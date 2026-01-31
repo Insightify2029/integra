@@ -1,0 +1,62 @@
+"""
+Mostahaqat Stats Cards
+======================
+Statistics cards for the module.
+"""
+
+from PyQt5.QtWidgets import QWidget, QHBoxLayout
+
+from ui.components.cards import StatCard
+
+from modules.mostahaqat.employees import (
+    get_employees_count,
+    get_active_employees_count,
+    get_nationalities_count,
+    get_departments_count,
+    get_jobs_count
+)
+
+
+class StatsCardsWidget(QWidget):
+    """Widget containing all stats cards."""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._setup_ui()
+    
+    def _setup_ui(self):
+        """Setup the widget."""
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(15)
+        
+        # Get stats
+        total = get_employees_count()
+        active = get_active_employees_count()
+        nationalities = get_nationalities_count()
+        departments = get_departments_count()
+        jobs = get_jobs_count()
+        
+        # Create cards
+        cards_data = [
+            ("👥", total, "إجمالي الموظفين", "#2563eb"),
+            ("✅", active, "الموظفين النشطين", "#10b981"),
+            ("🌍", nationalities, "الجنسيات", "#f59e0b"),
+            ("🏢", departments, "الأقسام", "#8b5cf6"),
+            ("💼", jobs, "الوظائف", "#ef4444"),
+        ]
+        
+        for icon, value, label, color in cards_data:
+            card = StatCard(icon, value, label, color)
+            layout.addWidget(card)
+    
+    def refresh(self):
+        """Refresh stats - recreate widget."""
+        # Clear existing
+        while self.layout().count():
+            item = self.layout().takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        
+        # Recreate
+        self._setup_ui()
