@@ -8,13 +8,16 @@ Professional clean interface with powerful menus and toolbars.
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
     QMenuBar, QMenu, QAction, QToolBar, QStatusBar,
-    QFrame, QSizePolicy
+    QFrame, QSizePolicy, QStackedWidget
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 
 from ui.windows.base import BaseWindow
 from ui.dialogs import show_info
+
+# Import new screens
+from modules.mostahaqat.screens import EmployeesListScreen, EmployeeProfileScreen
 
 
 class MostahaqatWindow(BaseWindow):
@@ -25,6 +28,12 @@ class MostahaqatWindow(BaseWindow):
     
     def __init__(self):
         super().__init__(title_suffix="مستحقات العاملين")
+        
+        # Stack widget to switch between screens
+        self._stack = None
+        self._welcome_screen = None
+        self._employees_list_screen = None
+        self._employee_profile_screen = None
         
         self._setup_menubar()
         self._setup_toolbar()
@@ -187,44 +196,76 @@ class MostahaqatWindow(BaseWindow):
                 spacing: 5px;
             }
             QToolBar QToolButton {
-                background-color: transparent;
+                background-color: #334155;
                 color: #f1f5f9;
                 border: none;
                 border-radius: 6px;
-                padding: 10px 16px;
+                padding: 8px 16px;
                 font-size: 13px;
                 font-weight: 500;
             }
             QToolBar QToolButton:hover {
-                background-color: #334155;
+                background-color: #475569;
             }
             QToolBar QToolButton:pressed {
                 background-color: #2563eb;
             }
+            QToolBar::separator {
+                width: 1px;
+                background-color: #475569;
+                margin: 0 10px;
+            }
         """)
-        self.addToolBar(toolbar)
         
         # Quick actions
-        toolbar.addAction(self._create_action("👥 الموظفين", "Ctrl+Shift+A", self._show_all_employees))
-        toolbar.addSeparator()
-        toolbar.addAction(self._create_action("➕ إضافة", "Ctrl+N", self._add_employee))
-        toolbar.addAction(self._create_action("🔍 بحث", "Ctrl+F", self._search_employee))
+        toolbar.addAction(self._create_action("👥 الموظفين", "", self._show_all_employees))
+        toolbar.addAction(self._create_action("➕ إضافة", "", self._add_employee))
+        toolbar.addAction(self._create_action("🔍 بحث", "", self._search_employee))
         toolbar.addSeparator()
         toolbar.addAction(self._create_action("🏖️ تسوية إجازة", "", self._single_settlement))
         toolbar.addAction(self._create_action("⏰ إضافي", "", self._overtime_summary))
         toolbar.addAction(self._create_action("🚪 نهاية خدمة", "", self._eos_calculator))
         toolbar.addSeparator()
         toolbar.addAction(self._create_action("📊 تقارير", "", self._reports_menu))
+        
+        self.addToolBar(toolbar)
     
     def _setup_central_area(self):
-        """Setup clean central area."""
+        """Setup central area with stacked widget."""
         central = QWidget()
         self.setCentralWidget(central)
         
         layout = QVBoxLayout(central)
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
         
-        # Clean workspace area
+        # Stacked widget for switching screens
+        self._stack = QStackedWidget()
+        
+        # Welcome screen (index 0)
+        self._welcome_screen = self._create_welcome_screen()
+        self._stack.addWidget(self._welcome_screen)
+        
+        # Employees list screen (index 1)
+        self._employees_list_screen = EmployeesListScreen()
+        self._employees_list_screen.employee_selected.connect(self._open_employee_profile)
+        self._employees_list_screen.add_employee_clicked.connect(self._add_employee)
+        self._stack.addWidget(self._employees_list_screen)
+        
+        # Employee profile screen (index 2)
+        self._employee_profile_screen = EmployeeProfileScreen()
+        self._employee_profile_screen.back_clicked.connect(self._show_employees_list)
+        self._employee_profile_screen.edit_clicked.connect(self._edit_employee_data)
+        self._employee_profile_screen.leave_settlement_clicked.connect(self._employee_leave_settlement)
+        self._employee_profile_screen.overtime_clicked.connect(self._employee_overtime)
+        self._employee_profile_screen.end_of_service_clicked.connect(self._employee_eos)
+        self._employee_profile_screen.deactivate_clicked.connect(self._deactivate_employee)
+        self._stack.addWidget(self._employee_profile_screen)
+        
+        layout.addWidget(self._stack)
+    
+    def _create_welcome_screen(self) -> QWidget:
+        """Create welcome screen widget."""
         workspace = QFrame()
         workspace.setStyleSheet("""
             QFrame {
@@ -232,14 +273,13 @@ class MostahaqatWindow(BaseWindow):
             }
         """)
         
-        # Center content
         ws_layout = QVBoxLayout(workspace)
         ws_layout.setAlignment(Qt.AlignCenter)
         
-        # Module title
+        # Title
         title = QLabel("مستحقات العاملين")
         title.setFont(QFont("Cairo", 36, QFont.Bold))
-        title.setStyleSheet("color: #06b6d4; background: transparent;")
+        title.setStyleSheet("color: #38bdf8; background: transparent;")
         title.setAlignment(Qt.AlignCenter)
         ws_layout.addWidget(title)
         
@@ -250,7 +290,7 @@ class MostahaqatWindow(BaseWindow):
         subtitle.setAlignment(Qt.AlignCenter)
         ws_layout.addWidget(subtitle)
         
-        layout.addWidget(workspace)
+        return workspace
     
     def _setup_statusbar(self):
         """Setup status bar."""
@@ -274,11 +314,57 @@ class MostahaqatWindow(BaseWindow):
         return action
     
     # ═══════════════════════════════════════════════════════════════
-    # Action handlers - All show "قيد التطوير" for now
+    # Navigation Methods
+    # ═══════════════════════════════════════════════════════════════
+    
+    def _show_welcome(self):
+        """Show welcome screen."""
+        self._stack.setCurrentIndex(0)
+        self.statusBar().showMessage("جاهز")
+    
+    def _show_employees_list(self):
+        """Show employees list screen."""
+        self._employees_list_screen.refresh()
+        self._stack.setCurrentIndex(1)
+        self.statusBar().showMessage("عرض قائمة الموظفين")
+    
+    def _open_employee_profile(self, employee_data: dict):
+        """Open employee profile screen."""
+        self._employee_profile_screen.set_employee(employee_data)
+        self._stack.setCurrentIndex(2)
+        self.statusBar().showMessage(f"ملف الموظف: {employee_data.get('name_ar', '')}")
+    
+    # ═══════════════════════════════════════════════════════════════
+    # Employee Actions (from profile screen)
+    # ═══════════════════════════════════════════════════════════════
+    
+    def _edit_employee_data(self, employee: dict):
+        """Edit employee data."""
+        show_info(self, "تعديل", f"تعديل بيانات {employee.get('name_ar', '')} - قيد التطوير")
+    
+    def _employee_leave_settlement(self, employee: dict):
+        """Calculate leave settlement for employee."""
+        show_info(self, "تسوية إجازة", f"تسوية إجازة {employee.get('name_ar', '')} - قيد التطوير")
+    
+    def _employee_overtime(self, employee: dict):
+        """Calculate overtime for employee."""
+        show_info(self, "حساب الإضافي", f"حساب الإضافي لـ {employee.get('name_ar', '')} - قيد التطوير")
+    
+    def _employee_eos(self, employee: dict):
+        """Calculate end of service for employee."""
+        show_info(self, "نهاية الخدمة", f"حساب نهاية خدمة {employee.get('name_ar', '')} - قيد التطوير")
+    
+    def _deactivate_employee(self, employee: dict):
+        """Deactivate employee."""
+        show_info(self, "إيقاف", f"إيقاف الموظف {employee.get('name_ar', '')} - قيد التطوير")
+    
+    # ═══════════════════════════════════════════════════════════════
+    # Menu Action Handlers
     # ═══════════════════════════════════════════════════════════════
     
     def _show_all_employees(self):
-        show_info(self, "الموظفين", "عرض جميع الموظفين - قيد التطوير")
+        """Show all employees - NOW WORKING!"""
+        self._show_employees_list()
     
     def _show_active_employees(self):
         show_info(self, "الموظفين", "عرض الموظفين النشطين - قيد التطوير")
@@ -429,4 +515,3 @@ class MostahaqatWindow(BaseWindow):
     
     def _reports_menu(self):
         show_info(self, "التقارير", "قائمة التقارير - قيد التطوير")
-
