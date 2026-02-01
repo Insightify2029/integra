@@ -369,6 +369,17 @@ class MostahaqatWindow(BaseWindow):
     # Menu Action Handlers
     # ═══════════════════════════════════════════════════════════════
     
+    def _on_employee_saved(self, updated_data: dict):
+        """بعد حفظ التعديلات - يرجع لملف الموظف."""
+        self._employee_profile_screen.set_employee(updated_data)
+        self._stack.setCurrentIndex(2)
+        self.statusBar().showMessage(f"\u2705 تم حفظ: {updated_data.get('name_ar', '')}")
+
+    def _on_edit_cancelled(self):
+        """إلغاء التعديل - يرجع لملف الموظف."""
+        self._stack.setCurrentIndex(2)
+        self.statusBar().showMessage("تم إلغاء التعديل")
+
     def _show_all_employees(self):
         """Show all employees - NOW WORKING!"""
         self._show_employees_list()
