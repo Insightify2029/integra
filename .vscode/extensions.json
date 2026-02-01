@@ -1,0 +1,12 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.pylint",
+        "ms-python.black-formatter",
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        "cweijan.vscode-postgresql-client2",
+        "PKief.material-icon-theme",
+        "streetsidesoftware.code-spell-checker"
+    ]
+}
