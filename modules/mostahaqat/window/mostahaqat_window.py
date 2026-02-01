@@ -17,7 +17,7 @@ from ui.windows.base import BaseWindow
 from ui.dialogs import show_info
 
 # Import new screens
-from modules.mostahaqat.screens import EmployeesListScreen, EmployeeProfileScreen
+from modules.mostahaqat.screens import EmployeesListScreen, EmployeeProfileScreen, EditEmployeeScreen
 
 
 class MostahaqatWindow(BaseWindow):
@@ -34,6 +34,7 @@ class MostahaqatWindow(BaseWindow):
         self._welcome_screen = None
         self._employees_list_screen = None
         self._employee_profile_screen = None
+        self._edit_employee_screen = None
         
         self._setup_menubar()
         self._setup_toolbar()
@@ -261,6 +262,12 @@ class MostahaqatWindow(BaseWindow):
         self._employee_profile_screen.end_of_service_clicked.connect(self._employee_eos)
         self._employee_profile_screen.deactivate_clicked.connect(self._deactivate_employee)
         self._stack.addWidget(self._employee_profile_screen)
+        
+        # Edit employee (3)
+        self._edit_employee_screen = EditEmployeeScreen()
+        self._edit_employee_screen.saved.connect(self._on_employee_saved)
+        self._edit_employee_screen.cancelled.connect(self._on_edit_cancelled)
+        self._stack.addWidget(self._edit_employee_screen)
         
         layout.addWidget(self._stack)
     
