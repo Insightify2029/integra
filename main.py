@@ -6,6 +6,18 @@ Version: 2.1.0
 """
 
 import sys
+import os
+
+# إخفاء الكونسول: لو مفيش stderr (pythonw) نوجهه لملف
+if sys.stderr is None:
+    sys.stderr = open(
+        os.path.join(os.path.dirname(__file__), "logs", "stderr.log"), "w"
+    )
+if sys.stdout is None:
+    sys.stdout = open(
+        os.path.join(os.path.dirname(__file__), "logs", "stdout.log"), "w"
+    )
+
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QFont
 from core.logging import setup_logging
