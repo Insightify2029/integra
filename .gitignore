@@ -27,3 +27,8 @@ SYNC.bat
 
 # Logging (A1)
 logs/
+
+# Logs
+stderr.log
+stdout.log
+startup_error.log
