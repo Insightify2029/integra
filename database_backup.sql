@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict eg0PxeUeGs0GdBB2e2NGK78yXbnVClEQxf01LjZOU41W4HgwU24y9f8MgShjVsL
+\restrict DeEEi0X6cgVM3UWKgLv6yNgqkj05rg8KG73kvVniZT5i783j91pJHelY7ep2brN
 
 -- Dumped from database version 16.11
 -- Dumped by pg_dump version 16.11
@@ -18,6 +18,41 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+ALTER TABLE IF EXISTS ONLY public.employees DROP CONSTRAINT IF EXISTS employees_status_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.employees DROP CONSTRAINT IF EXISTS employees_nationality_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.employees DROP CONSTRAINT IF EXISTS employees_job_title_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.employees DROP CONSTRAINT IF EXISTS employees_department_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.employees DROP CONSTRAINT IF EXISTS employees_company_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.employees DROP CONSTRAINT IF EXISTS employees_bank_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.nationalities DROP CONSTRAINT IF EXISTS nationalities_pkey;
+ALTER TABLE IF EXISTS ONLY public.job_titles DROP CONSTRAINT IF EXISTS job_titles_pkey;
+ALTER TABLE IF EXISTS ONLY public.employees DROP CONSTRAINT IF EXISTS employees_pkey;
+ALTER TABLE IF EXISTS ONLY public.employees DROP CONSTRAINT IF EXISTS employees_employee_code_key;
+ALTER TABLE IF EXISTS ONLY public.employee_statuses DROP CONSTRAINT IF EXISTS employee_statuses_pkey;
+ALTER TABLE IF EXISTS ONLY public.departments DROP CONSTRAINT IF EXISTS departments_pkey;
+ALTER TABLE IF EXISTS ONLY public.companies DROP CONSTRAINT IF EXISTS companies_pkey;
+ALTER TABLE IF EXISTS ONLY public.banks DROP CONSTRAINT IF EXISTS banks_pkey;
+ALTER TABLE IF EXISTS public.nationalities ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.job_titles ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.employees ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.employee_statuses ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.departments ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.companies ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.banks ALTER COLUMN id DROP DEFAULT;
+DROP SEQUENCE IF EXISTS public.nationalities_id_seq;
+DROP TABLE IF EXISTS public.nationalities;
+DROP SEQUENCE IF EXISTS public.job_titles_id_seq;
+DROP TABLE IF EXISTS public.job_titles;
+DROP SEQUENCE IF EXISTS public.employees_id_seq;
+DROP TABLE IF EXISTS public.employees;
+DROP SEQUENCE IF EXISTS public.employee_statuses_id_seq;
+DROP TABLE IF EXISTS public.employee_statuses;
+DROP SEQUENCE IF EXISTS public.departments_id_seq;
+DROP TABLE IF EXISTS public.departments;
+DROP SEQUENCE IF EXISTS public.companies_id_seq;
+DROP TABLE IF EXISTS public.companies;
+DROP SEQUENCE IF EXISTS public.banks_id_seq;
+DROP TABLE IF EXISTS public.banks;
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -860,5 +895,5 @@ ALTER TABLE ONLY public.employees
 -- PostgreSQL database dump complete
 --
 
-\unrestrict eg0PxeUeGs0GdBB2e2NGK78yXbnVClEQxf01LjZOU41W4HgwU24y9f8MgShjVsL
+\unrestrict DeEEi0X6cgVM3UWKgLv6yNgqkj05rg8KG73kvVniZT5i783j91pJHelY7ep2brN
 
