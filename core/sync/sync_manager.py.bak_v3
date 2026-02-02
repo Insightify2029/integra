@@ -1,0 +1,260 @@
+# -*- coding: utf-8 -*-
+"""Sync Manager v3 - المدير الرئيسي لنظام المزامنة"""
+
+from pathlib import Path
+from typing import Callable, Optional
+from datetime import datetime
+
+from PyQt5.QtCore import QObject, QThread, pyqtSignal, QTimer
+
+from .sync_config import load_sync_config, save_sync_config
+from .sync_status import SyncStatus, SyncState
+from .backup_manager import BackupManager, BackupInfo
+from .db_sync import DatabaseSync
+from .git_sync import GitSync
+
+
+class SyncWorker(QThread):
+    """Worker thread for sync operations - backward compatible with v2."""
+    progress = pyqtSignal(int, str)
+    finished = pyqtSignal(bool, str)
+    
+    def __init__(self, sync_type: str = None, sync_manager=None, mode: str = None):
+        super().__init__()
+        # Backward compat: v2 used 'mode', v3 uses 'sync_type'
+        if sync_type is None and mode is not None:
+            sync_type = mode
+        elif sync_type is None:
+            sync_type = "startup"
+        self.sync_type = sync_type
+        # Backward compat: auto-resolve sync_manager
+        if sync_manager is None:
+            sync_manager = get_sync_manager()
+        self.sync_manager = sync_manager
+    
+    def run(self):
+        try:
+            if self.sync_type == "startup":
+                result = self.sync_manager._do_startup_sync(self.progress.emit)
+            elif self.sync_type == "shutdown":
+                result = self.sync_manager._do_shutdown_sync(self.progress.emit)
+            elif self.sync_type == "db_only":
+                result = self.sync_manager._do_db_sync(self.progress.emit)
+            elif self.sync_type in ("git_pull", "pull"):
+                result = self.sync_manager._do_git_pull(self.progress.emit)
+            elif self.sync_type in ("git_push", "push"):
+                result = self.sync_manager._do_git_push(self.progress.emit)
+            elif self.sync_type == "full":
+                result = self.sync_manager._do_shutdown_sync(self.progress.emit)
+            else:
+                result = (False, f"نوع مزامنة غير معروف: {self.sync_type}")
+            self.finished.emit(result[0], result[1])
+        except Exception as e:
+            self.finished.emit(False, f"خطأ: {e}")
+
+
+class SyncManager(QObject):
+    sync_started = pyqtSignal(str)
+    sync_progress = pyqtSignal(int, str)
+    sync_finished = pyqtSignal(bool, str)
+    status_changed = pyqtSignal(str)
+    
+    _instance = None
+    
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+    
+    def __init__(self, project_root: Path = None):
+        if hasattr(self, '_initialized'):
+            return
+        super().__init__()
+        
+        if project_root is None:
+            project_root = Path(__file__).parent.parent.parent
+        
+        self.project_root = project_root
+        self.config = load_sync_config()
+        self.status = SyncStatus()
+        
+        self.backup_manager = BackupManager(project_root)
+        self.db_sync = DatabaseSync(project_root)
+        self.git_sync = GitSync(project_root)
+        
+        self._worker: Optional[SyncWorker] = None
+        self._auto_timer = QTimer()
+        self._auto_timer.timeout.connect(self._on_auto_sync)
+        self._setup_auto_sync()
+        
+        self._initialized = True
+    
+    def _setup_auto_sync(self):
+        if self.config.get("auto_sync_enabled", False):
+            hours = self.config.get("auto_sync_interval_hours", 2)
+            interval_ms = hours * 60 * 60 * 1000
+            self._auto_timer.start(interval_ms)
+        else:
+            self._auto_timer.stop()
+    
+    def _on_auto_sync(self):
+        if not self.status.is_syncing:
+            self.sync_database()
+    
+    def startup_sync(self, on_progress: Callable[[int, str], None] = None,
+                     on_finished: Callable[[bool, str], None] = None,
+                     blocking: bool = True):
+        if not self.config.get("sync_on_startup", True):
+            if on_finished:
+                on_finished(True, "المزامنة معطلة")
+            return
+        
+        if blocking:
+            result = self._do_startup_sync(on_progress)
+            if on_finished:
+                on_finished(result[0], result[1])
+        else:
+            self._start_worker("startup", on_progress, on_finished)
+    
+    def shutdown_sync(self, on_progress: Callable[[int, str], None] = None,
+                      on_finished: Callable[[bool, str], None] = None):
+        self._start_worker("shutdown", on_progress, on_finished)
+    
+    def sync_database(self, on_progress: Callable[[int, str], None] = None,
+                      on_finished: Callable[[bool, str], None] = None):
+        self._start_worker("db_only", on_progress, on_finished)
+    
+    def git_pull(self, on_progress: Callable[[int, str], None] = None,
+                 on_finished: Callable[[bool, str], None] = None):
+        self._start_worker("git_pull", on_progress, on_finished)
+    
+    def git_push(self, on_progress: Callable[[int, str], None] = None,
+                 on_finished: Callable[[bool, str], None] = None):
+        self._start_worker("git_push", on_progress, on_finished)
+    
+    def restore_backup(self, backup_info: BackupInfo,
+                       on_progress: Callable[[int, str], None] = None) -> tuple:
+        return self.db_sync.restore(backup_info, on_progress).success, ""
+    
+    def list_backups(self):
+        return self.backup_manager.list_backups()
+    
+    def get_latest_backup(self):
+        return self.backup_manager.get_latest_backup()
+    
+    def cleanup_old_backups(self):
+        retention = self.config.get("backup_retention_days", 30)
+        return self.backup_manager.cleanup_old_backups(retention)
+    
+    def update_config(self, **kwargs):
+        for key, value in kwargs.items():
+            self.config[key] = value
+        save_sync_config(self.config)
+        self._setup_auto_sync()
+    
+    @property
+    def is_syncing(self) -> bool:
+        return self.status.is_syncing
+    
+    @property
+    def last_sync_time(self) -> str:
+        return self.config.get("last_sync_time", "")
+    
+    def _start_worker(self, sync_type: str, on_progress, on_finished):
+        if self._worker and self._worker.isRunning():
+            return
+        
+        self.status.start()
+        self.sync_started.emit(sync_type)
+        self.status_changed.emit("syncing")
+        
+        self._worker = SyncWorker(sync_type, self)
+        
+        if on_progress:
+            self._worker.progress.connect(on_progress)
+        self._worker.progress.connect(self.sync_progress.emit)
+        
+        def on_done(success, summary):
+            self.status.finish()
+            self._update_last_sync(sync_type)
+            self.status_changed.emit("success" if success else "error")
+            self.sync_finished.emit(success, summary)
+            if on_finished:
+                on_finished(success, summary)
+        
+        self._worker.finished.connect(on_done)
+        self._worker.start()
+    
+    def _update_last_sync(self, sync_type: str):
+        self.config["last_sync_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.config["last_sync_type"] = sync_type
+        save_sync_config(self.config)
+    
+    def _do_startup_sync(self, on_progress) -> tuple:
+        if on_progress:
+            on_progress(0, "جاري تزامن قاعدة البيانات...")
+        result = self.db_sync.quick_restore(on_progress)
+        self.status.add_result(result.operation, result.success,
+                               result.message, result.duration_ms)
+        return result.success, result.message
+    
+    def _do_shutdown_sync(self, on_progress) -> tuple:
+        results = []
+        
+        if on_progress:
+            on_progress(0, "جاري حفظ قاعدة البيانات...")
+        
+        def db_progress(p, m):
+            if on_progress:
+                on_progress(int(p * 0.5), m)
+        
+        result = self.db_sync.backup(db_progress)
+        results.append(result)
+        self.status.add_result(result.operation, result.success,
+                               result.message, result.duration_ms)
+        
+        if on_progress:
+            on_progress(50, "جاري رفع البيانات...")
+        
+        def git_progress(p, m):
+            if on_progress:
+                on_progress(50 + int(p * 0.5), m)
+        
+        result = self.git_sync.push(on_progress=git_progress)
+        results.append(result)
+        self.status.add_result(result.operation, result.success,
+                               result.message, result.duration_ms)
+        
+        all_success = all(r.success for r in results)
+        total_ms = sum(r.duration_ms for r in results)
+        
+        if all_success:
+            return True, f"تمت المزامنة ({total_ms}ms)"
+        else:
+            failed = [r for r in results if not r.success]
+            return False, f"فشل: {failed[0].message}"
+    
+    def _do_db_sync(self, on_progress) -> tuple:
+        result = self.db_sync.backup(on_progress)
+        if not result.success:
+            return False, result.message
+        self.git_sync.push()
+        return True, "تمت المزامنة"
+    
+    def _do_git_pull(self, on_progress) -> tuple:
+        result = self.git_sync.pull(on_progress)
+        return result.success, result.message
+    
+    def _do_git_push(self, on_progress) -> tuple:
+        result = self.git_sync.push(on_progress=on_progress)
+        return result.success, result.message
+
+
+_sync_manager: Optional[SyncManager] = None
+
+
+def get_sync_manager() -> SyncManager:
+    global _sync_manager
+    if _sync_manager is None:
+        _sync_manager = SyncManager()
+    return _sync_manager

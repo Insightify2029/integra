@@ -1,4 +1,88 @@
-# -*- coding: utf-8 -*-
+# Tools/fix_sync_import.py
+"""
+═══════════════════════════════════════════════════════════════════
+  INTEGRA - إصلاح خطأ SyncWorker Import
+═══════════════════════════════════════════════════════════════════
+  cd /d D:\Projects\Integra
+  python Tools\fix_sync_import.py
+═══════════════════════════════════════════════════════════════════
+
+  المشكلة: install_sync_v3.py حدّث core/sync/ لكن ما حدّثش
+           sync_settings_dialog.py - فالملف القديم لسه بيستورد
+           SyncWorker اللي اتشال.
+
+  الحل:    1) تحديث sync_settings_dialog.py للإصدار v3
+           2) فحص كل ملفات المشروع للتأكد مفيش import تاني لـ SyncWorker
+═══════════════════════════════════════════════════════════════════
+"""
+
+import os
+from pathlib import Path
+from datetime import datetime
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+print()
+print("=" * 65)
+print("  INTEGRA - إصلاح خطأ SyncWorker Import")
+print("=" * 65)
+print(f"  المسار: {PROJECT_ROOT}")
+print(f"  التاريخ: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+print("=" * 65)
+
+# ═══════════════════════════════════════════════════════════════
+# الخطوة 1: البحث عن الملف القديم
+# ═══════════════════════════════════════════════════════════════
+
+print("\n[1/3] البحث عن sync_settings_dialog.py القديم...")
+
+# المسارات المحتملة للملف
+possible_paths = [
+    PROJECT_ROOT / "ui" / "dialogs" / "sync_settings" / "sync_settings_dialog.py",
+    PROJECT_ROOT / "ui" / "dialogs" / "sync_settings_dialog.py",
+    PROJECT_ROOT / "sync_settings_dialog.py",
+]
+
+found_path = None
+for p in possible_paths:
+    if p.exists():
+        found_path = p
+        # فحص هل الملف فيه SyncWorker
+        content = p.read_text(encoding="utf-8")
+        if "SyncWorker" in content:
+            print(f"  ⚠️  وُجد الملف القديم: {p.relative_to(PROJECT_ROOT)}")
+            print(f"      يحتوي على import لـ SyncWorker ← هذا سبب الخطأ!")
+        else:
+            print(f"  ✅ وُجد الملف: {p.relative_to(PROJECT_ROOT)}")
+            print(f"      لا يحتوي على SyncWorker (قد يكون محدّث)")
+        break
+
+if found_path is None:
+    # نبحث في كل المشروع
+    for p in PROJECT_ROOT.rglob("sync_settings_dialog.py"):
+        if "__pycache__" not in str(p):
+            found_path = p
+            content = p.read_text(encoding="utf-8")
+            has_worker = "SyncWorker" in content
+            print(f"  {'⚠️' if has_worker else '✅'} وُجد: {p.relative_to(PROJECT_ROOT)}")
+            break
+
+if found_path is None:
+    print("  ❌ الملف غير موجود! سيتم إنشاؤه...")
+    # نستخدم المسار الأول كمسار افتراضي
+    found_path = possible_paths[0]
+
+# ═══════════════════════════════════════════════════════════════
+# الخطوة 2: كتابة الملف المحدّث (v3)
+# ═══════════════════════════════════════════════════════════════
+
+print("\n[2/3] تحديث sync_settings_dialog.py إلى v3...")
+
+# التأكد من وجود المجلد
+found_path.parent.mkdir(parents=True, exist_ok=True)
+
+# النسخة الجديدة المتوافقة مع Sync v3
+NEW_DIALOG = r'''# -*- coding: utf-8 -*-
 """
 Sync Settings Dialog - v3
 =========================
@@ -630,3 +714,100 @@ class SyncSettingsDialog(QDialog):
                     padding: 10px;
                 }
             """)
+'''
+
+# نعمل backup للملف القديم
+if found_path.exists():
+    backup_name = found_path.with_suffix(".py.old_v2")
+    if not backup_name.exists():
+        import shutil
+        shutil.copy(str(found_path), str(backup_name))
+        print(f"  📦 نسخة احتياطية: {backup_name.name}")
+
+# كتابة الملف الجديد
+found_path.write_text(NEW_DIALOG.strip(), encoding="utf-8")
+print(f"  ✅ تم تحديث: {found_path.relative_to(PROJECT_ROOT)}")
+
+# التأكد من وجود __init__.py
+init_file = found_path.parent / "__init__.py"
+if not init_file.exists():
+    init_file.write_text(
+        "from .sync_settings_dialog import SyncSettingsDialog\n",
+        encoding="utf-8"
+    )
+    print(f"  ✅ تم إنشاء: {init_file.relative_to(PROJECT_ROOT)}")
+
+# ═══════════════════════════════════════════════════════════════
+# الخطوة 3: فحص كل المشروع لأي import SyncWorker متبقي
+# ═══════════════════════════════════════════════════════════════
+
+print("\n[3/3] فحص المشروع لأي SyncWorker imports متبقية...")
+
+problems_found = 0
+skip_dirs = {"__pycache__", ".git", "venv", "node_modules", ".old_v2"}
+
+for py_file in PROJECT_ROOT.rglob("*.py"):
+    # تخطي المجلدات غير المهمة
+    if any(skip in py_file.parts for skip in skip_dirs):
+        continue
+    # تخطي هذا السكريبت نفسه
+    if py_file.name == "fix_sync_import.py":
+        continue
+
+    try:
+        content = py_file.read_text(encoding="utf-8")
+        if "SyncWorker" in content:
+            # التأكد إنه import وليس تعريف الكلاس
+            for i, line in enumerate(content.splitlines(), 1):
+                stripped = line.strip()
+                if "SyncWorker" in stripped and "import" in stripped:
+                    if "from core.sync import" in stripped or "from .sync" in stripped:
+                        # هذا import - نتأكد هل هو في __init__.py أو sync_manager
+                        rel_path = py_file.relative_to(PROJECT_ROOT)
+                        # لو في sync_manager.py ده طبيعي (تعريف داخلي)
+                        if py_file.name == "sync_manager.py":
+                            continue
+                        print(f"  ⚠️  {rel_path} سطر {i}: {stripped}")
+                        problems_found += 1
+    except (UnicodeDecodeError, PermissionError):
+        continue
+
+# فحص __pycache__ القديمة
+print("\n  🧹 تنظيف __pycache__...")
+cache_dirs = list(PROJECT_ROOT.rglob("__pycache__"))
+sync_caches = [d for d in cache_dirs if "sync" in str(d).lower()]
+cleaned = 0
+for cache_dir in sync_caches:
+    for cached_file in cache_dir.glob("*.pyc"):
+        cached_file.unlink()
+        cleaned += 1
+    for cached_file in cache_dir.glob("*.pyo"):
+        cached_file.unlink()
+        cleaned += 1
+
+if cleaned:
+    print(f"     حُذف {cleaned} ملف cache من مجلدات sync")
+else:
+    print("     لا توجد ملفات cache للحذف")
+
+# ═══════════════════════════════════════════════════════════════
+# النتيجة النهائية
+# ═══════════════════════════════════════════════════════════════
+
+print()
+print("=" * 65)
+if problems_found == 0:
+    print("  ✅ تم الإصلاح بنجاح! لا توجد مشاكل متبقية")
+else:
+    print(f"  ⚠️  تم تحديث الملف الرئيسي لكن وُجدت {problems_found} مشاكل إضافية")
+    print("      راجع التفاصيل أعلاه")
+print("=" * 65)
+print()
+print("  ما تم:")
+print(f"  1. تحديث sync_settings_dialog.py → v3")
+print(f"  2. فحص كل ملفات المشروع ← {'نظيف ✅' if problems_found == 0 else f'{problems_found} مشاكل ⚠️'}")
+print(f"  3. تنظيف __pycache__ للـ sync ← {cleaned} ملف")
+print()
+print("  الخطوة التالية:")
+print("  python main.py")
+print("=" * 65)
