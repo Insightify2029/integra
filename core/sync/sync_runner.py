@@ -19,6 +19,9 @@ from datetime import datetime
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 BACKUP_FILE = PROJECT_ROOT / "database_backup.sql"
 
+# إخفاء نافذة CMD عند تشغيل subprocess على Windows
+CREATE_NO_WINDOW = 0x08000000
+
 
 # ═══════════════════════════════════════════════════════
 # PULL Mode - عند فتح البرنامج
@@ -129,7 +132,8 @@ def _git_pull(logs: list) -> bool:
         result = subprocess.run(
             ["git", "pull"],
             capture_output=True, text=True,
-            timeout=30, cwd=str(PROJECT_ROOT)
+            timeout=30, cwd=str(PROJECT_ROOT),
+            creationflags=CREATE_NO_WINDOW
         )
         if result.returncode == 0:
             msg = result.stdout.strip()
@@ -159,7 +163,8 @@ def _git_add(logs: list):
         subprocess.run(
             ["git", "add", "--all"],
             capture_output=True, text=True,
-            timeout=15, cwd=str(PROJECT_ROOT)
+            timeout=15, cwd=str(PROJECT_ROOT),
+            creationflags=CREATE_NO_WINDOW
         )
         logs.append("\u2705 Git Add: \u062a\u0645\u062a \u0625\u0636\u0627\u0641\u0629 \u0627\u0644\u0645\u0644\u0641\u0627\u062a")
     except Exception as e:
@@ -173,7 +178,8 @@ def _git_commit(logs: list):
         result = subprocess.run(
             ["git", "commit", "-m", msg],
             capture_output=True, text=True,
-            timeout=15, cwd=str(PROJECT_ROOT)
+            timeout=15, cwd=str(PROJECT_ROOT),
+            creationflags=CREATE_NO_WINDOW
         )
         output = result.stdout.strip()
         if "nothing to commit" in output:
@@ -192,7 +198,8 @@ def _git_push(logs: list) -> bool:
         result = subprocess.run(
             ["git", "push"],
             capture_output=True, text=True,
-            timeout=30, cwd=str(PROJECT_ROOT)
+            timeout=30, cwd=str(PROJECT_ROOT),
+            creationflags=CREATE_NO_WINDOW
         )
         if result.returncode == 0:
             logs.append("\u2705 Push: \u062a\u0645 \u0627\u0644\u0631\u0641\u0639 \u0639\u0644\u0649 GitHub")
@@ -233,7 +240,8 @@ def _db_backup(logs: list) -> bool:
              "--clean", "--if-exists",
              "-f", str(BACKUP_FILE)],
             capture_output=True, text=True,
-            timeout=60, env=env
+            timeout=60, env=env,
+            creationflags=CREATE_NO_WINDOW
         )
         if result.returncode == 0:
             size_kb = BACKUP_FILE.stat().st_size / 1024
@@ -273,7 +281,8 @@ def _db_restore(logs: list) -> bool:
              "-f", str(BACKUP_FILE),
              "--quiet"],
             capture_output=True, text=True,
-            timeout=120, env=env
+            timeout=120, env=env,
+            creationflags=CREATE_NO_WINDOW
         )
 
         if result.returncode == 0:
@@ -328,7 +337,8 @@ def _find_pg_tool(tool_name: str) -> str:
     try:
         result = subprocess.run(
             ["where", tool_name],
-            capture_output=True, text=True, timeout=5
+            capture_output=True, text=True, timeout=5,
+            creationflags=CREATE_NO_WINDOW
         )
         if result.returncode == 0:
             return result.stdout.strip().split("\n")[0]
