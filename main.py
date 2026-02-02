@@ -1,6 +1,6 @@
 """
 INTEGRA - Integrated Management System
-======================================
+=======================================
 Entry Point
 Version: 2.1.0
 """
@@ -9,8 +9,10 @@ import sys
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QFont
 from core.logging import setup_logging
+from core.error_handling import install_exception_handler
 
 setup_logging(debug_mode=True)
+install_exception_handler()
 
 
 def main():
