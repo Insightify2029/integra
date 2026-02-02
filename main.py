@@ -9,15 +9,18 @@ import sys
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QFont
 from core.logging import setup_logging
-from core.error_handling import install_exception_handler
 
 setup_logging(debug_mode=True)
-install_exception_handler()
 
 
 def main():
     """Application entry point."""
     app = QApplication(sys.argv)
+
+    # تركيب معالج الأخطاء (لازم يكون بعد QApplication)
+    from core.error_handling import install_exception_handler
+
+    install_exception_handler()
 
     # Set application info
     app.setApplicationName("INTEGRA")
