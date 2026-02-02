@@ -24,3 +24,6 @@ SYNC.bat
 # Temp
 *.tmp
 *.log
+
+# Logging (A1)
+logs/
