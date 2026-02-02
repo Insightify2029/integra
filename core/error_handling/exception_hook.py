@@ -138,7 +138,8 @@ class ExceptionHandler(QObject):
     def install(self):
         """تركيب المعالج - يمسك كل الأخطاء غير المعالجة"""
         sys.excepthook = self._handle_exception
-        _log_error("معالج الأخطاء الشامل - تم التركيب ✅")
+        if _has_logger:
+            logger.info("معالج الأخطاء الشامل - تم التركيب ✅")
 
     def _handle_exception(self, exc_type, exc_value, exc_traceback):
         """يتنادى تلقائياً لما يحصل أي خطأ غير معالج"""
