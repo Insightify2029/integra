@@ -3,6 +3,6 @@
   "sync_on_exit": true,
   "auto_sync_enabled": true,
   "auto_sync_interval_minutes": 30,
-  "last_sync_time": "2026-02-02 09:21",
-  "last_sync_direction": "push"
+  "last_sync_time": "2026-02-02 12:37",
+  "last_sync_direction": "pull"
 }
