@@ -4,6 +4,96 @@
 
 ---
 
+## الجلسة: 4 فبراير 2026 (فجراً) - المرحلة 4
+
+### ✅ ما تم إنجازه:
+
+1. **D11: Excel Import (pandas + openpyxl)**
+   - إنشاء `core/import_export/excel_importer.py`
+   - قراءة ملفات Excel (.xlsx, .xls) و CSV
+   - معاينة البيانات قبل الاستيراد
+   - التحقق من الأعمدة المطلوبة
+   - دعم الترميزات العربية المختلفة
+
+2. **D12: Word Export (python-docx)**
+   - إنشاء `core/import_export/word_exporter.py`
+   - إنشاء مستندات Word مع دعم RTL
+   - إضافة عناوين، فقرات، جداول، صور
+   - دوال جاهزة: `create_employee_report`, `create_employees_list_report`
+
+3. **D13: PDF Processing (pdfplumber)**
+   - إنشاء `core/import_export/pdf_reader.py`
+   - استخراج النص من PDF
+   - استخراج الجداول كـ dictionaries
+   - البحث في النص
+   - دعم العربية
+
+### 📁 الملفات الجديدة:
+
+```
+core/import_export/
+├── __init__.py
+├── excel_importer.py    # استيراد Excel/CSV
+├── word_exporter.py     # تصدير Word
+└── pdf_reader.py        # قراءة PDF
+```
+
+### 📋 الحالة الحالية:
+
+| المرحلة | الحالة |
+|---------|--------|
+| المرحلة 0: التشغيل | ✅ مكتمل |
+| المرحلة 1: الأساسيات | ✅ مكتمل |
+| المرحلة 2: تحسينات الواجهة | ✅ مكتمل |
+| المرحلة 3: استقرار وأداء | ✅ مكتمل |
+| المرحلة 4: استيراد/تصدير | ✅ **مكتمل** |
+| المرحلة 5: رسوم بيانية | ⏳ القادمة |
+
+### 🎯 المهمة القادمة:
+
+**المرحلة 5: رسوم بيانية وDashboard**
+```
+D5  → Plotly Charts
+D9  → QR Codes
+```
+
+### 💡 كيفية الاستخدام:
+
+```python
+# Excel Import
+from core.import_export import ExcelImporter, read_excel
+
+importer = ExcelImporter("employees.xlsx")
+importer.set_required_columns(["الاسم", "الراتب"])
+if importer.validate():
+    data = importer.read_all()
+
+# أو بشكل مختصر
+data, errors = read_excel("employees.xlsx")
+
+# Word Export
+from core.import_export import WordExporter, create_employee_report
+
+doc = WordExporter("report.docx")
+doc.add_heading("تقرير الموظفين", level=1)
+doc.add_table(employees_data)
+doc.save()
+
+# أو تقرير موظف جاهز
+create_employee_report(employee, "employee_report.docx")
+
+# PDF Read
+from core.import_export import PDFReader, read_pdf_text
+
+text, errors = read_pdf_text("document.pdf")
+
+# أو استخراج جداول
+reader = PDFReader("document.pdf")
+tables = reader.extract_tables_as_dicts()
+```
+
+---
+
 ## الجلسة: 3 فبراير 2026 (متأخر) - المرحلة 3
 
 ### ✅ ما تم إنجازه:
