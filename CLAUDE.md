@@ -1,5 +1,16 @@
 # CLAUDE.md - AI Assistant Guide for INTEGRA
 
+## 📋 Development Plan Reference
+
+> **IMPORTANT:** Always read `claude/INTEGRA_INFRASTRUCTURE_PLAN.md` for the current development roadmap.
+>
+> The plan covers 3 main tracks:
+> - **Track A:** Core Infrastructure (Logging, Error Handling, Auto-Save, Audit, Threading, Scheduler, File Watcher, Backup, Security, Validation)
+> - **Track B:** AI Integration (Ollama - Email Agent, Data Agent, Smart Alerts)
+> - **Track C:** Email Module (Outlook Classic Sync)
+
+---
+
 ## Project Overview
 
 **INTEGRA** is an enterprise-grade Integrated Management System built with PyQt5 and PostgreSQL. It's a desktop application primarily designed for managing employee data and various business modules.
