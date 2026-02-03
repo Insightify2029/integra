@@ -5,8 +5,8 @@
   "auto_sync_enabled": false,
   "auto_sync_interval_hours": 3,
   "auto_sync_interval_minutes": 30,
-  "last_sync_time": "2026-02-03 02:00:04",
+  "last_sync_time": "2026-02-03 20:39",
   "last_sync_type": "db_only",
-  "last_sync_direction": "push",
+  "last_sync_direction": "pull",
   "backup_retention_days": 30
 }
