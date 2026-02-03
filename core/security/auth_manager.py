@@ -11,7 +11,7 @@ Features:
   - Password strength validation
 """
 
-from typing import Optional, Dict, Any, Tuple
+from typing import Optional, Dict, Any, Tuple, Callable
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 import secrets
@@ -179,7 +179,7 @@ class AuthManager:
         self,
         username: str,
         password: str,
-        verify_func: callable = None
+        verify_func: Callable = None
     ) -> Tuple[bool, Optional[UserSession], str]:
         """
         Attempt to log in a user.
