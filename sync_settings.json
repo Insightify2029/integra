@@ -1,12 +1,13 @@
 {
   "sync_on_startup": false,
   "sync_on_exit": false,
-  "sync_on_exit_ask": true,
+  "sync_on_exit_ask": false,
   "auto_sync_enabled": false,
   "auto_sync_interval_hours": 3,
   "auto_sync_interval_minutes": 30,
-  "last_sync_time": "2026-02-03 20:39",
-  "last_sync_type": "db_only",
-  "last_sync_direction": "pull",
-  "backup_retention_days": 30
+  "last_sync_time": "",
+  "last_sync_type": "",
+  "last_sync_direction": "",
+  "backup_retention_days": 30,
+  "_note": "Sync system is DISABLED - will be reimplemented later"
 }
