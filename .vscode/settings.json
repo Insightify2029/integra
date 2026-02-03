@@ -10,7 +10,9 @@
     "git.confirmSync": false,
     "git.enableSmartCommit": true,
     "python.analysis.autoImportCompletions": true,
-    "editor.rulers": [88],
+    "editor.rulers": [
+        88
+    ],
     "files.exclude": {
         "**/__pycache__": true,
         "**/*.pyc": true
@@ -20,5 +22,6 @@
         "**/venv": true
     },
     "python-envs.defaultEnvManager": "ms-python.python:system",
-    "python-envs.pythonProjects": []
+    "python-envs.pythonProjects": [],
+    "claudeCodeChat.permissions.yoloMode": false
 }
