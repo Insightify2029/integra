@@ -5,8 +5,7 @@ import os
 import subprocess
 import time
 from pathlib import Path
-from typing import Callable, Optional
-from datetime import datetime
+from typing import Callable
 
 from .backup_manager import BackupManager, BackupInfo
 from .sync_status import SyncResult

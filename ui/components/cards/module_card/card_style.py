@@ -20,36 +20,36 @@ def get_card_style(accent_color="#2563eb"):
     theme = get_current_theme()
     
     if theme == 'dark':
-        return f"""
-            QFrame {{
+        return """
+            QFrame {
                 background-color: #1e293b;
                 border: none;
                 border-radius: 20px;
-            }}
-            QFrame:hover {{
+            }
+            QFrame:hover {
                 background-color: #334155;
-            }}
-            QFrame QLabel {{
+            }
+            QFrame QLabel {
                 border: none;
                 background: transparent;
                 padding: 0px;
                 margin: 0px;
-            }}
+            }
         """
     else:
-        return f"""
-            QFrame {{
+        return """
+            QFrame {
                 background-color: #ffffff;
                 border: none;
                 border-radius: 20px;
-            }}
-            QFrame:hover {{
+            }
+            QFrame:hover {
                 background-color: #f1f5f9;
-            }}
-            QFrame QLabel {{
+            }
+            QFrame QLabel {
                 border: none;
                 background: transparent;
                 padding: 0px;
                 margin: 0px;
-            }}
+            }
         """

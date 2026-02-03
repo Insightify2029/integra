@@ -5,7 +5,6 @@ Statistics card component.
 """
 
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QLabel
-from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 
 from core.themes import get_current_theme
@@ -39,11 +38,9 @@ class StatCard(QFrame):
         
         if theme == 'dark':
             bg = "#1e293b"
-            text_color = "#f1f5f9"
             muted_color = "#94a3b8"
         else:
             bg = "#ffffff"
-            text_color = "#1e293b"
             muted_color = "#64748b"
         
         self.setStyleSheet(f"""

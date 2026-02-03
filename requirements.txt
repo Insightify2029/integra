@@ -1,0 +1,18 @@
+# INTEGRA - Required Dependencies
+# ================================
+# Python 3.8+ required
+
+# GUI Framework
+PyQt5>=5.15.0
+
+# Database
+psycopg2-binary>=2.9.0
+
+# Logging
+loguru>=0.7.0
+
+# Excel Export (optional)
+openpyxl>=3.1.0
+
+# PDF Export (optional)
+reportlab>=4.0.0

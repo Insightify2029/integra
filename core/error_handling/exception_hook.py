@@ -181,7 +181,7 @@ class ExceptionHandler(QObject):
         try:
             dialog = ErrorDialog(error_type, error_message, full_traceback)
             dialog.exec_()
-        except Exception as e:
+        except Exception:
             # Fallback لو الـ dialog نفسه فشل
             QMessageBox.critical(
                 None,

@@ -12,13 +12,12 @@ from core.themes import get_current_theme
 
 class PrimaryButton(QPushButton):
     """Primary action button."""
-    
+
     def __init__(self, text: str, parent=None):
         super().__init__(text, parent)
         self._setup()
-    
+
     def _setup(self):
-        theme = get_current_theme()
         self.setFont(QFont("Cairo", 13))
         self.setCursor(0)  # Arrow cursor
         

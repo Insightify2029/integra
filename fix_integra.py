@@ -106,7 +106,7 @@ def fix_sync_runner():
     sync_runner = r"D:\Projects\Integra\core\sync\sync_runner.py"
     
     if not os.path.exists(sync_runner):
-        print(f"  sync_runner.py not found at expected path")
+        print("  sync_runner.py not found at expected path")
         return False
     
     with open(sync_runner, 'r', encoding='utf-8') as f:

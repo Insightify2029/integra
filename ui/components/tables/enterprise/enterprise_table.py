@@ -15,17 +15,16 @@ Features / المميزات:
 """
 
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QTableView,
+    QWidget, QVBoxLayout, QTableView,
     QHeaderView, QAbstractItemView, QMenu, QAction,
     QStyledItemDelegate, QStyle, QApplication
 )
 from PyQt5.QtCore import (
-    Qt, pyqtSignal, QSortFilterProxyModel, QModelIndex,
-    QTimer, QSize, QRegExp
+    Qt, pyqtSignal, QSortFilterProxyModel, QModelIndex
 )
 from PyQt5.QtGui import (
-    QStandardItemModel, QStandardItem, QFont, 
-    QColor, QCursor, QBrush
+    QStandardItemModel, QStandardItem,
+    QColor
 )
 
 from core.themes import get_current_theme

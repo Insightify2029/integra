@@ -8,7 +8,6 @@ from PyQt5.QtWidgets import QFrame, QLabel
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 
-from .card_container import create_card_container
 from .card_layout import create_card_layout
 from .card_shadow import create_card_shadow
 from .card_style import get_card_style

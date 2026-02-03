@@ -15,7 +15,7 @@ from datetime import datetime
 
 from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel,
-    QPushButton, QCheckBox, QSpinBox, QFrame,
+    QPushButton, QCheckBox, QSpinBox,
     QTextEdit, QGroupBox, QListWidget, QListWidgetItem,
     QMessageBox
 )
@@ -23,7 +23,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 
 from core.themes import get_current_theme
-from core.sync import get_sync_manager, load_sync_config, save_sync_config
+from core.sync import get_sync_manager, load_sync_config
 
 
 class SyncSettingsDialog(QDialog):

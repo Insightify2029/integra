@@ -5,10 +5,9 @@ Search Box
 """
 
 from PyQt5.QtWidgets import (
-    QWidget, QHBoxLayout, QLineEdit, QPushButton
+    QWidget, QHBoxLayout, QLineEdit
 )
-from PyQt5.QtCore import Qt, pyqtSignal, QTimer
-from PyQt5.QtGui import QFont
+from PyQt5.QtCore import pyqtSignal, QTimer
 
 from core.themes import get_current_theme
 

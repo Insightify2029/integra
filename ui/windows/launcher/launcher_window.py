@@ -6,7 +6,7 @@ Includes full sync automation (Git + Database).
 """
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import QTimer
 
 from ui.windows.base import BaseWindow
 from ui.dialogs import SettingsDialog, ThemesDialog, SyncSettingsDialog
@@ -17,7 +17,7 @@ from .launcher_cards_area import LauncherCardsArea
 from .launcher_statusbar import LauncherStatusBar
 
 from core.database.connection import connect
-from core.themes import get_stylesheet, apply_theme
+from core.themes import get_stylesheet
 from core.sync import SyncWorker, load_sync_config, save_sync_config
 
 

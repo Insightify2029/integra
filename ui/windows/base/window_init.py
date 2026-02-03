@@ -6,7 +6,7 @@ Base Window Initialization
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtGui import QFont
 
-from core.config.app import APP_NAME, APP_VERSION, APP_SUBTITLE
+from core.config.app import APP_NAME, APP_SUBTITLE
 from core.config.window import WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT
 from core.themes import get_stylesheet
 from core.themes.dark.fonts import FONT_FAMILY_ARABIC, FONT_SIZE_NORMAL

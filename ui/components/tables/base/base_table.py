@@ -4,7 +4,7 @@ Base Table Widget
 Reusable table component.
 """
 
-from PyQt5.QtWidgets import QTableWidget, QHeaderView, QAbstractItemView
+from PyQt5.QtWidgets import QTableWidget, QAbstractItemView
 from PyQt5.QtCore import Qt
 
 from core.themes import get_current_theme

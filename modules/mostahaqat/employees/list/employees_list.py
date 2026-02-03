@@ -4,9 +4,7 @@ Employees List Table
 Table widget for displaying employees.
 """
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 
 from ui.components.tables import BaseTable
 from ui.components.inputs import SearchInput, StyledComboBox

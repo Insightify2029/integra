@@ -5,11 +5,10 @@ Database and application settings.
 """
 
 from PyQt5.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QGroupBox, 
+    QDialog, QVBoxLayout, QHBoxLayout, QGroupBox,
     QFormLayout, QLineEdit, QPushButton, QLabel, QMessageBox
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
 
 from core.themes import get_stylesheet
 from core.database.connection import is_connected

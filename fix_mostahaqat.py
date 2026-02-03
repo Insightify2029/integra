@@ -67,7 +67,7 @@ if "_on_employee_saved" not in content or "def _on_employee_saved" not in conten
                 inserted = True
                 changes += 1
                 print(f"  ✅ Added _on_employee_saved after {marker}")
-                print(f"  ✅ Added _on_edit_cancelled")
+                print("  ✅ Added _on_edit_cancelled")
                 break
     
     if not inserted:

@@ -4,7 +4,7 @@ Launcher Menu Bar
 Menu bar for the launcher window.
 """
 
-from PyQt5.QtWidgets import QMenuBar, QMenu, QAction
+from PyQt5.QtWidgets import QAction
 
 
 def create_launcher_menu(window):

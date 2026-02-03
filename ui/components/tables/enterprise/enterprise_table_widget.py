@@ -13,11 +13,9 @@ Usage / طريقة الاستخدام:
 """
 
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QSplitter,
-    QFrame
+    QWidget, QVBoxLayout, QHBoxLayout
 )
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QFont
+from PyQt5.QtCore import pyqtSignal
 
 from .enterprise_table import EnterpriseTable
 from .table_toolbar import TableToolbar

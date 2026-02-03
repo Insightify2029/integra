@@ -6,9 +6,9 @@ Professional clean interface with powerful menus and toolbars.
 """
 
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-    QMenuBar, QMenu, QAction, QToolBar, QStatusBar,
-    QFrame, QSizePolicy, QStackedWidget
+    QWidget, QVBoxLayout, QLabel,
+    QAction, QToolBar,
+    QFrame, QStackedWidget
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont

@@ -6,7 +6,7 @@ Table Toolbar
 
 from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QPushButton, QLabel,
-    QFrame, QSizePolicy
+    QFrame
 )
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont

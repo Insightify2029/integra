@@ -6,8 +6,7 @@ Filter Panel
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-    QComboBox, QLineEdit, QPushButton, QFrame,
-    QScrollArea, QGridLayout
+    QComboBox, QLineEdit, QPushButton, QFrame
 )
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont

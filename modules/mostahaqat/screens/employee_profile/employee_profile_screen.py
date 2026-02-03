@@ -11,8 +11,7 @@ Features:
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-    QPushButton, QFrame, QGridLayout, QScrollArea,
-    QGroupBox, QSizePolicy
+    QPushButton, QFrame, QGridLayout, QScrollArea
 )
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont

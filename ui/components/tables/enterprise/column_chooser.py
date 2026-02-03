@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QCheckBox,
     QPushButton, QLabel, QScrollArea, QWidget, QFrame
 )
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QFont
 
 from core.themes import get_current_theme, get_stylesheet

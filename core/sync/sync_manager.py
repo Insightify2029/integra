@@ -9,13 +9,13 @@ Sync Manager v3.1 - المدير الرئيسي لنظام المزامنة
 """
 
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Optional
 from datetime import datetime
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QTimer
 
 from .sync_config import load_sync_config, save_sync_config
-from .sync_status import SyncStatus, SyncState
+from .sync_status import SyncStatus
 from .backup_manager import BackupManager, BackupInfo
 from .db_sync import DatabaseSync
 from .git_sync import GitSync

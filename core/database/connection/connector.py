@@ -32,8 +32,6 @@ def connect():
 
 def get_connection():
     """Get existing connection or create new one."""
-    global _connection
-    
     if _connection is None or _connection.closed:
         return connect()
     return _connection

@@ -9,10 +9,10 @@ from PyQt5.QtWidgets import (
     QPushButton, QLabel, QFileDialog, QCheckBox,
     QGroupBox, QButtonGroup, QProgressBar, QMessageBox
 )
-from PyQt5.QtCore import Qt, pyqtSignal, QThread
+from PyQt5.QtCore import pyqtSignal, QThread
 from PyQt5.QtGui import QFont
 
-from core.themes import get_current_theme, get_stylesheet
+from core.themes import get_current_theme
 
 import os
 from datetime import datetime
