@@ -56,30 +56,49 @@ class EmailLoadWorker(QThread):
 
                 # Get folder
                 folder = namespace.GetDefaultFolder(self.folder_type.value)
+                folder_name = folder.Name
+                app_logger.info(f"Loading emails from folder: {folder_name}")
 
-                # Get emails
+                # Get items
                 items = folder.Items
+                total_items = items.Count
+                app_logger.info(f"Folder has {total_items} total items")
+
+                if total_items == 0:
+                    self.finished.emit([])
+                    return
+
+                # Sort by received time (newest first)
                 items.Sort("[ReceivedTime]", True)
 
                 emails = []
                 count = 0
+                skipped = 0
 
-                for item in items:
+                # Use index-based iteration (1-based index in COM)
+                max_check = min(total_items, self.limit * 2)
+                for i in range(1, max_check + 1):
                     if count >= self.limit:
                         break
 
                     try:
-                        # Only process mail items (Class 43)
+                        item = items.Item(i)
+
+                        # Only process mail items (Class 43 = olMail)
                         if item.Class != 43:
+                            skipped += 1
                             continue
 
                         # Parse email
-                        email = self._parse_item(item, folder.Name)
+                        email = self._parse_item(item, folder_name)
                         if email:
                             emails.append(email)
                             count += 1
-                    except Exception:
+                    except Exception as e:
+                        app_logger.debug(f"Error processing item {i}: {e}")
                         continue
+
+                app_logger.info(f"Loaded {len(emails)} emails, skipped {skipped} non-mail items")
 
                 # Cache emails
                 cache_emails(emails)
@@ -89,6 +108,7 @@ class EmailLoadWorker(QThread):
                 pythoncom.CoUninitialize()
 
         except Exception as e:
+            app_logger.error(f"Email load error: {e}")
             self.error.emit(str(e))
 
     def _parse_item(self, item, folder_name: str) -> Email:
