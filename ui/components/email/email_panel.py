@@ -42,12 +42,127 @@ class EmailLoadWorker(QThread):
     def run(self):
         """Load emails in background."""
         try:
-            emails = get_emails(self.folder_type, self.limit)
-            # Cache emails
-            cache_emails(emails)
-            self.finished.emit(emails)
+            # Import COM libraries
+            import pythoncom
+            import win32com.client
+
+            # Initialize COM for this thread
+            pythoncom.CoInitialize()
+
+            try:
+                # Create new Outlook connection in this thread
+                outlook = win32com.client.Dispatch("Outlook.Application")
+                namespace = outlook.GetNamespace("MAPI")
+
+                # Get folder
+                folder = namespace.GetDefaultFolder(self.folder_type.value)
+
+                # Get emails
+                items = folder.Items
+                items.Sort("[ReceivedTime]", True)
+
+                emails = []
+                count = 0
+
+                for item in items:
+                    if count >= self.limit:
+                        break
+
+                    try:
+                        # Only process mail items (Class 43)
+                        if item.Class != 43:
+                            continue
+
+                        # Parse email
+                        email = self._parse_item(item, folder.Name)
+                        if email:
+                            emails.append(email)
+                            count += 1
+                    except Exception:
+                        continue
+
+                # Cache emails
+                cache_emails(emails)
+                self.finished.emit(emails)
+
+            finally:
+                pythoncom.CoUninitialize()
+
         except Exception as e:
             self.error.emit(str(e))
+
+    def _parse_item(self, item, folder_name: str) -> Email:
+        """Parse Outlook item to Email object."""
+        from core.email import Email, EmailImportance, EmailAttachment
+
+        # Get attachments info
+        attachments = []
+        has_attachments = item.Attachments.Count > 0
+
+        if has_attachments:
+            for att in item.Attachments:
+                try:
+                    attachments.append(EmailAttachment(
+                        filename=att.FileName,
+                        size=att.Size,
+                    ))
+                except Exception:
+                    continue
+
+        # Get recipients
+        to_list = []
+        cc_list = []
+        try:
+            for recipient in item.Recipients:
+                if recipient.Type == 1:
+                    to_list.append(recipient.Address or recipient.Name)
+                elif recipient.Type == 2:
+                    cc_list.append(recipient.Address or recipient.Name)
+        except Exception:
+            pass
+
+        # Get categories
+        categories = []
+        try:
+            if item.Categories:
+                categories = [c.strip() for c in item.Categories.split(',')]
+        except Exception:
+            pass
+
+        # Parse datetime
+        def parse_dt(pytime):
+            if pytime is None:
+                return None
+            try:
+                from datetime import datetime
+                return datetime(
+                    pytime.year, pytime.month, pytime.day,
+                    pytime.hour, pytime.minute, pytime.second
+                )
+            except Exception:
+                return None
+
+        return Email(
+            entry_id=item.EntryID,
+            conversation_id=getattr(item, 'ConversationID', None),
+            subject=item.Subject or "(بدون موضوع)",
+            body=item.Body or "",
+            body_html=getattr(item, 'HTMLBody', None),
+            sender_name=getattr(item, 'SenderName', ''),
+            sender_email=getattr(item, 'SenderEmailAddress', ''),
+            to=to_list,
+            cc=cc_list,
+            received_time=parse_dt(item.ReceivedTime),
+            sent_time=parse_dt(getattr(item, 'SentOn', None)),
+            created_time=parse_dt(getattr(item, 'CreationTime', None)),
+            is_read=not item.UnRead,
+            is_flagged=item.FlagStatus == 2,
+            importance=EmailImportance(item.Importance),
+            attachments=attachments,
+            has_attachments=has_attachments,
+            folder_name=folder_name,
+            categories=categories
+        )
 
 
 class AIAnalyzeWorker(QThread):
