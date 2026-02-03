@@ -9,6 +9,7 @@ from . import module_costing
 from . import module_logistics
 from . import module_custody
 from . import module_insurance
+from . import module_email
 
 
 def get_all_modules():
@@ -53,6 +54,14 @@ def get_all_modules():
             'icon': module_insurance.MODULE_ICON,
             'color': module_insurance.MODULE_COLOR,
             'enabled': module_insurance.MODULE_ENABLED
+        },
+        {
+            'id': module_email.MODULE_ID,
+            'name_ar': module_email.MODULE_NAME_AR,
+            'name_en': module_email.MODULE_NAME_EN,
+            'icon': module_email.MODULE_ICON,
+            'color': module_email.MODULE_COLOR,
+            'enabled': module_email.MODULE_ENABLED
         }
     ]
 
