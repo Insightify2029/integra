@@ -3,7 +3,7 @@
   "sync_on_exit_ask": true,
   "auto_sync_enabled": true,
   "auto_sync_interval_hours": 3,
-  "last_sync_time": "2026-02-03 12:00",
+  "last_sync_time": "2026-02-03 02:00:04",
   "last_sync_type": "db_only",
   "backup_retention_days": 30,
   "sync_on_exit": true,
