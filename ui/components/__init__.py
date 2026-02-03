@@ -9,6 +9,26 @@ from .tables import BaseTable
 from .buttons import PrimaryButton, SecondaryButton, DangerButton
 from .inputs import TextInput, SearchInput, StyledComboBox
 from .labels import TitleLabel, LogoLabel, SubtitleLabel, SectionLabel
+from .notifications import (
+    ToastManager,
+    toast_success,
+    toast_error,
+    toast_warning,
+    toast_info,
+    get_toast_manager
+)
+from .fluent import (
+    FluentButton,
+    FluentPrimaryButton,
+    FluentLineEdit,
+    FluentSearchBox,
+    FluentComboBox,
+    FluentCheckBox,
+    FluentProgressBar,
+    FluentInfoBar,
+    FluentCard,
+    FLUENT_AVAILABLE
+)
 
 __all__ = [
     # Cards
@@ -28,5 +48,23 @@ __all__ = [
     'TitleLabel',
     'LogoLabel',
     'SubtitleLabel',
-    'SectionLabel'
+    'SectionLabel',
+    # Notifications
+    'ToastManager',
+    'toast_success',
+    'toast_error',
+    'toast_warning',
+    'toast_info',
+    'get_toast_manager',
+    # Fluent Widgets (Windows 11 style)
+    'FluentButton',
+    'FluentPrimaryButton',
+    'FluentLineEdit',
+    'FluentSearchBox',
+    'FluentComboBox',
+    'FluentCheckBox',
+    'FluentProgressBar',
+    'FluentInfoBar',
+    'FluentCard',
+    'FLUENT_AVAILABLE'
 ]
