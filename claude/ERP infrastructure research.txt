@@ -1,0 +1,1581 @@
+ERP infrastructure research
+
+Research plan created
+
+
+
+
+
+
+
+Gathered 595 sources
+
+favicon
+github.com
+
+68 sources
+
+favicon
+medium.com
+
+39 sources
+
+favicon
+doc.qt.io
+
+35 sources
+
+favicon
+pypi.org
+
+25 sources
+
+428 other sources
+
+
+Professional Excel/file integration patterns for PyQt5+PostgreSQL ERP apps require watchdog library with debouncing for file monitoring, periodic sync (15-30 min) over real-time, and database-wins conflict resolution strategy
+91 sources
+
+PyQt5 desktop ERP applications benefit from enterprise patterns including QTimer-based scheduled tasks, QThreadPool for thread-safe database operations, QSystemTrayIcon for background running, and MVP architecture with signal/slot event buses for decoupled module communication
+120 sources
+
+Comprehensive security architecture for PyQt5/PostgreSQL ERP applications requires multi-layer validation, Argon2 password hashing, OS keyring credential storage, and session-per-user-action transaction patterns
+110 sources
+
+Comprehensive automation patterns for PyQt5/PostgreSQL ERP apps including watchdog/QFileSystemWatcher for file monitoring, APScheduler's QtScheduler for cron-based scheduling, business-rules library for JSON-configurable if-then automation, python-statemachine for approval workflows, and QThreadPool with connection pooling for thread-safe background processing
+82 sources
+
+Comprehensive best practices documented for Python/PyQt5/PostgreSQL ERP applications covering logging (Loguru), global exception handling, auto-save recovery, PostgreSQL trigger-based audit trails, health monitoring, and connection pooling
+92 sources
+
+PyQt5 desktop ERP applications can implement system tray notifications via QSystemTrayIcon, in-app toast notifications using pyqttoast/QNotifications libraries, and PDF reports through ReportLab or WeasyPrint with full export support for CSV, Excel, and JSON formats
+100 sources
+
+# Building enterprise-grade desktop ERP software with PyQt5 and PostgreSQL
+
+The architecture of professional ERP systems like Odoo and ERPNext reveals a consistent pattern: **three-tier layered architecture with module-based extensibility, hierarchical configuration management, and event-driven automation**. For a PyQt5 + PostgreSQL desktop application, you should implement a manifest-based plugin system, optimistic locking with version columns for multi-user support, and integrate APScheduler with SQLAlchemyJobStore for persistent job scheduling. The most critical insight is that modern Python-based ERPs (Odoo, ERPNext/Frappe) provide directly applicable patterns since they share the same technology stack—PostgreSQL databases, Python business logic, and module-driven architecture that can be adapted from web to desktop with PyQt5 replacing the presentation layer.
+
+---
+
+## How Odoo and ERPNext structure their module architecture
+
+Professional ERP systems share a remarkably consistent architectural foundation despite their different target markets. **Odoo uses a strict three-tier MVC architecture** where models are Python classes with automatic PostgreSQL mapping, views are XML templates, and controllers handle business logic. Every feature exists as a module—a self-contained directory with a `__manifest__.py` file declaring dependencies, version, and data files. ERPNext takes this further with its **DocType system**, where every business entity (Customer, Invoice, Order) is metadata-driven with auto-generated forms, REST APIs, and role-based permissions baked into the framework.
+
+The key infrastructure pattern across both systems is **manifest-based module discovery**. When the application starts, it scans designated directories for modules, reads their manifests to determine dependencies, and loads them in topologically sorted order. This enables third-party extensions without modifying core code. For PyQt5 implementation, Python's `importlib` module provides the foundation:
+
+```python
+class PluginManager:
+    def discover_plugins(self, plugin_dir):
+        for finder, name, ispkg in pkgutil.iter_modules([plugin_dir]):
+            if ispkg:
+                manifest = self._load_manifest(f"{plugin_dir}/{name}/__manifest__.py")
+                self.plugins[name] = {'manifest': manifest, 'loaded': False}
+    
+    def load_plugin(self, name):
+        spec = importlib.util.spec_from_file_location(name, f"plugins/{name}/__init__.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        if hasattr(module, 'init_plugin'):
+            module.init_plugin(self.get_api())
+```
+
+SAP S/4HANA and Oracle NetSuite use different approaches—SAP with ABAP-based modules organized by Lines of Business (Finance, Procurement, Manufacturing), NetSuite with SuiteScript JavaScript customization. However, both reinforce the principle of **domain-separated modules with well-defined extension points**.
+
+## Configuration management follows a three-level hierarchy
+
+Enterprise software universally implements hierarchical settings where **system defaults can be overridden at the company level, which can be overridden at the user level**. This pattern enables multi-tenant deployments while respecting individual preferences. The lookup cascade is straightforward: check user settings first, fall back to company, then system defaults.
+
+PostgreSQL's JSONB column type provides ideal storage for flexible settings values, supporting strings, numbers, booleans, and complex nested structures without schema changes. A practical implementation stores settings in a single table with level and entity_id columns to distinguish scope:
+
+```sql
+CREATE TABLE settings (
+    key VARCHAR(255) NOT NULL,
+    value JSONB,
+    level INTEGER NOT NULL,  -- 1=system, 2=company, 3=user
+    entity_id INTEGER,       -- company_id or user_id depending on level
+    UNIQUE(key, level, entity_id)
+);
+```
+
+**Feature flags** deserve special attention for desktop applications. Unlike web apps with instant deployment, desktop software must handle gradual rollouts. Implement percentage-based rollout using deterministic hashing: `enabled = (hash(f"{feature_name}{user_id}") % 100) < rollout_percentage` ensures consistent assignment across sessions without storing state.
+
+For environment-specific configuration (database credentials, paths), **Pydantic's BaseSettings** class automatically reads from environment variables and `.env` files, providing type validation and sensible defaults. Keep secrets in environment variables, user preferences in the database.
+
+## Multi-user synchronization relies on optimistic locking
+
+PostgreSQL's **Multi-Version Concurrency Control (MVCC)** handles most concurrent access automatically—readers never block writers and vice versa. Each transaction sees a consistent snapshot of data at its start time. However, desktop applications need explicit strategies for the "lost update" problem where two users edit the same record.
+
+**Optimistic locking** is the recommended pattern for most scenarios. Add a `version` integer column to every editable table, increment it on each update, and include the expected version in UPDATE statements:
+
+```python
+class OptimisticLockMixin:
+    version = Column(Integer, default=1, nullable=False)
+    
+    def update_with_lock(self, session, **updates):
+        result = session.execute(
+            f"UPDATE {self.__tablename__} SET version = version + 1, ... "
+            f"WHERE id = :id AND version = :version",
+            {'id': self.id, 'version': self.version, **updates}
+        )
+        if result.rowcount == 0:
+            raise ConcurrencyError("Record modified by another user")
+```
+
+For high-contention scenarios like inventory transfers, **pessimistic locking** with `SELECT FOR UPDATE` ensures exclusive access. PostgreSQL will block other transactions until the lock is released. Always set `statement_timeout` to prevent indefinite waits.
+
+**Record-level locking tables** provide a middle ground for desktop apps—store explicit locks with expiration timestamps so users can see "Record being edited by John" rather than experiencing silent failures. Clean up expired locks periodically.
+
+Real-time notifications between users leverage **PostgreSQL's LISTEN/NOTIFY** mechanism. When one user saves a record, trigger a NOTIFY; other connected users receive the event and can refresh their views. This avoids polling overhead while keeping users synchronized.
+
+## File watching requires stability detection and debouncing
+
+The **watchdog library** (version 6.0+) provides cross-platform file system monitoring using native OS mechanisms—inotify on Linux, FSEvents on macOS, ReadDirectoryChangesW on Windows. However, raw events require significant processing for production use.
+
+**Stability detection** prevents processing files still being written. When a file appears, wait for its size to stabilize and attempt exclusive access before declaring it ready:
+
+```python
+def _is_file_complete(self, filepath):
+    size1 = os.path.getsize(filepath)
+    time.sleep(0.5)
+    size2 = os.path.getsize(filepath)
+    if size1 != size2:
+        return False
+    try:
+        with open(filepath, 'rb') as f:
+            pass  # Test exclusive access
+        return True
+    except IOError:
+        return False
+```
+
+**Debouncing** handles the multiple events triggered by a single save operation. Track the last event time per file and ignore events within a configurable window (typically 1-2 seconds). For Excel files specifically, filter out temporary files starting with `~$` and implement longer debounce windows since Excel triggers multiple events during auto-save.
+
+Enterprise hot folder patterns from SAP Hybris and Informatica use a **four-directory structure**: `input/` (drop zone), `processing/` (files being handled), `archive/` (successful), and `error/` (failed with logs). Move files through these stages to provide clear audit trails and prevent reprocessing.
+
+**Processing queues** with configurable concurrency prevent overload when many files arrive simultaneously. Implement exponential backoff retry (1s, 2s, 4s delays) with a maximum of 3-5 attempts before moving to the error folder with an explanation file.
+
+## APScheduler with PostgreSQL provides persistent job scheduling
+
+For PyQt5 desktop applications, **APScheduler's QtScheduler** integrates directly with the Qt event loop while **SQLAlchemyJobStore** persists jobs to PostgreSQL. This combination ensures scheduled tasks survive application restarts—critical for overnight backups and scheduled reports.
+
+```python
+from apscheduler.schedulers.qt import QtScheduler
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+
+jobstores = {'default': SQLAlchemyJobStore(url=db_url, tablename='scheduled_jobs')}
+job_defaults = {
+    'coalesce': True,           # Combine missed executions into one
+    'max_instances': 3,
+    'misfire_grace_time': 900   # 15 minute grace period
+}
+scheduler = QtScheduler(jobstores=jobstores, job_defaults=job_defaults)
+```
+
+**Misfire handling** is crucial for desktop apps that may be closed during scheduled times. The `misfire_grace_time` parameter allows jobs to run if the scheduler starts within that window after the scheduled time. The `coalesce` option merges multiple missed runs into a single execution, preventing cascading catch-up jobs.
+
+APScheduler supports three trigger types: **date** (one-time execution), **interval** (recurring every N hours/minutes), and **cron** (complex schedules like "every Monday at 9 AM"). Store job configurations in the database alongside the APScheduler job data so users can view and modify schedules through your UI.
+
+Always use **`replace_existing=True`** when adding jobs during application startup to prevent duplicate jobs accumulating across restarts. Implement job history logging in a separate table to provide audit trails and execution time tracking.
+
+## Workflow automation follows the trigger-condition-action pattern
+
+Rule-based automation engines in ERPs like Odoo implement **"if X happens, do Y"** logic through trigger-condition-action patterns. Triggers fire on events (record created, field changed, time elapsed), conditions filter which records apply, and actions execute the automated response.
+
+Odoo's automated actions demonstrate the pattern: when a Sale Order status changes to "sent", automatically create a follow-up activity for the salesperson. This requires:
+
+1. **Trigger registration**: Hook into model save events
+2. **Condition evaluation**: Domain filters like `[('state', '=', 'sent')]`
+3. **Action execution**: Create record, send email, update fields, or execute custom code
+
+The **business-rules library** (by Venmo) provides a JSON-based rule definition system ideal for desktop applications because rules can be stored in the database and modified through a UI without code changes:
+
+```python
+rules = [{
+    "conditions": {"all": [
+        {"name": "days_overdue", "operator": "greater_than", "value": 30},
+        {"name": "amount", "operator": "greater_than", "value": 1000}
+    ]},
+    "actions": [{"name": "escalate_collection", "params": {"priority": "high"}}]
+}]
+```
+
+Define **Variables** classes that expose record data and **Actions** classes with decorated methods that perform operations. The library handles rule evaluation and action triggering. For complex expert systems, PyKE provides knowledge-based inference, though it's typically overkill for standard ERP automation.
+
+**Event-driven architecture** using a signal/hook system enables modules to extend core behavior without modification. Implement a simple pub/sub registry where the core emits signals (`before_save`, `after_invoice_paid`) and plugins register handlers. This is how Odoo allows custom modules to add validation or trigger workflows.
+
+## Excel bidirectional sync requires xlwings for live connections
+
+For **bidirectional Excel synchronization**, xlwings is the only viable option because it communicates with running Excel instances via COM (Windows) or AppleScript (macOS). Unlike openpyxl which only works with closed files, xlwings can read and write while the user has the spreadsheet open.
+
+The architecture for live sync involves three components: **file change detection** (watchdog), **data mapping** (named ranges to database columns), and **conflict resolution**. Named ranges provide stable references that survive row/column insertions:
+
+```python
+import xlwings as xw
+
+class LiveExcelLink:
+    def connect_to_workbook(self, filepath):
+        self.app = xw.apps.active or xw.App(visible=True)
+        self.workbook = self.app.books.open(filepath)
+    
+    def read_range(self, range_name):
+        return self.workbook.sheets.active.range(range_name).value  # Gets calculated values
+    
+    def write_range(self, range_name, values):
+        self.workbook.sheets.active.range(range_name).value = values
+```
+
+**Conflict resolution** requires tracking modification timestamps on both sides. Strategies include: last-write-wins (simple), database-wins (authoritative system), merge (combine non-conflicting changes), or user-choice (present conflict UI). For most business applications, database-wins with notification to Excel users provides the best balance.
+
+For **batch processing and server-side operations**, openpyxl excels. Use its `read_only=True` mode for memory-efficient reading of large files and `data_only=True` to get calculated values instead of formulas. xlsxwriter is optimal for creating new formatted reports but cannot read existing files.
+
+PyQt5 integration requires **QThread workers** for all Excel operations to prevent UI freezing. Move xlwings operations to a worker thread and use signals to communicate progress and results back to the main thread.
+
+## Data import follows the template-validate-import pattern
+
+Enterprise ERPs universally implement a **template-first import workflow**: users download a pre-formatted template matching the target table's structure, fill it with data, and upload for validation before committing. This approach dramatically reduces import errors compared to free-form data entry.
+
+ERPNext recommends **limiting imports to 1000 rows per batch** to prevent system overload, with each row triggering full validation, permissions checks, and hooks. Odoo's import wizard provides automatic field mapping with manual override capability and a "Test Import" button for dry runs.
+
+**Multi-format parsing** requires different libraries:
+- **CSV**: pandas with `encoding='utf-8-sig'` to handle BOM, chardet for unknown encodings
+- **Excel**: openpyxl with `data_only=True` for values, support for multiple sheets
+- **PDF tables**: pdfplumber provides highest accuracy with visual debugging for complex layouts
+- **Word documents**: python-docx for table extraction
+
+**Validation operates at four levels**: format (file type, encoding), row-level (types, required fields, formats), batch (duplicates within import, foreign keys), and database (constraints, triggers). Collect all errors before presenting them—never fail on the first error.
+
+```python
+class ImportValidationResult:
+    def __init__(self):
+        self.errors = []      # {row, column, message, severity}
+        self.valid_rows = []
+        self.skipped_rows = []
+    
+    def add_error(self, row_num, column, message):
+        self.errors.append({'row': row_num, 'column': column, 'message': message})
+```
+
+**Pydantic** provides the cleanest validation approach with type annotations and custom validators. Define a model matching your import schema and instantiate it for each row—validation errors are automatically collected with clear messages.
+
+**Partial import** is essential for production use: import all valid rows, skip invalid ones, and generate a downloadable error report with row numbers, field names, invalid values, and resolution guidance. Never force all-or-nothing imports for large datasets.
+
+## Backup automation combines pg_dump with retention policies
+
+PostgreSQL's **pg_dump** utility with custom format (`-Fc`) provides the best balance of compression and flexibility. Custom format backups are compressed by default and support parallel restore and selective object extraction:
+
+```bash
+pg_dump -h localhost -U user -Fc database_name > backup.dump
+```
+
+For Python automation, subprocess calls with gzip compression and timestamp naming create organized backup archives. Store credentials via `PGPASSWORD` environment variable or `.pgpass` file, never in code.
+
+**The Grandfather-Father-Son (GFS) rotation scheme** provides cost-effective retention:
+- **Daily (Son)**: Last 7-14 days of backups
+- **Weekly (Father)**: Sunday backups retained 4-6 weeks
+- **Monthly (Grandfather)**: End-of-month backups retained 12-24 months
+
+Implement this by tagging backups with their retention tier and running a cleanup job that evaluates each backup against the policy. Always verify backups can be restored—use `pg_restore -l backup.dump` to validate structure without actual restoration.
+
+**Point-in-Time Recovery (PITR)** requires WAL archiving configuration in `postgresql.conf`:
+```sql
+wal_level = replica
+archive_mode = on
+archive_command = 'cp %p /backup/wal_archive/%f'
+```
+
+Combined with periodic base backups via `pg_basebackup`, this enables recovery to any point in time—critical for recovering from user errors like accidental deletions.
+
+## Email integration and desktop notifications complete the automation stack
+
+For **email notifications**, SendGrid's API provides superior deliverability and tracking compared to direct SMTP, though smtplib remains viable for low-volume scenarios. Implement an email queue in PostgreSQL with status tracking (pending, sent, failed, retry) and a background worker that processes the queue with exponential backoff retry.
+
+**Report delivery** combines scheduled jobs (APScheduler), report generation (ReportLab for PDF, openpyxl for Excel), and email sending. Store distribution lists in the database with per-recipient format preferences and maintain delivery logs for audit trails.
+
+**Desktop notifications** via PyQt5's QSystemTrayIcon provide native toast/balloon notifications across platforms. Implement an in-app notification center for persistent alerts that users can review later—store notifications in PostgreSQL with read/unread status and severity levels (info, success, warning, error).
+
+---
+
+## Conclusion: Implementation priorities and technology recommendations
+
+Building professional ERP infrastructure requires prioritizing **the plugin architecture first**—without extensibility, you'll face mounting technical debt as requirements evolve. Implement manifest-based module discovery, a signal/hook system for extension points, and hierarchical settings from the start.
+
+For automation, the **APScheduler + watchdog + business-rules combination** covers 90% of enterprise requirements. APScheduler with PostgreSQL persistence handles scheduling, watchdog manages hot folders, and JSON-based business rules enable user-configurable automation without code changes.
+
+Excel integration is often underestimated in complexity. **Start with one-way export**, add file-watching import second, and only tackle bidirectional live sync if users specifically require it—xlwings' COM dependency limits cross-platform deployment.
+
+The most impactful pattern across all systems is **event-driven architecture with database persistence**. Every significant action should emit events that plugins can observe, every job should be persisted for reliability, and every automation should be auditable. This foundation enables building increasingly sophisticated features without architectural rewrites.
+
+| Component | Primary Recommendation | Alternative |
+|-----------|----------------------|-------------|
+| ORM | SQLAlchemy 2.0 | Peewee |
+| Job Scheduling | APScheduler + QtScheduler | schedule + QTimer |
+| File Watching | watchdog | QFileSystemWatcher |
+| Excel Live Sync | xlwings | openpyxl (batch only) |
+| Validation | Pydantic | Cerberus |
+| PDF Tables | pdfplumber | tabula-py |
+| Report Generation | ReportLab + openpyxl | WeasyPrint |
+| Email | SendGrid API | smtplib |
+| Backup | pg_dump -Fc + gzip | pg_basebackup for PITR |
+
+# Professional Desktop ERP Infrastructure: Complete Reference Guide
+
+Building enterprise-grade desktop software requires mastering the foundational infrastructure layer that makes applications reliable, automated, and efficient. This comprehensive guide synthesizes best practices from SAP, Odoo, ERPNext, and professional Python applications specifically for a **PyQt5 + PostgreSQL desktop ERP** architecture like INTEGRA. The infrastructure patterns documented here—from structured logging and crash recovery to automated workflows and Excel synchronization—form the backbone that elevates a desktop application from functional prototype to professional enterprise software.
+
+---
+
+## 1. Application infrastructure forms the reliability foundation
+
+Professional ERP applications require robust infrastructure for logging, error handling, audit trails, and configuration management. These systems operate silently in the background but are critical when diagnosing issues, tracking changes, or recovering from failures.
+
+### Structured logging with Loguru
+
+**Loguru** has emerged as the preferred Python logging library for desktop applications, offering thread-safety, automatic rotation, and structured JSON output with minimal configuration:
+
+```python
+from loguru import logger
+import sys
+
+class ApplicationLogger:
+    """Centralized logging for PyQt5 ERP application"""
+    
+    def __init__(self, log_dir: str):
+        logger.remove()  # Remove default handler
+        
+        # File logging with rotation
+        logger.add(
+            f"{log_dir}/app_{{time:YYYY-MM-DD}}.log",
+            rotation="10 MB",
+            retention="30 days",
+            level="INFO",
+            format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {module}:{function}:{line} | {message}",
+            backtrace=True,
+            diagnose=False  # Set False in production
+        )
+        
+        # JSON for structured log aggregation
+        logger.add(f"{log_dir}/structured.json", serialize=True, level="WARNING")
+        
+        # Separate audit log
+        logger.add(
+            f"{log_dir}/audit.log",
+            filter=lambda record: "AUDIT" in record["extra"],
+            format="{time} | {message}"
+        )
+    
+    def audit(self, user: str, action: str, entity: str, entity_id: int, changes: dict):
+        """Log audit events with structured data"""
+        logger.bind(AUDIT=True).info(
+            f"User: {user} | Action: {action} | {entity}#{entity_id}",
+            changes=changes
+        )
+```
+
+**Log level guidelines**: Use DEBUG for variable values and SQL queries during development; INFO for normal business transactions and user actions; WARNING for unexpected but recoverable situations; ERROR for failures preventing specific operations; CRITICAL for system-wide failures requiring immediate attention.
+
+### Global exception handling prevents silent crashes
+
+PyQt5 can silently swallow exceptions in slots and virtual methods. A global exception hook captures these and presents them appropriately:
+
+```python
+import sys
+import traceback
+from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtWidgets import QApplication, QMessageBox
+
+class UncaughtHook(QObject):
+    _exception_caught = pyqtSignal(object)
+
+    def __init__(self):
+        super().__init__()
+        sys.excepthook = self.exception_hook
+        self._exception_caught.connect(self.show_exception_box)
+
+    def exception_hook(self, exc_type, exc_value, exc_traceback):
+        if issubclass(exc_type, KeyboardInterrupt):
+            sys.__excepthook__(exc_type, exc_value, exc_traceback)
+            return
+            
+        log_msg = '\n'.join([
+            ''.join(traceback.format_tb(exc_traceback)),
+            f'{exc_type.__name__}: {exc_value}'
+        ])
+        logger.critical(f"Uncaught exception:\n{log_msg}")
+        self._exception_caught.emit(log_msg)
+
+    def show_exception_box(self, log_msg):
+        if QApplication.instance():
+            errorbox = QMessageBox()
+            errorbox.setIcon(QMessageBox.Critical)
+            errorbox.setWindowTitle("Application Error")
+            errorbox.setText("An unexpected error occurred:")
+            errorbox.setDetailedText(str(log_msg))
+            errorbox.exec_()
+
+# Initialize at application startup
+qt_exception_hook = UncaughtHook()
+```
+
+### Auto-save with QTimer protects user work
+
+```python
+from PyQt5.QtCore import QTimer
+from datetime import datetime
+import json
+
+class AutoSaveManager:
+    def __init__(self, recovery_dir: str, interval_ms: int = 60000):
+        self.recovery_dir = recovery_dir
+        self.modified = False
+        
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.auto_save)
+        self.timer.start(interval_ms)
+    
+    def mark_modified(self):
+        self.modified = True
+    
+    def auto_save(self):
+        if not self.modified:
+            return
+        try:
+            data = self.collect_unsaved_data()
+            recovery_path = f"{self.recovery_dir}/recovery_{datetime.now():%Y%m%d_%H%M%S}.json"
+            with open(recovery_path, 'w') as f:
+                json.dump(data, f)
+            self.modified = False
+            logger.debug(f"Auto-save completed: {recovery_path}")
+        except Exception as e:
+            logger.error(f"Auto-save failed: {e}")
+    
+    def check_recovery_on_startup(self):
+        """Check for recovery files on application startup"""
+        from pathlib import Path
+        recovery_files = sorted(Path(self.recovery_dir).glob("recovery_*.json"))
+        return recovery_files[-1] if recovery_files else None
+```
+
+### PostgreSQL triggers provide tamper-proof audit trails
+
+Database-level auditing captures **all changes regardless of source**, preventing bypassing by application bugs:
+
+```sql
+-- Create audit schema
+CREATE SCHEMA IF NOT EXISTS audit;
+
+CREATE TABLE audit.logged_actions (
+    id BIGSERIAL PRIMARY KEY,
+    schema_name TEXT NOT NULL,
+    table_name TEXT NOT NULL,
+    action_tstamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    action TEXT CHECK (action IN ('I', 'U', 'D')),
+    application_user TEXT,
+    old_data JSONB,
+    new_data JSONB,
+    changed_fields JSONB
+);
+
+CREATE OR REPLACE FUNCTION audit.audit_trigger_func() 
+RETURNS TRIGGER AS $body$
+BEGIN
+    INSERT INTO audit.logged_actions (
+        schema_name, table_name, action, application_user,
+        old_data, new_data, changed_fields
+    ) VALUES (
+        TG_TABLE_SCHEMA,
+        TG_TABLE_NAME,
+        substring(TG_OP, 1, 1),
+        current_setting('app.current_user', TRUE),
+        CASE WHEN TG_OP IN ('UPDATE', 'DELETE') THEN to_jsonb(OLD) END,
+        CASE WHEN TG_OP IN ('UPDATE', 'INSERT') THEN to_jsonb(NEW) END,
+        CASE WHEN TG_OP = 'UPDATE' THEN (
+            SELECT jsonb_object_agg(key, value)
+            FROM jsonb_each(to_jsonb(NEW))
+            WHERE to_jsonb(NEW) -> key IS DISTINCT FROM to_jsonb(OLD) -> key
+        ) END
+    );
+    RETURN NULL;
+END;
+$body$ LANGUAGE plpgsql;
+
+-- Apply to tables
+CREATE TRIGGER employees_audit AFTER INSERT OR UPDATE OR DELETE 
+ON employees FOR EACH ROW EXECUTE FUNCTION audit.audit_trigger_func();
+```
+
+Set the application user in your Python code before transactions:
+
+```python
+def set_audit_user(conn, username: str):
+    with conn.cursor() as cur:
+        cur.execute("SET LOCAL app.current_user = %s", (username,))
+```
+
+### Hierarchical settings management with QSettings
+
+Professional applications need settings at multiple levels—system defaults, company configuration, user preferences, and module-specific overrides:
+
+```python
+from PyQt5.QtCore import QSettings, QCoreApplication
+
+class SettingsManager:
+    DEFAULTS = {
+        'database/host': 'localhost',
+        'database/port': 5432,
+        'ui/theme': 'light',
+        'ui/language': 'en',
+        'scheduler/enabled': True,
+        'backup/auto_backup': True,
+        'backup/retention_days': 30,
+    }
+    
+    VERSION_KEY = 'settings/version'
+    CURRENT_VERSION = 2
+    
+    def __init__(self):
+        QCoreApplication.setOrganizationName("INTEGRA")
+        QCoreApplication.setApplicationName("ERP")
+        self.settings = QSettings()
+        self._migrate_settings()
+    
+    def _migrate_settings(self):
+        """Handle settings migration between versions"""
+        stored_version = self.settings.value(self.VERSION_KEY, 0, type=int)
+        if stored_version < self.CURRENT_VERSION:
+            # Perform migrations
+            self.settings.setValue(self.VERSION_KEY, self.CURRENT_VERSION)
+            self.settings.sync()
+    
+    def get(self, key, default=None):
+        if default is None:
+            default = self.DEFAULTS.get(key)
+        return self.settings.value(key, default)
+    
+    def get_bool(self, key, default=None):
+        if default is None:
+            default = self.DEFAULTS.get(key, False)
+        return self.settings.value(key, default, type=bool)
+    
+    def set(self, key, value):
+        self.settings.setValue(key, value)
+        self.settings.sync()
+```
+
+---
+
+## 2. Automation capabilities differentiate professional ERP systems
+
+Enterprise software proactively handles tasks through file watching, scheduled jobs, rule-based automation, and workflow engines. These capabilities reduce manual work and ensure consistency.
+
+### File watching with watchdog integrates with PyQt5
+
+The **watchdog** library provides robust file system monitoring. Key considerations include debouncing rapid changes and handling file locks:
+
+```python
+from watchdog.observers import Observer
+from watchdog.events import PatternMatchingEventHandler
+from PyQt5.QtCore import QThread, pyqtSignal
+import threading
+import time
+
+class ExcelFileHandler(PatternMatchingEventHandler):
+    def __init__(self, callback):
+        super().__init__(patterns=['*.xlsx', '*.xls', '*.csv'], ignore_directories=True)
+        self.callback = callback
+        self._debounce_timer = None
+        self._debounce_delay = 1.0  # seconds
+        self._lock = threading.Lock()
+    
+    def on_modified(self, event):
+        self._debounced_callback(event)
+    
+    def _debounced_callback(self, event):
+        with self._lock:
+            if self._debounce_timer:
+                self._debounce_timer.cancel()
+            self._debounce_timer = threading.Timer(
+                self._debounce_delay,
+                self._execute_callback,
+                [event]
+            )
+            self._debounce_timer.start()
+    
+    def _execute_callback(self, event):
+        if self._is_file_accessible(event.src_path):
+            self.callback(event)
+        else:
+            # Retry if file still locked by Excel
+            threading.Timer(0.5, self._execute_callback, [event]).start()
+    
+    def _is_file_accessible(self, filepath):
+        try:
+            with open(filepath, 'r+b'):
+                return True
+        except (IOError, PermissionError):
+            return False
+
+class FileWatcherThread(QThread):
+    file_changed = pyqtSignal(str, str)  # path, event_type
+    
+    def __init__(self, watch_paths):
+        super().__init__()
+        self.watch_paths = watch_paths
+        self.observer = None
+        self._running = False
+    
+    def run(self):
+        self._running = True
+        handler = ExcelFileHandler(lambda e: self.file_changed.emit(e.src_path, e.event_type))
+        self.observer = Observer()
+        for path in self.watch_paths:
+            self.observer.schedule(handler, path, recursive=False)
+        self.observer.start()
+        while self._running:
+            time.sleep(0.5)
+        self.observer.stop()
+        self.observer.join()
+    
+    def stop(self):
+        self._running = False
+```
+
+### APScheduler provides Odoo-style cron scheduling
+
+**APScheduler's QtScheduler** integrates seamlessly with PyQt5's event loop, enabling sophisticated scheduling similar to Odoo's ir.cron:
+
+```python
+from apscheduler.schedulers.qt import QtScheduler
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
+
+class TaskSchedulerManager:
+    def __init__(self):
+        self.scheduler = QtScheduler()
+    
+    def start(self):
+        self.scheduler.start()
+    
+    def schedule_backup(self, backup_func, hour=3, minute=0):
+        """Schedule nightly backup at specified time"""
+        self.scheduler.add_job(
+            backup_func,
+            CronTrigger(hour=hour, minute=minute),
+            id='nightly_backup',
+            replace_existing=True
+        )
+    
+    def schedule_report(self, report_func, cron_expr='0 9 * * MON'):
+        """Schedule weekly report (every Monday at 9 AM)"""
+        trigger = CronTrigger.from_crontab(cron_expr)
+        self.scheduler.add_job(report_func, trigger, id='weekly_report')
+    
+    def schedule_interval_task(self, func, minutes=30):
+        """Run task at regular intervals"""
+        self.scheduler.add_job(
+            func,
+            IntervalTrigger(minutes=minutes),
+            id=f'interval_{func.__name__}'
+        )
+    
+    def schedule_contract_expiry_check(self, check_func):
+        """Daily check for expiring contracts"""
+        self.scheduler.add_job(
+            check_func,
+            CronTrigger(hour=8, minute=0),
+            id='contract_expiry_check'
+        )
+```
+
+### Rule-based automation with business-rules library
+
+The **business-rules** library (from Venmo) enables configurable if-then automation stored as JSON in the database:
+
+```python
+from business_rules import run_all
+from business_rules.variables import BaseVariables, numeric_rule_variable, string_rule_variable
+from business_rules.actions import BaseActions, rule_action
+
+class TransactionVariables(BaseVariables):
+    def __init__(self, transaction):
+        self.transaction = transaction
+    
+    @numeric_rule_variable
+    def amount(self):
+        return self.transaction.amount
+    
+    @string_rule_variable
+    def description(self):
+        return self.transaction.description.lower()
+
+class TransactionActions(BaseActions):
+    def __init__(self, transaction):
+        self.transaction = transaction
+    
+    @rule_action(params={'category': str})
+    def set_category(self, category):
+        self.transaction.category = category
+    
+    @rule_action(params={'flag': str})
+    def flag_for_review(self, flag):
+        self.transaction.review_flag = flag
+
+# Rules stored in database as JSON
+rules = [
+    {
+        "conditions": {"all": [
+            {"name": "description", "operator": "contains", "value": "grocery"}
+        ]},
+        "actions": [{"name": "set_category", "params": {"category": "Groceries"}}]
+    },
+    {
+        "conditions": {"all": [
+            {"name": "amount", "operator": "greater_than", "value": 1000}
+        ]},
+        "actions": [{"name": "flag_for_review", "params": {"flag": "large_transaction"}}]
+    }
+]
+
+def process_transaction(transaction, rules):
+    run_all(
+        rule_list=rules,
+        defined_variables=TransactionVariables(transaction),
+        defined_actions=TransactionActions(transaction),
+        stop_on_first_trigger=False
+    )
+```
+
+### Workflow automation with state machines
+
+The **python-statemachine** library provides clean workflow management for approval chains:
+
+```python
+from statemachine import StateMachine, State
+from datetime import datetime
+
+class DocumentApprovalMachine(StateMachine):
+    # States
+    draft = State(initial=True)
+    pending_review = State()
+    under_review = State()
+    approved = State(final=True)
+    rejected = State(final=True)
+    
+    # Transitions
+    submit = draft.to(pending_review)
+    start_review = pending_review.to(under_review)
+    complete_review = under_review.to(approved) | under_review.to(rejected)
+    revise = rejected.to(draft)
+    
+    def __init__(self, document):
+        self.document = document
+        super().__init__()
+    
+    def before_submit(self):
+        if not self.document.is_complete():
+            raise ValueError("Document is incomplete")
+    
+    def on_enter_pending_review(self):
+        self.document.submitted_at = datetime.now()
+        self.notify_reviewers()
+    
+    def on_enter_approved(self):
+        self.document.approved_at = datetime.now()
+        self.send_approval_notification()
+```
+
+---
+
+## 3. Background processing keeps the UI responsive
+
+Long-running operations must execute in background threads to maintain UI responsiveness. PyQt5's QThreadPool and QRunnable pattern is recommended for most operations.
+
+### Complete QThread worker pattern
+
+```python
+import sys
+import traceback
+from PyQt5.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal, pyqtSlot
+
+class WorkerSignals(QObject):
+    finished = pyqtSignal()
+    error = pyqtSignal(tuple)
+    result = pyqtSignal(object)
+    progress = pyqtSignal(int, str)
+
+class Worker(QRunnable):
+    def __init__(self, fn, *args, **kwargs):
+        super().__init__()
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+        self.kwargs['progress_callback'] = self.signals.progress
+    
+    @pyqtSlot()
+    def run(self):
+        try:
+            result = self.fn(*self.args, **self.kwargs)
+        except Exception:
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            self.signals.result.emit(result)
+        finally:
+            self.signals.finished.emit()
+
+class BackgroundTaskManager:
+    def __init__(self):
+        self.threadpool = QThreadPool()
+    
+    def run_task(self, fn, *args, on_result=None, on_error=None, 
+                 on_progress=None, on_finished=None, **kwargs):
+        worker = Worker(fn, *args, **kwargs)
+        if on_result:
+            worker.signals.result.connect(on_result)
+        if on_error:
+            worker.signals.error.connect(on_error)
+        if on_progress:
+            worker.signals.progress.connect(on_progress)
+        if on_finished:
+            worker.signals.finished.connect(on_finished)
+        self.threadpool.start(worker)
+        return worker
+
+# Usage
+def long_running_operation(progress_callback):
+    for i in range(100):
+        time.sleep(0.1)
+        progress_callback.emit(i + 1, f"Processing step {i + 1}")
+    return "Operation complete"
+
+task_manager = BackgroundTaskManager()
+task_manager.run_task(
+    long_running_operation,
+    on_result=lambda r: print(f"Result: {r}"),
+    on_progress=lambda v, m: progress_bar.setValue(v)
+)
+```
+
+### Thread-safe database access
+
+**Critical**: Each thread must have its own database connection. Never share connections across threads.
+
+```python
+from PyQt5.QtCore import QMutex
+import psycopg2
+from psycopg2 import pool
+from contextlib import contextmanager
+
+class ThreadSafeDBPool:
+    _instance = None
+    _mutex = QMutex()
+    
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._mutex.lock()
+            try:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+            finally:
+                cls._mutex.unlock()
+        return cls._instance
+    
+    def __init__(self, dsn, min_conn=2, max_conn=10):
+        if not hasattr(self, 'pool'):
+            self.pool = psycopg2.pool.ThreadedConnectionPool(min_conn, max_conn, dsn)
+    
+    @contextmanager
+    def get_connection(self):
+        conn = self.pool.getconn()
+        try:
+            yield conn
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            self.pool.putconn(conn)
+```
+
+---
+
+## 4. Excel integration requires bidirectional sync capabilities
+
+Palm oil refineries often use Excel for external data entry. Professional integration involves watching files, importing with validation, and syncing changes back to Excel.
+
+### Complete hot-folder import system
+
+```python
+import shutil
+from pathlib import Path
+from datetime import datetime
+from openpyxl import load_workbook
+
+class HotFolderProcessor:
+    def __init__(self, inbox: str, archive: str, error: str):
+        self.inbox = Path(inbox)
+        self.archive = Path(archive)
+        self.error = Path(error)
+        for folder in [self.inbox, self.archive, self.error]:
+            folder.mkdir(parents=True, exist_ok=True)
+    
+    def process_file(self, filepath: Path) -> dict:
+        result = {'file': filepath.name, 'status': 'pending', 'records': 0, 'errors': []}
+        
+        # Wait for file to be released
+        if not self._wait_for_file_unlock(filepath):
+            return {'status': 'locked', 'error': 'File still locked'}
+        
+        try:
+            # Read and validate
+            df = self._read_excel(filepath)
+            validation_errors = self._validate_data(df)
+            
+            if validation_errors:
+                self._move_to_error(filepath)
+                result['status'] = 'validation_failed'
+                result['errors'] = validation_errors
+                return result
+            
+            # Import to database
+            records = self._import_to_database(df)
+            result['records'] = records
+            
+            # Archive successful import
+            self._archive_file(filepath)
+            result['status'] = 'success'
+            
+        except Exception as e:
+            self._move_to_error(filepath)
+            result['status'] = 'error'
+            result['errors'] = [str(e)]
+        
+        return result
+    
+    def _wait_for_file_unlock(self, filepath, timeout=30):
+        import time
+        start = time.time()
+        while time.time() - start < timeout:
+            try:
+                with open(filepath, 'r+b'):
+                    return True
+            except (IOError, PermissionError):
+                time.sleep(0.5)
+        return False
+    
+    def _archive_file(self, filepath):
+        date_folder = self.archive / datetime.now().strftime('%Y/%m/%d')
+        date_folder.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(filepath), str(date_folder / filepath.name))
+```
+
+### Template-based Excel generation
+
+```python
+from openpyxl import load_workbook
+from copy import copy
+
+class TemplateReportGenerator:
+    def __init__(self, template_path: str):
+        self.template_path = template_path
+    
+    def generate(self, data: dict, output_path: str):
+        wb = load_workbook(self.template_path)
+        ws = wb.active
+        
+        # Replace placeholders {{field_name}}
+        for row in ws.iter_rows():
+            for cell in row:
+                if cell.value and isinstance(cell.value, str):
+                    if cell.value.startswith('{{') and cell.value.endswith('}}'):
+                        key = cell.value[2:-2].strip()
+                        if key in data:
+                            original_style = copy(cell._style)
+                            cell.value = data[key]
+                            cell._style = original_style
+        
+        wb.save(output_path)
+        return output_path
+```
+
+### Database to Excel reverse sync
+
+```python
+class DatabaseExcelSync:
+    def push_changes_to_excel(self, excel_path: str, changes: list, key_column: str):
+        wb = load_workbook(excel_path)
+        ws = wb.active
+        
+        # Build index of existing rows
+        header_row = [cell.value for cell in ws[1]]
+        key_col_idx = header_row.index(key_column) + 1
+        
+        row_index = {}
+        for row_idx, row in enumerate(ws.iter_rows(min_row=2), start=2):
+            key_value = row[key_col_idx - 1].value
+            row_index[key_value] = row_idx
+        
+        # Track formula cells to preserve
+        formula_cells = set()
+        for row in ws.iter_rows(min_row=2):
+            for cell in row:
+                if cell.value and str(cell.value).startswith('='):
+                    formula_cells.add((cell.row, cell.column))
+        
+        # Apply changes
+        for change in changes:
+            key_value = change[key_column]
+            if key_value in row_index:
+                row_idx = row_index[key_value]
+                for col_name, value in change.items():
+                    if col_name in header_row:
+                        col_idx = header_row.index(col_name) + 1
+                        if (row_idx, col_idx) not in formula_cells:
+                            ws.cell(row=row_idx, column=col_idx, value=value)
+            else:
+                # Insert new row
+                new_row = ws.max_row + 1
+                for col_name, value in change.items():
+                    if col_name in header_row:
+                        col_idx = header_row.index(col_name) + 1
+                        ws.cell(row=new_row, column=col_idx, value=value)
+        
+        wb.save(excel_path)
+```
+
+---
+
+## 5. Notification and alerting systems make applications proactive
+
+### QSystemTrayIcon for desktop notifications
+
+```python
+from PyQt5.QtWidgets import QSystemTrayIcon, QMenu, QAction, QApplication
+from PyQt5.QtGui import QIcon
+
+class NotificationManager:
+    def __init__(self, parent):
+        # Keep app running when window closed
+        QApplication.setQuitOnLastWindowClosed(False)
+        
+        self.tray_icon = QSystemTrayIcon(parent)
+        self.tray_icon.setIcon(QIcon(":/icons/app_icon.png"))
+        self.tray_icon.setToolTip("INTEGRA ERP - Running")
+        
+        # Context menu
+        menu = QMenu()
+        show_action = QAction("Show Window", parent)
+        show_action.triggered.connect(parent.show)
+        menu.addAction(show_action)
+        
+        quit_action = QAction("Quit", parent)
+        quit_action.triggered.connect(QApplication.quit)
+        menu.addAction(quit_action)
+        
+        self.tray_icon.setContextMenu(menu)
+        self.tray_icon.activated.connect(self._on_activated)
+        self.tray_icon.show()
+    
+    def _on_activated(self, reason):
+        if reason == QSystemTrayIcon.DoubleClick:
+            self.parent().show()
+    
+    def notify(self, title, message, icon=QSystemTrayIcon.Information, duration=5000):
+        if QSystemTrayIcon.supportsMessages():
+            self.tray_icon.showMessage(title, message, icon, duration)
+```
+
+### Conditional alert system
+
+```python
+from datetime import datetime, timedelta
+from PyQt5.QtCore import QTimer, QThread, pyqtSignal
+
+class AlertCondition:
+    def check(self, db_session) -> list:
+        raise NotImplementedError
+
+class ContractExpiringAlert(AlertCondition):
+    def __init__(self, days_ahead=30):
+        self.days_ahead = days_ahead
+    
+    def check(self, db_session):
+        expiry_date = datetime.now() + timedelta(days=self.days_ahead)
+        contracts = db_session.execute("""
+            SELECT id, employee_name, end_date
+            FROM employee_contracts
+            WHERE end_date <= %s AND end_date > NOW()
+            AND alert_sent = FALSE
+        """, (expiry_date,))
+        
+        return [{
+            'type': 'CONTRACT_EXPIRING',
+            'priority': 'HIGH' if (c.end_date - datetime.now()).days < 7 else 'NORMAL',
+            'message': f'Contract for {c.employee_name} expires on {c.end_date}'
+        } for c in contracts]
+
+class AlertMonitor(QThread):
+    alert_triggered = pyqtSignal(dict)
+    
+    def __init__(self, conditions, check_interval_ms=300000):  # 5 minutes
+        super().__init__()
+        self.conditions = conditions
+        self.interval = check_interval_ms
+        self.running = True
+    
+    def run(self):
+        while self.running:
+            for condition in self.conditions:
+                alerts = condition.check(self.get_db_session())
+                for alert in alerts:
+                    self.alert_triggered.emit(alert)
+            self.msleep(self.interval)
+```
+
+---
+
+## 6. Report generation supports multiple output formats
+
+### PDF generation with ReportLab
+
+```python
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
+from reportlab.lib import colors
+from io import BytesIO
+from datetime import datetime
+
+class PDFReportGenerator:
+    def __init__(self, buffer, pagesize=A4):
+        self.buffer = buffer
+        self.pagesize = pagesize
+        self.styles = getSampleStyleSheet()
+    
+    def _header_footer(self, canvas, doc):
+        canvas.saveState()
+        canvas.setFont('Helvetica-Bold', 12)
+        canvas.drawString(inch, doc.height + doc.topMargin, "INTEGRA ERP")
+        canvas.setFont('Helvetica', 9)
+        canvas.drawRightString(
+            doc.width + doc.leftMargin,
+            doc.height + doc.topMargin,
+            f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        )
+        canvas.drawCentredString(doc.width / 2 + doc.leftMargin, 0.5 * inch, f"Page {doc.page}")
+        canvas.restoreState()
+    
+    def generate_report(self, title, data):
+        doc = SimpleDocTemplate(self.buffer, pagesize=self.pagesize,
+                                rightMargin=0.5*inch, leftMargin=0.5*inch,
+                                topMargin=0.75*inch, bottomMargin=0.5*inch)
+        
+        story = []
+        story.append(Paragraph(title, self.styles['Heading1']))
+        story.append(Spacer(1, 0.25*inch))
+        
+        table = Table(data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ]))
+        story.append(table)
+        
+        doc.build(story, onFirstPage=self._header_footer, onLaterPages=self._header_footer)
+        return self.buffer.getvalue()
+```
+
+### Matplotlib charts embedded in PyQt5
+
+```python
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
+from matplotlib.figure import Figure
+from PyQt5.QtWidgets import QWidget, QVBoxLayout
+
+class ChartWidget(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        layout = QVBoxLayout(self)
+        
+        self.fig = Figure(figsize=(8, 6), dpi=100)
+        self.canvas = FigureCanvasQTAgg(self.fig)
+        self.axes = self.fig.add_subplot(111)
+        
+        toolbar = NavigationToolbar2QT(self.canvas, self)
+        layout.addWidget(toolbar)
+        layout.addWidget(self.canvas)
+    
+    def plot_bar_chart(self, labels, values, title=""):
+        self.axes.clear()
+        self.axes.bar(labels, values)
+        self.axes.set_title(title)
+        self.axes.tick_params(axis='x', rotation=45)
+        self.fig.tight_layout()
+        self.canvas.draw()
+```
+
+---
+
+## 7. Data integrity requires multi-layer validation
+
+### Pydantic for application-level validation
+
+```python
+from pydantic import BaseModel, Field, field_validator, EmailStr
+from decimal import Decimal
+from datetime import date
+from typing import List
+
+class EmployeeSchema(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    email: EmailStr
+    hire_date: date
+    salary: Decimal = Field(ge=0)
+    department_id: int
+    
+    @field_validator('hire_date')
+    @classmethod
+    def validate_hire_date(cls, v):
+        if v > date.today():
+            raise ValueError('Hire date cannot be in the future')
+        return v
+
+class PayrollEntrySchema(BaseModel):
+    employee_id: int
+    period_start: date
+    period_end: date
+    basic_salary: Decimal = Field(ge=0)
+    allowances: Decimal = Field(ge=0)
+    deductions: Decimal = Field(ge=0)
+    
+    @field_validator('period_end')
+    @classmethod
+    def validate_period(cls, v, info):
+        if 'period_start' in info.data and v < info.data['period_start']:
+            raise ValueError('Period end must be after period start')
+        return v
+    
+    @property
+    def net_salary(self) -> Decimal:
+        return self.basic_salary + self.allowances - self.deductions
+```
+
+### Database constraints as final defense
+
+```sql
+CREATE TABLE employees (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL CHECK (length(name) >= 2),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    hire_date DATE NOT NULL CHECK (hire_date <= CURRENT_DATE),
+    salary DECIMAL(12,2) NOT NULL CHECK (salary >= 0),
+    department_id INTEGER NOT NULL REFERENCES departments(id)
+);
+
+CREATE TABLE payroll_entries (
+    id SERIAL PRIMARY KEY,
+    employee_id INTEGER NOT NULL REFERENCES employees(id),
+    period_start DATE NOT NULL,
+    period_end DATE NOT NULL,
+    basic_salary DECIMAL(12,2) NOT NULL CHECK (basic_salary >= 0),
+    CONSTRAINT valid_period CHECK (period_end >= period_start)
+);
+```
+
+---
+
+## 8. Security infrastructure protects sensitive payroll data
+
+### Argon2 password hashing
+
+```python
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
+from datetime import datetime, timedelta
+
+class AuthenticationManager:
+    def __init__(self):
+        self.ph = PasswordHasher(
+            time_cost=3,
+            memory_cost=65536,
+            parallelism=4
+        )
+        self.max_login_attempts = 5
+        self.lockout_duration = timedelta(minutes=15)
+    
+    def hash_password(self, password: str) -> str:
+        return self.ph.hash(password)
+    
+    def verify_password(self, password: str, hash: str) -> bool:
+        try:
+            self.ph.verify(hash, password)
+            return True
+        except VerifyMismatchError:
+            return False
+    
+    def authenticate(self, session, username: str, password: str):
+        user = session.query(User).filter_by(username=username).first()
+        
+        if not user:
+            return {'success': False, 'error': 'Invalid credentials'}
+        
+        if user.lockout_until and user.lockout_until > datetime.utcnow():
+            return {'success': False, 'error': 'Account locked'}
+        
+        if not self.verify_password(password, user.password_hash):
+            user.failed_attempts = (user.failed_attempts or 0) + 1
+            if user.failed_attempts >= self.max_login_attempts:
+                user.lockout_until = datetime.utcnow() + self.lockout_duration
+            session.commit()
+            return {'success': False, 'error': 'Invalid credentials'}
+        
+        user.failed_attempts = 0
+        user.lockout_until = None
+        user.last_login = datetime.utcnow()
+        session.commit()
+        return {'success': True, 'user': user}
+```
+
+### OS keyring for credential storage
+
+```python
+import keyring
+
+class SecureCredentialManager:
+    SERVICE_NAME = "INTEGRA_ERP"
+    
+    def store_database_credentials(self, host: str, username: str, password: str):
+        keyring.set_password(self.SERVICE_NAME, f"db_{host}_user", username)
+        keyring.set_password(self.SERVICE_NAME, f"db_{host}_pass", password)
+    
+    def get_database_credentials(self, host: str):
+        username = keyring.get_password(self.SERVICE_NAME, f"db_{host}_user")
+        password = keyring.get_password(self.SERVICE_NAME, f"db_{host}_pass")
+        return {'username': username, 'password': password} if username else None
+```
+
+### Role-based access control (RBAC)
+
+```python
+from enum import Enum, auto
+from typing import Set
+from functools import wraps
+
+class Permission(Enum):
+    EMPLOYEE_VIEW = auto()
+    EMPLOYEE_EDIT = auto()
+    PAYROLL_VIEW = auto()
+    PAYROLL_PROCESS = auto()
+    REPORT_FINANCIAL = auto()
+    SETTINGS_MANAGE = auto()
+
+class Role(Enum):
+    ADMIN = 'admin'
+    HR_MANAGER = 'hr_manager'
+    PAYROLL_CLERK = 'payroll_clerk'
+    VIEWER = 'viewer'
+
+ROLE_PERMISSIONS = {
+    Role.ADMIN: set(Permission),
+    Role.HR_MANAGER: {Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT, 
+                      Permission.PAYROLL_VIEW, Permission.REPORT_FINANCIAL},
+    Role.PAYROLL_CLERK: {Permission.EMPLOYEE_VIEW, Permission.PAYROLL_VIEW,
+                         Permission.PAYROLL_PROCESS},
+    Role.VIEWER: {Permission.EMPLOYEE_VIEW, Permission.PAYROLL_VIEW}
+}
+
+class RBACManager:
+    def __init__(self):
+        self._current_user = None
+    
+    def set_current_user(self, user):
+        self._current_user = user
+    
+    def has_permission(self, permission: Permission) -> bool:
+        if not self._current_user:
+            return False
+        user_role = Role(self._current_user.role)
+        return permission in ROLE_PERMISSIONS.get(user_role, set())
+
+rbac = RBACManager()
+
+def requires_permission(permission: Permission):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if not rbac.has_permission(permission):
+                raise PermissionError(f"Permission denied: {permission.name}")
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+```
+
+---
+
+## 9. Database backup and migration complete the infrastructure
+
+### Automated PostgreSQL backup
+
+```python
+import subprocess
+import gzip
+import hashlib
+from pathlib import Path
+from datetime import datetime
+
+class PostgreSQLBackupManager:
+    def __init__(self, db_config: dict, backup_dir: str):
+        self.db_config = db_config
+        self.backup_dir = Path(backup_dir)
+        self.backup_dir.mkdir(parents=True, exist_ok=True)
+    
+    def create_backup(self) -> dict:
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"{self.db_config['database']}_{timestamp}.dump"
+        filepath = self.backup_dir / filename
+        
+        cmd = [
+            'pg_dump',
+            '-h', self.db_config['host'],
+            '-p', str(self.db_config.get('port', 5432)),
+            '-U', self.db_config['user'],
+            '-Fc',  # Custom compressed format
+            '-f', str(filepath),
+            self.db_config['database']
+        ]
+        
+        env = {'PGPASSWORD': self.db_config['password']}
+        result = subprocess.run(cmd, env={**os.environ, **env}, capture_output=True)
+        
+        if result.returncode != 0:
+            return {'success': False, 'error': result.stderr.decode()}
+        
+        checksum = self._calculate_checksum(filepath)
+        return {
+            'success': True,
+            'filepath': str(filepath),
+            'size': filepath.stat().st_size,
+            'checksum': checksum
+        }
+    
+    def _calculate_checksum(self, filepath) -> str:
+        sha256 = hashlib.sha256()
+        with open(filepath, 'rb') as f:
+            for block in iter(lambda: f.read(4096), b''):
+                sha256.update(block)
+        return sha256.hexdigest()
+    
+    def cleanup_old_backups(self, keep_days=30):
+        cutoff = datetime.now().timestamp() - (keep_days * 86400)
+        for file in self.backup_dir.glob('*.dump'):
+            if file.stat().st_mtime < cutoff:
+                file.unlink()
+```
+
+### Alembic migration setup
+
+```python
+# alembic/env.py
+from alembic import context
+from sqlalchemy import engine_from_config
+from myapp.models import Base
+
+target_metadata = Base.metadata
+
+def run_migrations_online():
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section),
+        prefix='sqlalchemy.'
+    )
+    with connectable.connect() as connection:
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            compare_type=True
+        )
+        with context.begin_transaction():
+            context.run_migrations()
+```
+
+---
+
+## 10. Application architecture follows MVP pattern
+
+Professional PyQt5 applications separate concerns using Model-View-Presenter:
+
+```
+integra/
+├── main.py
+├── app/
+│   ├── application.py      # QApplication subclass
+│   ├── event_bus.py        # Signal-based event bus
+│   └── settings.py
+├── models/                 # Data and business logic
+│   ├── employee.py
+│   ├── payroll.py
+│   └── cost_center.py
+├── views/                  # UI only
+│   ├── main_window.py
+│   ├── employee_view.py
+│   └── payroll_view.py
+├── presenters/             # Mediate model-view
+│   ├── employee_presenter.py
+│   └── payroll_presenter.py
+├── services/               # Shared services
+│   ├── database.py
+│   ├── scheduler.py
+│   └── export.py
+└── resources/
+    ├── icons/
+    └── translations/
+```
+
+### Event bus for decoupled communication
+
+```python
+from PyQt5.QtCore import QObject, pyqtSignal
+
+class ApplicationEventBus(QObject):
+    # Business events
+    employee_created = pyqtSignal(int)
+    payroll_processed = pyqtSignal(int, str)  # employee_id, period
+    
+    # System events  
+    database_connected = pyqtSignal()
+    background_task_completed = pyqtSignal(str, bool)
+    
+    _instance = None
+    
+    @classmethod
+    def instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+
+# Publisher
+event_bus = ApplicationEventBus.instance()
+event_bus.employee_created.emit(employee_id)
+
+# Subscriber (different module)
+event_bus.employee_created.connect(self.handle_new_employee)
+```
+
+---
+
+## Conclusion: Infrastructure investment pays dividends
+
+Implementing professional infrastructure transforms INTEGRA from a functional application into enterprise-grade software. The **key priorities** for a palm oil refinery ERP should be:
+
+1. **Audit trails** (PostgreSQL triggers) - essential for payroll and financial compliance
+2. **Background processing** (QThreadPool) - keeps UI responsive during heavy operations
+3. **Scheduled tasks** (APScheduler) - automates backups, report generation, and alerts
+4. **Excel integration** (watchdog + openpyxl) - bridges external data entry workflows
+5. **Multi-layer validation** (PyQt5 + Pydantic + PostgreSQL) - ensures data integrity
+6. **RBAC** - protects sensitive HR and payroll information
+
+The patterns documented here—drawn from SAP, Odoo, ERPNext, and professional Python applications—provide a blueprint for building infrastructure that scales with organizational needs while maintaining reliability and security. Each component reinforces the others: audit trails capture changes validated by the data layer, background tasks execute scheduled jobs defined by the automation system, and the event bus connects modules without tight coupling.
+
+Start with logging, error handling, and database connection management as the foundation, then progressively add automation, notifications, and advanced features. This infrastructure investment enables the business modules to focus purely on domain logic while the infrastructure handles cross-cutting concerns professionally.
