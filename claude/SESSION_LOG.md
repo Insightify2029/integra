@@ -4,6 +4,89 @@
 
 ---
 
+## الجلسة: 4 فبراير 2026 (فجراً) - المرحلة 5
+
+### ✅ ما تم إنجازه:
+
+1. **D5: Plotly Charts (رسوم بيانية تفاعلية)**
+   - إنشاء `ui/components/charts/plotly_widget.py`
+   - PlotlyChart widget مع دعم WebEngine
+   - أنواع الرسوم: Pie, Bar, Line, Gauge
+   - دعم RTL والعربية
+   - تصدير كصورة
+
+2. **D9: QR Code Generator**
+   - إنشاء `core/utils/qr_generator.py`
+   - QRGenerator class مع تخصيص كامل
+   - دوال جاهزة: `generate_qr_code`, `qr_to_pixmap`
+   - `generate_employee_qr` لبطاقات الموظفين
+   - تصدير كـ QPixmap للـ PyQt5
+
+### 📁 الملفات الجديدة:
+
+```
+ui/components/charts/
+├── __init__.py
+└── plotly_widget.py     # رسوم بيانية تفاعلية
+
+core/utils/
+└── qr_generator.py      # توليد QR codes
+```
+
+### 📋 الحالة الحالية:
+
+| المرحلة | الحالة |
+|---------|--------|
+| المرحلة 0: التشغيل | ✅ مكتمل |
+| المرحلة 1: الأساسيات | ✅ مكتمل |
+| المرحلة 2: تحسينات الواجهة | ✅ مكتمل |
+| المرحلة 3: استقرار وأداء | ✅ مكتمل |
+| المرحلة 4: استيراد/تصدير | ✅ مكتمل |
+| المرحلة 5: رسوم بيانية | ✅ **مكتمل** |
+| المرحلة 6: البيانات والأمان | ⏳ القادمة |
+
+### 🎯 المهمة القادمة:
+
+**المرحلة 6: البيانات والأمان**
+```
+A4  → Audit Trail (PostgreSQL triggers)
+A10 → Pydantic Validation
+A9  → Security (RBAC)
+```
+
+### 💡 كيفية الاستخدام:
+
+```python
+# Plotly Charts
+from ui.components.charts import PlotlyChart, create_pie_chart
+
+chart = PlotlyChart(self)
+chart.pie_chart(
+    values=[30, 25, 20, 25],
+    labels=["الإدارة", "المبيعات", "الإنتاج", "الدعم"],
+    title="توزيع الموظفين"
+)
+layout.addWidget(chart)
+
+# أو مختصر
+chart = create_pie_chart(values, labels, "العنوان", parent=self)
+
+# QR Codes
+from core.utils import generate_qr_code, qr_to_pixmap, generate_employee_qr
+
+# حفظ كملف
+generate_qr_code("https://example.com", "qr.png")
+
+# للعرض في PyQt5
+pixmap = qr_to_pixmap("EMP:12345")
+label.setPixmap(pixmap)
+
+# لبطاقة موظف
+pixmap = generate_employee_qr(123, "محمد أحمد")
+```
+
+---
+
 ## الجلسة: 4 فبراير 2026 (فجراً) - المرحلة 4
 
 ### ✅ ما تم إنجازه:
