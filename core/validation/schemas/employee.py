@@ -12,7 +12,7 @@ Schemas:
 """
 
 from typing import Optional
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 
@@ -300,5 +300,5 @@ class EmployeeResponse(EmployeeBase):
     bank_name: Optional[str] = Field(None, description="اسم البنك")
 
     # Timestamps
-    created_at: Optional[date] = Field(None, description="تاريخ الإنشاء")
-    updated_at: Optional[date] = Field(None, description="تاريخ التحديث")
+    created_at: Optional[datetime] = Field(None, description="تاريخ الإنشاء")
+    updated_at: Optional[datetime] = Field(None, description="تاريخ التحديث")

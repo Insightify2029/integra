@@ -23,7 +23,7 @@ Usage:
     manager.shutdown(wait=True, timeout_ms=5000)
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Callable
 from datetime import datetime
 from dataclasses import dataclass, field
 
@@ -134,7 +134,7 @@ class TaskManager(QObject):
 
         return worker.worker_id
 
-    def submit_func(self, func: callable, *args, name: str = "Task",
+    def submit_func(self, func: Callable, *args, name: str = "Task",
                     priority: int = 0, **kwargs) -> str:
         """
         Submit a function for background execution.

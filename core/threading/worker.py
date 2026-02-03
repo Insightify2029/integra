@@ -19,7 +19,7 @@ Usage:
 
 from enum import Enum, auto
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any, Optional, Callable
 from datetime import datetime
 import traceback
 import uuid
@@ -199,7 +199,7 @@ class SimpleWorker(BaseWorker):
         get_task_manager().submit(worker)
     """
 
-    def __init__(self, func: callable, *args, name: str = "SimpleWorker", **kwargs):
+    def __init__(self, func: Callable, *args, name: str = "SimpleWorker", **kwargs):
         """
         Create a worker that runs a function.
 
