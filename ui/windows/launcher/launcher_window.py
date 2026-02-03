@@ -244,31 +244,41 @@ class LauncherWindow(BaseWindow):
             show_info(self, "\u0642\u0631\u064a\u0628\u0627\u064b", f"\u0645\u0648\u062f\u064a\u0648\u0644 {module_id} \u0642\u064a\u062f \u0627\u0644\u062a\u0637\u0648\u064a\u0631")
 
     def closeEvent(self, event):
-        """Handle window close - PUSH sync if enabled."""
-        # مزامنة عند الإغلاق (PUSH: backup + commit + push)
-        try:
-            config = load_sync_config()
-            if config.get("sync_on_exit", True):
-                self.status_bar.showMessage(
-                    "\U0001f504 \u062c\u0627\u0631\u064a \u0646\u0633\u062e \u0627\u0644\u062f\u0627\u062a\u0627\u0628\u064a\u0632 + \u0631\u0641\u0639 \u0627\u0644\u062a\u063a\u064a\u064a\u0631\u0627\u062a..."
-                )
+        """Handle window close - سؤال المستخدم عن النسخ الاحتياطي."""
+        from PyQt5.QtWidgets import QMessageBox
+
+        # سؤال المستخدم
+        reply = QMessageBox.question(
+            self,
+            "إغلاق البرنامج",
+            "هل تريد حفظ نسخة احتياطية من قاعدة البيانات؟",
+            QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
+            QMessageBox.No  # الافتراضي: لا
+        )
+
+        # إلغاء الإغلاق
+        if reply == QMessageBox.Cancel:
+            event.ignore()
+            return
+
+        # حفظ نسخة احتياطية إذا طلب المستخدم
+        if reply == QMessageBox.Yes:
+            try:
+                self.status_bar.showMessage("💾 جاري حفظ النسخة الاحتياطية...")
                 self.repaint()
 
-                # تشغيل متزامن (مش في الخلفية) عشان البرنامج مش يقفل قبل ما يخلص
-                from core.sync.sync_runner import run_sync_push
-                success, logs = run_sync_push()
+                # Backup فقط (بدون Git)
+                from core.sync.db_sync import DatabaseSync
+                db_sync = DatabaseSync()
+                result = db_sync.backup()
 
-                for log in logs:
-                    print(f"  [EXIT SYNC] {log}")
+                if result.success:
+                    print(f"[BACKUP] ✅ {result.message}")
+                else:
+                    print(f"[BACKUP] ❌ {result.message}")
 
-                # تحديث وقت آخر مزامنة
-                from datetime import datetime
-                config["last_sync_time"] = datetime.now().strftime("%Y-%m-%d %H:%M")
-                config["last_sync_direction"] = "push"
-                save_sync_config(config)
-
-        except Exception as e:
-            print(f"[SYNC] Exit sync error: {e}")
+            except Exception as e:
+                print(f"[BACKUP] Error: {e}")
 
         # إغلاق كل النوافذ المفتوحة
         for window in self._open_windows.values():
