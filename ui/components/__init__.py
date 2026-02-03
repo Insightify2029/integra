@@ -36,6 +36,15 @@ from .ai import (
     AIToolbar,
     create_ai_toolbar
 )
+from .email import (
+    EmailListWidget,
+    EmailListItem,
+    create_email_list,
+    EmailViewerWidget,
+    create_email_viewer,
+    EmailPanel,
+    create_email_panel
+)
 
 __all__ = [
     # Cards
@@ -79,5 +88,13 @@ __all__ = [
     'ChatMessage',
     'create_chat_panel',
     'AIToolbar',
-    'create_ai_toolbar'
+    'create_ai_toolbar',
+    # Email Components
+    'EmailListWidget',
+    'EmailListItem',
+    'create_email_list',
+    'EmailViewerWidget',
+    'create_email_viewer',
+    'EmailPanel',
+    'create_email_panel'
 ]
