@@ -32,6 +32,14 @@ from .formatters import (
     format_ordinal
 )
 
+from .qr_generator import (
+    QRGenerator,
+    generate_qr_code,
+    qr_to_pixmap,
+    generate_employee_qr,
+    generate_url_qr
+)
+
 __all__ = [
     # Icons
     'Icons',
@@ -55,5 +63,11 @@ __all__ = [
     'format_duration',
     # Count
     'format_count',
-    'format_ordinal'
+    'format_ordinal',
+    # QR Code
+    'QRGenerator',
+    'generate_qr_code',
+    'qr_to_pixmap',
+    'generate_employee_qr',
+    'generate_url_qr'
 ]
