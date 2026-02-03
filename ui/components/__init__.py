@@ -29,6 +29,13 @@ from .fluent import (
     FluentCard,
     FLUENT_AVAILABLE
 )
+from .ai import (
+    AIChatPanel,
+    ChatMessage,
+    create_chat_panel,
+    AIToolbar,
+    create_ai_toolbar
+)
 
 __all__ = [
     # Cards
@@ -66,5 +73,11 @@ __all__ = [
     'FluentProgressBar',
     'FluentInfoBar',
     'FluentCard',
-    'FLUENT_AVAILABLE'
+    'FLUENT_AVAILABLE',
+    # AI Components
+    'AIChatPanel',
+    'ChatMessage',
+    'create_chat_panel',
+    'AIToolbar',
+    'create_ai_toolbar'
 ]
