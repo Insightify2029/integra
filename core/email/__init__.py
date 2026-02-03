@@ -26,7 +26,9 @@ from .email_models import (
     Email,
     EmailFolder,
     EmailAttachment,
-    EmailPriority
+    EmailPriority,
+    EmailImportance,
+    FolderType
 )
 
 __all__ = [
@@ -48,5 +50,7 @@ __all__ = [
     'Email',
     'EmailFolder',
     'EmailAttachment',
-    'EmailPriority'
+    'EmailPriority',
+    'EmailImportance',
+    'FolderType'
 ]
