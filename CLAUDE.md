@@ -152,6 +152,38 @@ from core.error_handling import install_exception_handler
 install_exception_handler()
 ```
 
+### Threading (`core/threading/`)
+Background task execution without freezing the UI:
+```python
+from core.threading import run_in_background, Worker, get_task_manager
+
+# Simple usage - run function in background
+run_in_background(
+    save_to_database,
+    args=(data,),
+    on_finished=lambda result: print("Done!"),
+    on_error=lambda t, m, tb: print(f"Error: {m}")
+)
+
+# With progress reporting
+def heavy_task(progress_callback, items):
+    for i, item in enumerate(items):
+        process(item)
+        progress_callback(int((i+1)/len(items)*100), f"Processing {i+1}")
+    return "Complete"
+
+worker = Worker(heavy_task, args=(my_items,), use_progress=True)
+worker.signals.progress.connect(lambda p, msg: progress_bar.setValue(p))
+worker.signals.finished.connect(handle_result)
+worker.start()
+
+# Task manager for advanced control
+tm = get_task_manager()
+task_id = tm.run(my_function, on_finished=callback)
+tm.cancel(task_id)  # Cancel specific task
+tm.cancel_all()     # Cancel all tasks
+```
+
 ### Sync System (`core/sync/`)
 ```python
 from core.sync import get_sync_manager, SyncWorker

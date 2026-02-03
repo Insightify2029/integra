@@ -33,6 +33,13 @@ def main():
     from core.error_handling import install_exception_handler
     install_exception_handler()
 
+    # تهيئة مدير المهام الخلفية
+    from core.threading import get_task_manager, shutdown_task_manager
+    get_task_manager()  # تهيئة مبكرة
+
+    # التنظيف عند الإغلاق
+    app.aboutToQuit.connect(lambda: shutdown_task_manager(wait=True, timeout_ms=5000))
+
     # Set application info
     app.setApplicationName("INTEGRA")
     app.setApplicationVersion("2.1.0")
