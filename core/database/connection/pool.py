@@ -21,11 +21,12 @@ Usage:
 """
 
 from contextlib import contextmanager
+from urllib.parse import quote_plus
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.pool import QueuePool
 from sqlalchemy.exc import DisconnectionError
 from core.logging import app_logger
-from .connection_config import get_connection_string
+from .connection_config import get_connection_params
 
 
 # Pool configuration
@@ -48,7 +49,14 @@ def _create_engine():
         return _engine
 
     try:
-        connection_string = get_connection_string()
+        # Get connection params and URL-encode password for special characters
+        params = get_connection_params()
+        encoded_password = quote_plus(str(params['password']))
+
+        connection_string = (
+            f"postgresql://{params['user']}:{encoded_password}"
+            f"@{params['host']}:{params['port']}/{params['database']}"
+        )
 
         _engine = create_engine(
             connection_string,
