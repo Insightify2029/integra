@@ -21,6 +21,9 @@ Desktop.ini
 .env
 SYNC.bat
 
+# Sync settings (local per machine)
+sync_settings.json
+
 # Temp
 *.tmp
 *.log

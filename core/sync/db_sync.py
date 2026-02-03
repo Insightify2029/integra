@@ -26,10 +26,32 @@ class DatabaseSync:
 
     def __init__(self, project_root: Path = None):
         if project_root is None:
-            project_root = Path(__file__).parent.parent.parent
+            project_root = self._find_project_root()
         self.project_root = project_root
         self.backup_manager = BackupManager(project_root)
         self._db_config = self._load_db_config()
+
+    def _find_project_root(self) -> Path:
+        """البحث عن مجلد المشروع بطرق متعددة"""
+        # الطريقة 1: من موقع الملف الحالي
+        from_file = Path(__file__).parent.parent.parent
+        if (from_file / ".env").exists() or (from_file / "main.py").exists():
+            return from_file
+
+        # الطريقة 2: من مجلد العمل الحالي
+        cwd = Path.cwd()
+        if (cwd / ".env").exists() or (cwd / "main.py").exists():
+            return cwd
+
+        # الطريقة 3: من sys.path
+        import sys
+        for p in sys.path:
+            path = Path(p)
+            if (path / ".env").exists() or (path / "main.py").exists():
+                return path
+
+        # الافتراضي: مجلد العمل
+        return cwd
 
     def _load_db_config(self) -> dict:
         """تحميل إعدادات قاعدة البيانات من .env"""
@@ -41,18 +63,44 @@ class DatabaseSync:
             "password": ""
         }
 
+        # محاولة استخدام python-dotenv أولاً
+        try:
+            from dotenv import dotenv_values
+            env_file = self.project_root / ".env"
+            if env_file.exists():
+                values = dotenv_values(str(env_file))
+                config["password"] = values.get("DB_PASSWORD", "")
+                config["host"] = values.get("DB_HOST", config["host"])
+                config["port"] = values.get("DB_PORT", config["port"])
+                config["name"] = values.get("DB_NAME", config["name"])
+                config["user"] = values.get("DB_USER", config["user"])
+                return config
+        except ImportError:
+            pass
+
+        # قراءة يدوية من .env
         env_file = self.project_root / ".env"
         if env_file.exists():
             try:
-                with open(env_file, "r", encoding="utf-8") as f:
-                    for line in f:
+                # محاولة قراءة بترميزات مختلفة
+                content = None
+                for encoding in ["utf-8", "utf-8-sig", "cp1256", "latin-1"]:
+                    try:
+                        with open(env_file, "r", encoding=encoding) as f:
+                            content = f.read()
+                        break
+                    except UnicodeDecodeError:
+                        continue
+
+                if content:
+                    for line in content.splitlines():
                         line = line.strip()
                         if not line or line.startswith("#"):
                             continue
                         if "=" in line:
                             key, value = line.split("=", 1)
                             key = key.strip()
-                            value = value.strip()
+                            value = value.strip().strip('"').strip("'")
                             if key == "DB_PASSWORD":
                                 config["password"] = value
                             elif key == "DB_HOST":
