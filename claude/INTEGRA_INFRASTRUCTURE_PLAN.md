@@ -6,7 +6,7 @@
 
 ## نظرة عامة
 
-هذه الخطة تغطي **13 محوراً رئيسياً** لتطوير البنية التحتية:
+هذه الخطة تغطي **14 محوراً رئيسياً** لتطوير البنية التحتية:
 
 | المحور | الوصف | الأولوية |
 |---|---|---|
@@ -22,7 +22,8 @@
 | **L** | مصمم التقارير والنماذج (Report & Form Designer) 🆕 | احترافي - تصميم حر للتقارير والنماذج |
 | **M** | الربط مع Power BI Desktop (BI Connector) 🆕 | تحليلي - تحليلات متقدمة بدون تراخيص |
 | **N** | المساعد الذكي المتكامل (AI Copilot) 🆕 | استراتيجي - العقل المدبر للبرنامج |
-| **O** | الوعي الزمني الفائق (Hyper Time Intelligence) 🆕 | أساسي - البُعد الزمني للذكاء |
+| **O** | الوعي الزمني الفائق (Hyper Time Intelligence) | أساسي - البُعد الزمني للذكاء |
+| **P** | مدير الملفات الذكي (Smart File Manager) 🆕 | استراتيجي - إدارة الملفات بالذكاء الاصطناعي |
 
 > **ملاحظة مهمة:** المحور D يعتمد على تحليل ملف `claude/ALL_Libraries.txt` لاستغلال المكتبات المثبتة فعلياً
 
@@ -3793,6 +3794,1648 @@ O8 → Time Triggers (المحفزات الزمنية) - أحداث تلقائي
 
 ---
 
+## المحور P: مدير الملفات الذكي (Smart File Manager) 🆕
+
+> موديول شامل لإدارة الملفات داخل البرنامج وعلى الجهاز مع دعم كامل للذكاء الاصطناعي
+
+### P1. Excel AI Engine (محرك إكسيل الذكي)
+
+**الميزات الأساسية:**
+```python
+# core/file_manager/excel/excel_ai_engine.py
+
+from enum import Enum
+from dataclasses import dataclass
+from typing import List, Dict, Any, Optional, Tuple
+import pandas as pd
+
+class ColumnType(Enum):
+    """أنواع الأعمدة المكتشفة"""
+    TEXT = "text"
+    NUMBER = "number"
+    CURRENCY = "currency"
+    DATE = "date"
+    PHONE = "phone"
+    EMAIL = "email"
+    IBAN = "iban"
+    PERCENTAGE = "percentage"
+    BOOLEAN = "boolean"
+    UNKNOWN = "unknown"
+
+@dataclass
+class ColumnAnalysis:
+    """تحليل عمود"""
+    name: str
+    detected_type: ColumnType
+    confidence: float  # 0.0 to 1.0
+    sample_values: List[Any]
+    null_count: int
+    unique_count: int
+    suggested_db_column: Optional[str] = None
+
+class ExcelAIEngine:
+    """محرك Excel المدعوم بالذكاء الاصطناعي"""
+
+    def __init__(self, file_path: str):
+        self.file_path = file_path
+        self.df: Optional[pd.DataFrame] = None
+        self.column_analyses: List[ColumnAnalysis] = []
+
+    def load(self) -> Tuple[bool, str]:
+        """تحميل ملف Excel"""
+        try:
+            if self.file_path.endswith('.csv'):
+                # محاولة اكتشاف الترميز
+                encodings = ['utf-8', 'utf-8-sig', 'cp1256', 'iso-8859-6']
+                for enc in encodings:
+                    try:
+                        self.df = pd.read_csv(self.file_path, encoding=enc)
+                        break
+                    except UnicodeDecodeError:
+                        continue
+            else:
+                self.df = pd.read_excel(self.file_path)
+            return True, f"تم تحميل {len(self.df)} صف"
+        except Exception as e:
+            return False, str(e)
+
+    def analyze_columns(self) -> List[ColumnAnalysis]:
+        """تحليل ذكي لكل الأعمدة"""
+        if self.df is None:
+            return []
+
+        analyses = []
+        for col in self.df.columns:
+            analysis = self._analyze_column(col)
+            analyses.append(analysis)
+
+        self.column_analyses = analyses
+        return analyses
+
+    def _analyze_column(self, col_name: str) -> ColumnAnalysis:
+        """تحليل عمود واحد"""
+        series = self.df[col_name]
+
+        # إحصائيات أساسية
+        null_count = series.isnull().sum()
+        unique_count = series.nunique()
+        sample_values = series.dropna().head(5).tolist()
+
+        # اكتشاف النوع
+        detected_type, confidence = self._detect_type(series)
+
+        # اقتراح عمود DB
+        suggested_db = self._suggest_db_column(col_name, detected_type)
+
+        return ColumnAnalysis(
+            name=col_name,
+            detected_type=detected_type,
+            confidence=confidence,
+            sample_values=sample_values,
+            null_count=null_count,
+            unique_count=unique_count,
+            suggested_db_column=suggested_db
+        )
+
+    def _detect_type(self, series: pd.Series) -> Tuple[ColumnType, float]:
+        """اكتشاف نوع العمود بالذكاء الاصطناعي"""
+        non_null = series.dropna()
+        if len(non_null) == 0:
+            return ColumnType.UNKNOWN, 0.0
+
+        sample = non_null.astype(str).head(100)
+
+        # فحص الأنماط
+        patterns = {
+            ColumnType.PHONE: r'^[\+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$',
+            ColumnType.EMAIL: r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+            ColumnType.IBAN: r'^[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}$',
+            ColumnType.DATE: r'^\d{1,4}[-/]\d{1,2}[-/]\d{1,4}$',
+        }
+
+        for col_type, pattern in patterns.items():
+            import re
+            matches = sample.str.match(pattern, na=False).sum()
+            if matches / len(sample) > 0.8:
+                return col_type, matches / len(sample)
+
+        # فحص رقمي
+        try:
+            numeric = pd.to_numeric(non_null, errors='coerce')
+            if numeric.notna().sum() / len(non_null) > 0.9:
+                # هل هو عملة؟
+                if numeric.mean() > 100 and numeric.mean() < 1000000:
+                    return ColumnType.CURRENCY, 0.7
+                return ColumnType.NUMBER, 0.95
+        except:
+            pass
+
+        return ColumnType.TEXT, 0.5
+
+    def clean_data(self) -> Dict[str, Any]:
+        """تنظيف البيانات تلقائياً"""
+        if self.df is None:
+            return {"success": False, "message": "لم يتم تحميل الملف"}
+
+        original_rows = len(self.df)
+        changes = []
+
+        # إزالة المسافات الزائدة
+        for col in self.df.select_dtypes(include=['object']).columns:
+            self.df[col] = self.df[col].str.strip()
+            changes.append(f"تنظيف المسافات في {col}")
+
+        # توحيد التنسيقات
+        # تحويل أرقام الهاتف
+        # إزالة الصفوف الفارغة تماماً
+        self.df = self.df.dropna(how='all')
+
+        return {
+            "success": True,
+            "original_rows": original_rows,
+            "cleaned_rows": len(self.df),
+            "removed_rows": original_rows - len(self.df),
+            "changes": changes
+        }
+
+    def detect_duplicates(self, columns: List[str] = None) -> pd.DataFrame:
+        """اكتشاف الصفوف المكررة"""
+        if self.df is None:
+            return pd.DataFrame()
+
+        if columns:
+            duplicates = self.df[self.df.duplicated(subset=columns, keep=False)]
+        else:
+            duplicates = self.df[self.df.duplicated(keep=False)]
+
+        return duplicates
+
+    def preview(self, rows: int = 10) -> pd.DataFrame:
+        """معاينة البيانات"""
+        if self.df is None:
+            return pd.DataFrame()
+        return self.df.head(rows)
+
+    def get_column_mapping_suggestions(self, target_table: str) -> Dict[str, str]:
+        """اقتراحات ربط الأعمدة بجدول قاعدة البيانات"""
+        # خريطة الأسماء المعروفة
+        known_mappings = {
+            "employees": {
+                "الاسم": "name_ar",
+                "الاسم بالعربي": "name_ar",
+                "الاسم بالانجليزي": "name_en",
+                "رقم الموظف": "employee_number",
+                "الراتب": "salary",
+                "تاريخ التعيين": "hire_date",
+                "الهاتف": "phone",
+                "الجوال": "mobile",
+                "البريد": "email",
+                "IBAN": "iban",
+            }
+        }
+
+        suggestions = {}
+        table_mappings = known_mappings.get(target_table, {})
+
+        for analysis in self.column_analyses:
+            # بحث بالاسم
+            if analysis.name in table_mappings:
+                suggestions[analysis.name] = table_mappings[analysis.name]
+            elif analysis.suggested_db_column:
+                suggestions[analysis.name] = analysis.suggested_db_column
+
+        return suggestions
+
+    def import_to_database(self, table_name: str,
+                          column_mapping: Dict[str, str],
+                          mode: str = "append") -> Dict[str, Any]:
+        """استيراد البيانات إلى قاعدة البيانات"""
+        # mode: "append" | "replace" | "update"
+
+        if self.df is None:
+            return {"success": False, "message": "لم يتم تحميل الملف"}
+
+        try:
+            # تطبيق الـ mapping
+            df_mapped = self.df.rename(columns=column_mapping)
+
+            # الحقول المطلوبة فقط
+            valid_columns = list(column_mapping.values())
+            df_final = df_mapped[valid_columns]
+
+            # الاستيراد حسب الوضع
+            # ... implementation
+
+            return {
+                "success": True,
+                "imported_rows": len(df_final),
+                "table": table_name
+            }
+        except Exception as e:
+            return {"success": False, "message": str(e)}
+```
+
+**واجهة المستخدم:**
+```python
+# ui/dialogs/file_manager/excel_import_dialog.py
+
+class ExcelImportDialog(QDialog):
+    """نافذة استيراد Excel الذكية"""
+
+    def __init__(self, file_path: str, parent=None):
+        super().__init__(parent)
+        self.engine = ExcelAIEngine(file_path)
+        self.setup_ui()
+
+    def setup_ui(self):
+        layout = QVBoxLayout(self)
+
+        # شريط الخطوات
+        self.steps = QTabWidget()
+        self.steps.addTab(self.create_preview_tab(), "1. معاينة")
+        self.steps.addTab(self.create_mapping_tab(), "2. ربط الأعمدة")
+        self.steps.addTab(self.create_options_tab(), "3. خيارات")
+        self.steps.addTab(self.create_confirm_tab(), "4. تأكيد")
+
+        layout.addWidget(self.steps)
+
+        # أزرار
+        buttons = QHBoxLayout()
+        self.btn_clean = QPushButton("🧹 تنظيف البيانات")
+        self.btn_duplicates = QPushButton("🔍 اكتشاف المكرر")
+        self.btn_import = QPushButton("📥 استيراد")
+
+        buttons.addWidget(self.btn_clean)
+        buttons.addWidget(self.btn_duplicates)
+        buttons.addStretch()
+        buttons.addWidget(self.btn_import)
+
+        layout.addLayout(buttons)
+```
+
+### P2. PDF AI Studio (استوديو PDF الذكي)
+
+**الميزات الأساسية:**
+```python
+# core/file_manager/pdf/pdf_ai_studio.py
+
+import fitz  # PyMuPDF
+from PIL import Image
+import pytesseract
+from typing import List, Dict, Optional, BinaryIO
+import io
+
+class PDFAIStudio:
+    """استوديو PDF المدعوم بالذكاء الاصطناعي"""
+
+    def __init__(self):
+        self.documents: Dict[str, fitz.Document] = {}
+
+    # ===============================
+    # العمليات الأساسية
+    # ===============================
+
+    def open(self, file_path: str) -> str:
+        """فتح ملف PDF"""
+        doc_id = f"doc_{len(self.documents)}"
+        self.documents[doc_id] = fitz.open(file_path)
+        return doc_id
+
+    def split(self, doc_id: str, pages: List[int], output_path: str) -> bool:
+        """فصل صفحات محددة"""
+        doc = self.documents.get(doc_id)
+        if not doc:
+            return False
+
+        new_doc = fitz.open()
+        for page_num in pages:
+            if 0 <= page_num < len(doc):
+                new_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
+
+        new_doc.save(output_path)
+        new_doc.close()
+        return True
+
+    def split_all(self, doc_id: str, output_folder: str) -> List[str]:
+        """فصل كل الصفحات لملفات منفردة"""
+        doc = self.documents.get(doc_id)
+        if not doc:
+            return []
+
+        output_files = []
+        for i in range(len(doc)):
+            output_path = f"{output_folder}/page_{i+1}.pdf"
+            self.split(doc_id, [i], output_path)
+            output_files.append(output_path)
+
+        return output_files
+
+    def merge(self, file_paths: List[str], output_path: str) -> bool:
+        """دمج عدة ملفات PDF"""
+        try:
+            merged = fitz.open()
+            for path in file_paths:
+                doc = fitz.open(path)
+                merged.insert_pdf(doc)
+                doc.close()
+
+            merged.save(output_path)
+            merged.close()
+            return True
+        except Exception as e:
+            print(f"Error merging: {e}")
+            return False
+
+    def extract_pages(self, doc_id: str, start: int, end: int,
+                     output_path: str) -> bool:
+        """استخراج نطاق من الصفحات"""
+        return self.split(doc_id, list(range(start, end + 1)), output_path)
+
+    def rotate_pages(self, doc_id: str, pages: List[int],
+                    angle: int, output_path: str) -> bool:
+        """تدوير صفحات (90, 180, 270)"""
+        doc = self.documents.get(doc_id)
+        if not doc:
+            return False
+
+        for page_num in pages:
+            if 0 <= page_num < len(doc):
+                page = doc[page_num]
+                page.set_rotation(angle)
+
+        doc.save(output_path)
+        return True
+
+    def compress(self, doc_id: str, output_path: str,
+                quality: str = "medium") -> Dict[str, Any]:
+        """ضغط ملف PDF"""
+        doc = self.documents.get(doc_id)
+        if not doc:
+            return {"success": False}
+
+        original_size = doc.tobytes().__len__()
+
+        # إعدادات الضغط
+        if quality == "low":
+            doc.save(output_path, garbage=4, deflate=True,
+                    clean=True, linear=True)
+        elif quality == "medium":
+            doc.save(output_path, garbage=3, deflate=True, clean=True)
+        else:
+            doc.save(output_path, garbage=2, deflate=True)
+
+        compressed_size = fitz.open(output_path).tobytes().__len__()
+
+        return {
+            "success": True,
+            "original_size": original_size,
+            "compressed_size": compressed_size,
+            "reduction_percent": round((1 - compressed_size/original_size) * 100, 1)
+        }
+
+    # ===============================
+    # OCR بالذكاء الاصطناعي
+    # ===============================
+
+    def ocr_page(self, doc_id: str, page_num: int,
+                lang: str = "ara+eng") -> str:
+        """استخراج النص من صفحة بـ OCR"""
+        doc = self.documents.get(doc_id)
+        if not doc or page_num >= len(doc):
+            return ""
+
+        page = doc[page_num]
+
+        # تحويل الصفحة إلى صورة عالية الجودة
+        mat = fitz.Matrix(3.0, 3.0)  # 3x zoom for better OCR
+        pix = page.get_pixmap(matrix=mat)
+
+        # تحويل إلى PIL Image
+        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+
+        # OCR مع Tesseract
+        # lang: ara = Arabic, eng = English, ara+eng = Both
+        text = pytesseract.image_to_string(img, lang=lang, config='--psm 6')
+
+        return text
+
+    def ocr_document(self, doc_id: str, lang: str = "ara+eng") -> List[Dict]:
+        """استخراج النص من كل الصفحات"""
+        doc = self.documents.get(doc_id)
+        if not doc:
+            return []
+
+        results = []
+        for i in range(len(doc)):
+            text = self.ocr_page(doc_id, i, lang)
+            results.append({
+                "page": i + 1,
+                "text": text,
+                "word_count": len(text.split())
+            })
+
+        return results
+
+    def ocr_with_ai_enhancement(self, doc_id: str, page_num: int) -> Dict:
+        """OCR محسّن بالذكاء الاصطناعي"""
+        # OCR أساسي
+        raw_text = self.ocr_page(doc_id, page_num)
+
+        # تحسين بـ AI (Ollama)
+        from core.ai import get_ai_service
+        ai = get_ai_service()
+
+        prompt = f"""
+        النص التالي مستخرج من مستند PDF بـ OCR وقد يحتوي على أخطاء.
+        قم بتصحيح الأخطاء الإملائية والنحوية مع الحفاظ على المعنى:
+
+        {raw_text}
+        """
+
+        corrected = ai.chat(prompt)
+
+        return {
+            "raw_text": raw_text,
+            "corrected_text": corrected,
+            "confidence": 0.85  # يمكن حسابها من AI
+        }
+
+    # ===============================
+    # تلخيص بالذكاء الاصطناعي
+    # ===============================
+
+    def summarize_document(self, doc_id: str) -> str:
+        """تلخيص محتوى PDF بالذكاء الاصطناعي"""
+        doc = self.documents.get(doc_id)
+        if not doc:
+            return ""
+
+        # استخراج النص
+        full_text = ""
+        for page in doc:
+            full_text += page.get_text()
+
+        # إذا لم يوجد نص، استخدم OCR
+        if len(full_text.strip()) < 100:
+            ocr_results = self.ocr_document(doc_id)
+            full_text = "\n".join([r["text"] for r in ocr_results])
+
+        # تلخيص بـ AI
+        from core.ai import get_ai_service
+        ai = get_ai_service()
+
+        summary = ai.summarize(full_text, max_length=500)
+        return summary
+
+    def extract_key_info(self, doc_id: str) -> Dict:
+        """استخراج المعلومات الرئيسية من المستند"""
+        text = self.get_all_text(doc_id)
+
+        from core.ai import get_ai_service
+        ai = get_ai_service()
+
+        prompt = f"""
+        استخرج المعلومات الرئيسية من المستند التالي:
+        - الموضوع الرئيسي
+        - الأشخاص المذكورين
+        - التواريخ
+        - المبالغ المالية
+        - الأرقام المهمة
+
+        المستند:
+        {text[:5000]}  # أول 5000 حرف
+        """
+
+        response = ai.chat(prompt)
+        return {"extracted_info": response}
+
+    # ===============================
+    # البحث
+    # ===============================
+
+    def search(self, doc_id: str, query: str) -> List[Dict]:
+        """البحث في محتوى PDF"""
+        doc = self.documents.get(doc_id)
+        if not doc:
+            return []
+
+        results = []
+        for page_num, page in enumerate(doc):
+            text = page.get_text()
+            if query.lower() in text.lower():
+                # البحث عن موقع النص
+                instances = page.search_for(query)
+                results.append({
+                    "page": page_num + 1,
+                    "count": len(instances),
+                    "positions": [{"x": r.x0, "y": r.y0} for r in instances]
+                })
+
+        return results
+
+    # ===============================
+    # الحماية والعلامة المائية
+    # ===============================
+
+    def add_watermark(self, doc_id: str, text: str,
+                     output_path: str, opacity: float = 0.3) -> bool:
+        """إضافة علامة مائية"""
+        doc = self.documents.get(doc_id)
+        if not doc:
+            return False
+
+        for page in doc:
+            # إنشاء علامة مائية
+            rect = page.rect
+            point = fitz.Point(rect.width/4, rect.height/2)
+            page.insert_text(
+                point, text,
+                fontsize=40,
+                rotate=45,
+                color=(0.7, 0.7, 0.7),
+                overlay=True
+            )
+
+        doc.save(output_path)
+        return True
+
+    def encrypt(self, doc_id: str, password: str,
+               output_path: str) -> bool:
+        """تشفير PDF بكلمة مرور"""
+        doc = self.documents.get(doc_id)
+        if not doc:
+            return False
+
+        doc.save(
+            output_path,
+            encryption=fitz.PDF_ENCRYPT_AES_256,
+            user_pw=password,
+            owner_pw=password
+        )
+        return True
+
+    def get_all_text(self, doc_id: str) -> str:
+        """الحصول على كل النص"""
+        doc = self.documents.get(doc_id)
+        if not doc:
+            return ""
+
+        text = ""
+        for page in doc:
+            text += page.get_text() + "\n"
+        return text
+```
+
+### P3. Image Tools (أدوات الصور)
+
+```python
+# core/file_manager/image/image_tools.py
+
+from PIL import Image
+from pathlib import Path
+from typing import List, Dict, Tuple, Optional
+import io
+
+class ImageTools:
+    """أدوات معالجة الصور"""
+
+    @staticmethod
+    def resize(image_path: str, output_path: str,
+              size: Tuple[int, int] = None,
+              scale: float = None) -> Dict:
+        """تغيير حجم الصورة"""
+        img = Image.open(image_path)
+        original_size = img.size
+
+        if scale:
+            new_size = (int(img.width * scale), int(img.height * scale))
+        elif size:
+            new_size = size
+        else:
+            return {"success": False, "message": "يجب تحديد size أو scale"}
+
+        resized = img.resize(new_size, Image.Resampling.LANCZOS)
+        resized.save(output_path)
+
+        return {
+            "success": True,
+            "original_size": original_size,
+            "new_size": new_size
+        }
+
+    @staticmethod
+    def convert(image_path: str, output_path: str,
+               format: str = "PNG") -> bool:
+        """تحويل صيغة الصورة"""
+        img = Image.open(image_path)
+
+        # معالجة خاصة للـ RGBA -> JPEG
+        if format.upper() == "JPEG" and img.mode == "RGBA":
+            img = img.convert("RGB")
+
+        img.save(output_path, format=format.upper())
+        return True
+
+    @staticmethod
+    def compress(image_path: str, output_path: str,
+                quality: int = 85) -> Dict:
+        """ضغط الصورة"""
+        img = Image.open(image_path)
+        original_size = Path(image_path).stat().st_size
+
+        # للـ PNG نستخدم optimize
+        if output_path.lower().endswith('.png'):
+            img.save(output_path, optimize=True)
+        else:
+            if img.mode == "RGBA":
+                img = img.convert("RGB")
+            img.save(output_path, quality=quality, optimize=True)
+
+        compressed_size = Path(output_path).stat().st_size
+
+        return {
+            "success": True,
+            "original_size": original_size,
+            "compressed_size": compressed_size,
+            "reduction_percent": round((1 - compressed_size/original_size) * 100, 1)
+        }
+
+    @staticmethod
+    def batch_process(image_paths: List[str], output_folder: str,
+                     operations: List[Dict]) -> List[Dict]:
+        """معالجة دفعية للصور"""
+        results = []
+
+        for path in image_paths:
+            try:
+                img = Image.open(path)
+
+                for op in operations:
+                    if op["type"] == "resize":
+                        img = img.resize(op["size"], Image.Resampling.LANCZOS)
+                    elif op["type"] == "convert":
+                        if op["format"] == "JPEG" and img.mode == "RGBA":
+                            img = img.convert("RGB")
+                    elif op["type"] == "rotate":
+                        img = img.rotate(op["angle"], expand=True)
+
+                # حفظ
+                filename = Path(path).stem
+                ext = operations[-1].get("format", "PNG").lower()
+                output_path = f"{output_folder}/{filename}.{ext}"
+                img.save(output_path)
+
+                results.append({"file": path, "success": True, "output": output_path})
+
+            except Exception as e:
+                results.append({"file": path, "success": False, "error": str(e)})
+
+        return results
+
+    @staticmethod
+    def get_info(image_path: str) -> Dict:
+        """معلومات الصورة"""
+        img = Image.open(image_path)
+        file_size = Path(image_path).stat().st_size
+
+        return {
+            "width": img.width,
+            "height": img.height,
+            "format": img.format,
+            "mode": img.mode,
+            "file_size": file_size,
+            "file_size_formatted": f"{file_size / 1024:.1f} KB"
+        }
+```
+
+### P4. Word Document Engine (محرك مستندات Word)
+
+```python
+# core/file_manager/word/word_engine.py
+
+from docx import Document
+from docx.shared import Inches, Pt, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from typing import List, Dict, Optional
+from pathlib import Path
+
+class WordEngine:
+    """محرك مستندات Word"""
+
+    def __init__(self, file_path: str = None):
+        if file_path:
+            self.doc = Document(file_path)
+            self.file_path = file_path
+        else:
+            self.doc = Document()
+            self.file_path = None
+
+    def read_text(self) -> str:
+        """قراءة كل النص"""
+        text = ""
+        for para in self.doc.paragraphs:
+            text += para.text + "\n"
+        return text
+
+    def read_tables(self) -> List[List[List[str]]]:
+        """قراءة الجداول"""
+        tables = []
+        for table in self.doc.tables:
+            table_data = []
+            for row in table.rows:
+                row_data = [cell.text for cell in row.cells]
+                table_data.append(row_data)
+            tables.append(table_data)
+        return tables
+
+    def add_heading(self, text: str, level: int = 1):
+        """إضافة عنوان"""
+        self.doc.add_heading(text, level=level)
+
+    def add_paragraph(self, text: str, style: str = None,
+                     alignment: str = "right"):
+        """إضافة فقرة"""
+        para = self.doc.add_paragraph(text, style=style)
+
+        if alignment == "right":
+            para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        elif alignment == "center":
+            para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        elif alignment == "left":
+            para.alignment = WD_ALIGN_PARAGRAPH.LEFT
+
+    def add_table(self, data: List[List[str]],
+                 headers: List[str] = None) -> None:
+        """إضافة جدول"""
+        if headers:
+            data = [headers] + data
+
+        table = self.doc.add_table(rows=len(data), cols=len(data[0]))
+        table.style = 'Table Grid'
+
+        for i, row_data in enumerate(data):
+            row = table.rows[i]
+            for j, cell_text in enumerate(row_data):
+                row.cells[j].text = str(cell_text)
+
+    def add_image(self, image_path: str, width: float = None):
+        """إضافة صورة"""
+        if width:
+            self.doc.add_picture(image_path, width=Inches(width))
+        else:
+            self.doc.add_picture(image_path)
+
+    def save(self, output_path: str = None):
+        """حفظ المستند"""
+        path = output_path or self.file_path
+        if path:
+            self.doc.save(path)
+            return True
+        return False
+
+    def to_pdf(self, output_path: str) -> bool:
+        """تحويل إلى PDF"""
+        # يتطلب Microsoft Word أو LibreOffice
+        try:
+            from docx2pdf import convert
+
+            # حفظ مؤقت إذا لم يكن محفوظ
+            if not self.file_path:
+                temp_path = "temp_doc.docx"
+                self.save(temp_path)
+                convert(temp_path, output_path)
+                Path(temp_path).unlink()
+            else:
+                convert(self.file_path, output_path)
+
+            return True
+        except Exception as e:
+            print(f"Error converting to PDF: {e}")
+            return False
+```
+
+### P5. File Browser (مستكشف الملفات)
+
+```python
+# core/file_manager/browser/file_browser.py
+
+from pathlib import Path
+from dataclasses import dataclass
+from typing import List, Dict, Optional
+from datetime import datetime
+import os
+import shutil
+
+@dataclass
+class FileInfo:
+    """معلومات ملف"""
+    name: str
+    path: str
+    is_dir: bool
+    size: int
+    modified: datetime
+    extension: str
+    tags: List[str] = None
+
+class FileBrowser:
+    """مستكشف الملفات المتقدم"""
+
+    def __init__(self):
+        self.current_path = Path.home()
+        self.favorites: List[Path] = []
+        self.recent_files: List[str] = []
+        self.file_tags: Dict[str, List[str]] = {}  # path -> tags
+
+    def list_directory(self, path: str = None) -> List[FileInfo]:
+        """عرض محتويات مجلد"""
+        target = Path(path) if path else self.current_path
+
+        items = []
+        try:
+            for item in target.iterdir():
+                stat = item.stat()
+                items.append(FileInfo(
+                    name=item.name,
+                    path=str(item),
+                    is_dir=item.is_dir(),
+                    size=stat.st_size if item.is_file() else 0,
+                    modified=datetime.fromtimestamp(stat.st_mtime),
+                    extension=item.suffix.lower() if item.is_file() else "",
+                    tags=self.file_tags.get(str(item), [])
+                ))
+        except PermissionError:
+            pass
+
+        # ترتيب: المجلدات أولاً، ثم الملفات
+        items.sort(key=lambda x: (not x.is_dir, x.name.lower()))
+        return items
+
+    def navigate(self, path: str):
+        """الانتقال إلى مجلد"""
+        new_path = Path(path)
+        if new_path.is_dir():
+            self.current_path = new_path
+            return True
+        return False
+
+    def go_up(self):
+        """الانتقال للمجلد الأعلى"""
+        parent = self.current_path.parent
+        if parent != self.current_path:
+            self.current_path = parent
+            return True
+        return False
+
+    def search(self, query: str, path: str = None,
+              include_content: bool = False) -> List[FileInfo]:
+        """البحث عن ملفات"""
+        target = Path(path) if path else self.current_path
+        results = []
+
+        for item in target.rglob("*"):
+            # البحث بالاسم
+            if query.lower() in item.name.lower():
+                results.append(self._to_file_info(item))
+                continue
+
+            # البحث بالمحتوى (اختياري)
+            if include_content and item.is_file():
+                try:
+                    if item.suffix in ['.txt', '.md', '.py', '.json']:
+                        content = item.read_text(encoding='utf-8', errors='ignore')
+                        if query.lower() in content.lower():
+                            results.append(self._to_file_info(item))
+                except:
+                    pass
+
+            # البحث بالوسوم
+            if str(item) in self.file_tags:
+                if query.lower() in [t.lower() for t in self.file_tags[str(item)]]:
+                    results.append(self._to_file_info(item))
+
+        return results[:100]  # أول 100 نتيجة
+
+    def add_tag(self, file_path: str, tag: str):
+        """إضافة وسم لملف"""
+        if file_path not in self.file_tags:
+            self.file_tags[file_path] = []
+        if tag not in self.file_tags[file_path]:
+            self.file_tags[file_path].append(tag)
+
+    def remove_tag(self, file_path: str, tag: str):
+        """إزالة وسم"""
+        if file_path in self.file_tags:
+            if tag in self.file_tags[file_path]:
+                self.file_tags[file_path].remove(tag)
+
+    def add_to_favorites(self, path: str):
+        """إضافة للمفضلة"""
+        p = Path(path)
+        if p not in self.favorites:
+            self.favorites.append(p)
+
+    def get_recent(self, limit: int = 20) -> List[str]:
+        """الملفات الأخيرة"""
+        return self.recent_files[:limit]
+
+    def bulk_rename(self, files: List[str], pattern: str,
+                   replacement: str = None,
+                   prefix: str = None,
+                   suffix: str = None,
+                   numbering: bool = False) -> List[Dict]:
+        """إعادة تسمية جماعية"""
+        results = []
+
+        for i, file_path in enumerate(files, 1):
+            path = Path(file_path)
+            old_name = path.stem
+            ext = path.suffix
+
+            # تطبيق التغييرات
+            new_name = old_name
+
+            if pattern and replacement is not None:
+                import re
+                new_name = re.sub(pattern, replacement, new_name)
+
+            if prefix:
+                new_name = prefix + new_name
+
+            if suffix:
+                new_name = new_name + suffix
+
+            if numbering:
+                new_name = f"{new_name}_{i:03d}"
+
+            new_path = path.parent / f"{new_name}{ext}"
+
+            try:
+                path.rename(new_path)
+                results.append({
+                    "old": str(path),
+                    "new": str(new_path),
+                    "success": True
+                })
+            except Exception as e:
+                results.append({
+                    "old": str(path),
+                    "error": str(e),
+                    "success": False
+                })
+
+        return results
+
+    def copy(self, source: str, dest: str) -> bool:
+        """نسخ ملف/مجلد"""
+        src = Path(source)
+        dst = Path(dest)
+
+        try:
+            if src.is_file():
+                shutil.copy2(src, dst)
+            else:
+                shutil.copytree(src, dst)
+            return True
+        except Exception as e:
+            return False
+
+    def move(self, source: str, dest: str) -> bool:
+        """نقل ملف/مجلد"""
+        try:
+            shutil.move(source, dest)
+            return True
+        except:
+            return False
+
+    def delete(self, path: str, to_trash: bool = True) -> bool:
+        """حذف ملف/مجلد"""
+        p = Path(path)
+
+        try:
+            if to_trash:
+                # النقل للمحذوفات بدلاً من الحذف النهائي
+                from send2trash import send2trash
+                send2trash(path)
+            else:
+                if p.is_file():
+                    p.unlink()
+                else:
+                    shutil.rmtree(p)
+            return True
+        except:
+            return False
+
+    def _to_file_info(self, path: Path) -> FileInfo:
+        """تحويل Path إلى FileInfo"""
+        stat = path.stat()
+        return FileInfo(
+            name=path.name,
+            path=str(path),
+            is_dir=path.is_dir(),
+            size=stat.st_size if path.is_file() else 0,
+            modified=datetime.fromtimestamp(stat.st_mtime),
+            extension=path.suffix.lower() if path.is_file() else "",
+            tags=self.file_tags.get(str(path), [])
+        )
+```
+
+### P6. Cloud Storage Integration (تكامل التخزين السحابي)
+
+```python
+# core/file_manager/cloud/cloud_storage.py
+
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import List, Optional, BinaryIO
+from enum import Enum
+
+class CloudProvider(Enum):
+    GOOGLE_DRIVE = "google_drive"
+    ONEDRIVE = "onedrive"
+    DROPBOX = "dropbox"
+
+@dataclass
+class CloudFile:
+    """ملف سحابي"""
+    id: str
+    name: str
+    path: str
+    size: int
+    is_folder: bool
+    shared_link: Optional[str] = None
+    provider: CloudProvider = None
+
+class CloudStorageBase(ABC):
+    """قاعدة التخزين السحابي"""
+
+    @abstractmethod
+    def authenticate(self) -> bool:
+        pass
+
+    @abstractmethod
+    def list_files(self, folder_id: str = None) -> List[CloudFile]:
+        pass
+
+    @abstractmethod
+    def download(self, file_id: str, local_path: str) -> bool:
+        pass
+
+    @abstractmethod
+    def upload(self, local_path: str, folder_id: str = None) -> Optional[CloudFile]:
+        pass
+
+    @abstractmethod
+    def get_shared_link(self, file_id: str) -> str:
+        pass
+
+class GoogleDriveStorage(CloudStorageBase):
+    """Google Drive Integration"""
+
+    def __init__(self, credentials_path: str = None):
+        self.credentials_path = credentials_path
+        self.service = None
+
+    def authenticate(self) -> bool:
+        try:
+            from google.oauth2.credentials import Credentials
+            from googleapiclient.discovery import build
+            from google_auth_oauthlib.flow import InstalledAppFlow
+
+            SCOPES = ['https://www.googleapis.com/auth/drive']
+
+            flow = InstalledAppFlow.from_client_secrets_file(
+                self.credentials_path, SCOPES)
+            creds = flow.run_local_server(port=0)
+
+            self.service = build('drive', 'v3', credentials=creds)
+            return True
+        except Exception as e:
+            print(f"Google Drive auth error: {e}")
+            return False
+
+    def list_files(self, folder_id: str = None) -> List[CloudFile]:
+        if not self.service:
+            return []
+
+        query = f"'{folder_id}' in parents" if folder_id else None
+        results = self.service.files().list(
+            q=query,
+            pageSize=100,
+            fields="files(id, name, size, mimeType)"
+        ).execute()
+
+        files = []
+        for item in results.get('files', []):
+            files.append(CloudFile(
+                id=item['id'],
+                name=item['name'],
+                path="",
+                size=int(item.get('size', 0)),
+                is_folder=item['mimeType'] == 'application/vnd.google-apps.folder',
+                provider=CloudProvider.GOOGLE_DRIVE
+            ))
+
+        return files
+
+    def download(self, file_id: str, local_path: str) -> bool:
+        if not self.service:
+            return False
+
+        try:
+            from googleapiclient.http import MediaIoBaseDownload
+            import io
+
+            request = self.service.files().get_media(fileId=file_id)
+            fh = io.FileIO(local_path, 'wb')
+            downloader = MediaIoBaseDownload(fh, request)
+
+            done = False
+            while not done:
+                status, done = downloader.next_chunk()
+
+            return True
+        except:
+            return False
+
+    def upload(self, local_path: str, folder_id: str = None) -> Optional[CloudFile]:
+        # Implementation...
+        pass
+
+    def get_shared_link(self, file_id: str) -> str:
+        if not self.service:
+            return ""
+
+        self.service.permissions().create(
+            fileId=file_id,
+            body={'type': 'anyone', 'role': 'reader'}
+        ).execute()
+
+        file = self.service.files().get(
+            fileId=file_id,
+            fields='webViewLink'
+        ).execute()
+
+        return file.get('webViewLink', '')
+
+class OneDriveStorage(CloudStorageBase):
+    """OneDrive Integration"""
+    # Implementation similar to Google Drive...
+    pass
+
+class DropboxStorage(CloudStorageBase):
+    """Dropbox Integration"""
+    # Implementation similar to Google Drive...
+    pass
+
+class CloudStorageManager:
+    """مدير التخزين السحابي الموحد"""
+
+    def __init__(self):
+        self.providers: Dict[CloudProvider, CloudStorageBase] = {}
+
+    def add_provider(self, provider: CloudProvider, storage: CloudStorageBase):
+        """إضافة مزود تخزين"""
+        self.providers[provider] = storage
+
+    def authenticate_all(self) -> Dict[CloudProvider, bool]:
+        """تسجيل الدخول لكل المزودين"""
+        results = {}
+        for provider, storage in self.providers.items():
+            results[provider] = storage.authenticate()
+        return results
+
+    def download_from_link(self, link: str, local_path: str) -> bool:
+        """تحميل من رابط سحابي"""
+        # اكتشاف المزود من الرابط
+        if "drive.google.com" in link:
+            provider = CloudProvider.GOOGLE_DRIVE
+        elif "onedrive" in link or "sharepoint" in link:
+            provider = CloudProvider.ONEDRIVE
+        elif "dropbox.com" in link:
+            provider = CloudProvider.DROPBOX
+        else:
+            return False
+
+        storage = self.providers.get(provider)
+        if not storage:
+            return False
+
+        # استخراج file_id من الرابط
+        file_id = self._extract_file_id(link, provider)
+        return storage.download(file_id, local_path)
+
+    def _extract_file_id(self, link: str, provider: CloudProvider) -> str:
+        """استخراج معرف الملف من الرابط"""
+        # Implementation per provider...
+        pass
+```
+
+### P7. Document Attachments (مرفقات المستندات)
+
+```python
+# core/file_manager/attachments/attachment_manager.py
+
+from dataclasses import dataclass
+from typing import List, Optional, BinaryIO
+from enum import Enum
+from datetime import datetime
+import hashlib
+import os
+
+class StorageType(Enum):
+    """نوع التخزين"""
+    DATABASE_BLOB = "blob"       # حفظ في قاعدة البيانات
+    LOCAL_PATH = "local"         # مسار على الجهاز
+    CLOUD_LINK = "cloud"         # رابط سحابي
+
+@dataclass
+class Attachment:
+    """مرفق"""
+    id: int
+    filename: str
+    storage_type: StorageType
+    storage_path: str           # المسار أو الرابط
+    file_size: int
+    mime_type: str
+    entity_type: str            # employees, companies, etc.
+    entity_id: int
+    version: int = 1
+    checksum: str = None
+    created_at: datetime = None
+    created_by: int = None
+
+class AttachmentManager:
+    """مدير المرفقات"""
+
+    def __init__(self, base_path: str = "attachments"):
+        self.base_path = base_path
+        os.makedirs(base_path, exist_ok=True)
+
+    def attach_file(self, file_path: str, entity_type: str, entity_id: int,
+                   storage_type: StorageType = StorageType.LOCAL_PATH,
+                   user_id: int = None) -> Optional[Attachment]:
+        """ربط ملف بسجل"""
+
+        if not os.path.exists(file_path):
+            return None
+
+        filename = os.path.basename(file_path)
+        file_size = os.path.getsize(file_path)
+
+        # حساب checksum
+        checksum = self._calculate_checksum(file_path)
+
+        # تحديد مسار التخزين
+        if storage_type == StorageType.LOCAL_PATH:
+            # نسخ الملف للمجلد المنظم
+            dest_folder = f"{self.base_path}/{entity_type}/{entity_id}"
+            os.makedirs(dest_folder, exist_ok=True)
+            dest_path = f"{dest_folder}/{filename}"
+
+            import shutil
+            shutil.copy2(file_path, dest_path)
+            storage_path = dest_path
+
+        elif storage_type == StorageType.DATABASE_BLOB:
+            # قراءة الملف وحفظه في DB
+            with open(file_path, 'rb') as f:
+                content = f.read()
+            storage_path = self._save_to_database(content, filename)
+
+        else:
+            # رابط سحابي - يُمرر كما هو
+            storage_path = file_path
+
+        # إنشاء سجل المرفق
+        attachment = Attachment(
+            id=None,  # سيُحدد من DB
+            filename=filename,
+            storage_type=storage_type,
+            storage_path=storage_path,
+            file_size=file_size,
+            mime_type=self._get_mime_type(filename),
+            entity_type=entity_type,
+            entity_id=entity_id,
+            checksum=checksum,
+            created_at=datetime.now(),
+            created_by=user_id
+        )
+
+        # حفظ في قاعدة البيانات
+        self._save_attachment_record(attachment)
+
+        return attachment
+
+    def attach_from_cloud(self, cloud_link: str, entity_type: str,
+                         entity_id: int, filename: str = None) -> Optional[Attachment]:
+        """ربط ملف من التخزين السحابي"""
+
+        if not filename:
+            # استخراج اسم الملف من الرابط
+            filename = cloud_link.split("/")[-1].split("?")[0]
+
+        attachment = Attachment(
+            id=None,
+            filename=filename,
+            storage_type=StorageType.CLOUD_LINK,
+            storage_path=cloud_link,
+            file_size=0,  # غير معروف
+            mime_type=self._get_mime_type(filename),
+            entity_type=entity_type,
+            entity_id=entity_id,
+            created_at=datetime.now()
+        )
+
+        self._save_attachment_record(attachment)
+        return attachment
+
+    def get_attachments(self, entity_type: str, entity_id: int) -> List[Attachment]:
+        """الحصول على مرفقات سجل"""
+        from core.database import select_all
+
+        columns, rows = select_all("""
+            SELECT * FROM attachments
+            WHERE entity_type = %s AND entity_id = %s
+            ORDER BY created_at DESC
+        """, (entity_type, entity_id))
+
+        return [self._row_to_attachment(row, columns) for row in rows]
+
+    def get_file_content(self, attachment: Attachment) -> Optional[bytes]:
+        """الحصول على محتوى الملف"""
+
+        if attachment.storage_type == StorageType.LOCAL_PATH:
+            with open(attachment.storage_path, 'rb') as f:
+                return f.read()
+
+        elif attachment.storage_type == StorageType.DATABASE_BLOB:
+            return self._load_from_database(attachment.storage_path)
+
+        elif attachment.storage_type == StorageType.CLOUD_LINK:
+            # تحميل من السحابة
+            from core.file_manager.cloud import CloudStorageManager
+            manager = CloudStorageManager()
+
+            import tempfile
+            temp_path = tempfile.mktemp()
+            if manager.download_from_link(attachment.storage_path, temp_path):
+                with open(temp_path, 'rb') as f:
+                    content = f.read()
+                os.remove(temp_path)
+                return content
+
+        return None
+
+    def create_new_version(self, attachment_id: int,
+                          new_file_path: str) -> Optional[Attachment]:
+        """إنشاء نسخة جديدة من المرفق"""
+        # الحصول على المرفق الأصلي
+        original = self.get_attachment_by_id(attachment_id)
+        if not original:
+            return None
+
+        # إنشاء مرفق جديد بنفس البيانات لكن version + 1
+        new_attachment = self.attach_file(
+            new_file_path,
+            original.entity_type,
+            original.entity_id,
+            original.storage_type
+        )
+
+        if new_attachment:
+            new_attachment.version = original.version + 1
+            self._update_attachment_record(new_attachment)
+
+        return new_attachment
+
+    def get_versions(self, entity_type: str, entity_id: int,
+                    filename: str) -> List[Attachment]:
+        """الحصول على كل نسخ ملف"""
+        from core.database import select_all
+
+        columns, rows = select_all("""
+            SELECT * FROM attachments
+            WHERE entity_type = %s AND entity_id = %s AND filename = %s
+            ORDER BY version DESC
+        """, (entity_type, entity_id, filename))
+
+        return [self._row_to_attachment(row, columns) for row in rows]
+
+    def _calculate_checksum(self, file_path: str) -> str:
+        """حساب checksum للملف"""
+        sha256 = hashlib.sha256()
+        with open(file_path, 'rb') as f:
+            for chunk in iter(lambda: f.read(8192), b''):
+                sha256.update(chunk)
+        return sha256.hexdigest()
+
+    def _get_mime_type(self, filename: str) -> str:
+        """تحديد نوع الملف"""
+        import mimetypes
+        mime_type, _ = mimetypes.guess_type(filename)
+        return mime_type or "application/octet-stream"
+
+    def _save_attachment_record(self, attachment: Attachment):
+        """حفظ سجل المرفق في DB"""
+        from core.database import insert_returning_id
+
+        attachment.id = insert_returning_id("""
+            INSERT INTO attachments
+            (filename, storage_type, storage_path, file_size, mime_type,
+             entity_type, entity_id, version, checksum, created_at, created_by)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            attachment.filename,
+            attachment.storage_type.value,
+            attachment.storage_path,
+            attachment.file_size,
+            attachment.mime_type,
+            attachment.entity_type,
+            attachment.entity_id,
+            attachment.version,
+            attachment.checksum,
+            attachment.created_at,
+            attachment.created_by
+        ))
+
+    def _save_to_database(self, content: bytes, filename: str) -> str:
+        """حفظ محتوى الملف في DB كـ BLOB"""
+        from core.database import insert_returning_id
+
+        blob_id = insert_returning_id("""
+            INSERT INTO file_blobs (filename, content, created_at)
+            VALUES (%s, %s, NOW())
+        """, (filename, content))
+
+        return f"blob://{blob_id}"
+
+    def _load_from_database(self, storage_path: str) -> Optional[bytes]:
+        """تحميل محتوى من DB"""
+        if not storage_path.startswith("blob://"):
+            return None
+
+        blob_id = int(storage_path.replace("blob://", ""))
+
+        from core.database import select_one
+        result = select_one(
+            "SELECT content FROM file_blobs WHERE id = %s",
+            (blob_id,)
+        )
+
+        return result[0] if result else None
+```
+
+### P8. Database Schema
+
+```sql
+-- جدول المرفقات
+CREATE TABLE attachments (
+    id SERIAL PRIMARY KEY,
+    filename VARCHAR(255) NOT NULL,
+    storage_type VARCHAR(20) NOT NULL,  -- 'blob', 'local', 'cloud'
+    storage_path TEXT NOT NULL,
+    file_size BIGINT DEFAULT 0,
+    mime_type VARCHAR(100),
+    entity_type VARCHAR(50) NOT NULL,   -- 'employees', 'companies', etc.
+    entity_id INTEGER NOT NULL,
+    version INTEGER DEFAULT 1,
+    checksum VARCHAR(64),
+    created_at TIMESTAMP DEFAULT NOW(),
+    created_by INTEGER REFERENCES users(id)
+);
+
+-- جدول محتوى الملفات (BLOB)
+CREATE TABLE file_blobs (
+    id SERIAL PRIMARY KEY,
+    filename VARCHAR(255),
+    content BYTEA NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- جدول وسوم الملفات
+CREATE TABLE file_tags (
+    id SERIAL PRIMARY KEY,
+    file_path TEXT NOT NULL,
+    tag VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(file_path, tag)
+);
+
+-- جدول الملفات الأخيرة
+CREATE TABLE recent_files (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    file_path TEXT NOT NULL,
+    accessed_at TIMESTAMP DEFAULT NOW()
+);
+
+-- جدول المفضلة
+CREATE TABLE favorite_paths (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    path TEXT NOT NULL,
+    name VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(user_id, path)
+);
+
+-- Indexes
+CREATE INDEX idx_attachments_entity ON attachments(entity_type, entity_id);
+CREATE INDEX idx_attachments_filename ON attachments(filename);
+CREATE INDEX idx_file_tags_path ON file_tags(file_path);
+CREATE INDEX idx_file_tags_tag ON file_tags(tag);
+CREATE INDEX idx_recent_files_user ON recent_files(user_id, accessed_at DESC);
+```
+
+### P9. هيكل الملفات
+
+```
+core/file_manager/
+├── __init__.py
+├── excel/
+│   ├── __init__.py
+│   ├── excel_ai_engine.py      # محرك Excel الذكي
+│   ├── column_detector.py      # اكتشاف أنواع الأعمدة
+│   ├── data_cleaner.py         # تنظيف البيانات
+│   └── db_importer.py          # استيراد لقاعدة البيانات
+├── pdf/
+│   ├── __init__.py
+│   ├── pdf_ai_studio.py        # استوديو PDF
+│   ├── pdf_ocr.py              # OCR للـ PDF
+│   ├── pdf_tools.py            # أدوات أساسية
+│   └── pdf_summarizer.py       # تلخيص بالـ AI
+├── image/
+│   ├── __init__.py
+│   └── image_tools.py          # أدوات الصور
+├── word/
+│   ├── __init__.py
+│   └── word_engine.py          # محرك Word
+├── browser/
+│   ├── __init__.py
+│   ├── file_browser.py         # مستكشف الملفات
+│   ├── file_search.py          # بحث الملفات
+│   └── bulk_operations.py      # عمليات جماعية
+├── cloud/
+│   ├── __init__.py
+│   ├── cloud_storage.py        # إدارة موحدة
+│   ├── google_drive.py         # Google Drive
+│   ├── onedrive.py             # OneDrive
+│   └── dropbox.py              # Dropbox
+├── attachments/
+│   ├── __init__.py
+│   └── attachment_manager.py   # مدير المرفقات
+└── ocr/
+    ├── __init__.py
+    ├── arabic_ocr.py           # OCR عربي محسّن
+    └── ocr_enhancer.py         # تحسين بالـ AI
+
+ui/dialogs/file_manager/
+├── __init__.py
+├── excel_import_dialog.py      # نافذة استيراد Excel
+├── pdf_studio_dialog.py        # نافذة PDF Studio
+├── file_browser_dialog.py      # نافذة مستكشف الملفات
+├── cloud_connect_dialog.py     # ربط التخزين السحابي
+└── attachment_viewer.py        # عارض المرفقات
+
+modules/file_manager/
+├── __init__.py
+├── window/
+│   └── file_manager_window.py  # النافذة الرئيسية
+├── screens/
+│   ├── pdf_studio/             # شاشة PDF Studio
+│   ├── excel_manager/          # شاشة Excel
+│   └── document_browser/       # مستعرض المستندات
+└── widgets/
+    ├── file_preview.py         # معاينة الملفات
+    ├── dual_pane.py            # عرض مزدوج
+    └── tag_editor.py           # محرر الوسوم
+```
+
+### P10. المراحل التنفيذية
+
+```
+P1 → Excel AI Engine (محرك Excel الذكي) - Smart Import, Cleaning, Mapping
+P2 → PDF AI Studio (استوديو PDF) - Split, Merge, OCR Arabic+English
+P3 → Image Tools (أدوات الصور) - Resize, Convert, Compress, Batch
+P4 → Word Engine (محرك Word) - Read, Write, Convert
+P5 → File Browser (مستكشف الملفات) - Dual Pane, Tags, Search
+P6 → Cloud Integration (التخزين السحابي) - Google Drive, OneDrive, Dropbox
+P7 → Attachments (المرفقات) - Hybrid Storage, Versioning
+P8 → AI Copilot Integration (تكامل الكوبايلوت) - أوامر طبيعية للملفات
+```
+
+### P11. نقاط القوة الفريدة
+
+| الميزة | الوصف | المنافسون |
+|--------|-------|-----------|
+| **AI-Powered OCR** | استخراج النص العربي والإنجليزي بدقة عالية جداً | فقط Sage و NetSuite |
+| **Smart Excel Import** | اكتشاف ذكي لأنواع البيانات + تنظيف تلقائي | غير موجود |
+| **Hybrid Storage** | BLOB + Local + Cloud في نظام واحد | نادر |
+| **AI Summarization** | تلخيص PDF/Word بالذكاء الاصطناعي | غير موجود في ERP |
+| **Natural Commands** | "ادمج الملفات دي" - أوامر طبيعية | غير موجود |
+
+---
+
 ## 🚀 أفكار إبداعية لتطوير المنظومة
 
 ### 1. Smart Inbox (صندوق وارد ذكي)
@@ -3941,7 +5584,19 @@ O7 → Auto-Rescheduling (الجدولة الذكية) - إعادة ترتيب �
 O8 → Time Triggers (المحفزات الزمنية) - أحداث تلقائية
 ```
 
-### المرحلة 18: التجارية (مستقبلية)
+### المرحلة 18: مدير الملفات الذكي (Smart File Manager) 🔴 **جديد**
+```
+P1 → Excel AI Engine (محرك Excel الذكي) - Smart Import, Cleaning, Mapping
+P2 → PDF AI Studio (استوديو PDF) - Split, Merge, OCR Arabic+English
+P3 → Image Tools (أدوات الصور) - Resize, Convert, Compress, Batch
+P4 → Word Engine (محرك Word) - Read, Write, Convert
+P5 → File Browser (مستكشف الملفات) - Dual Pane, Tags, Search
+P6 → Cloud Integration (التخزين السحابي) - Google Drive, OneDrive, Dropbox
+P7 → Attachments (المرفقات) - Hybrid Storage, Versioning
+P8 → AI Copilot Integration (تكامل الكوبايلوت) - أوامر طبيعية للملفات
+```
+
+### المرحلة 19: التجارية (مستقبلية)
 ```
 E1 → Licensing System
 E2 → Auto-Update
@@ -3949,7 +5604,7 @@ E3 → Installer
 E4 → Multi-Company
 ```
 
-### المرحلة 19: التوسع (مستقبلية)
+### المرحلة 20: التوسع (مستقبلية)
 ```
 F1 → API Layer
 F2 → Plugin System
