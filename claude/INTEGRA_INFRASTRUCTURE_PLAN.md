@@ -6,7 +6,7 @@
 
 ## نظرة عامة
 
-هذه الخطة تغطي **14 محوراً رئيسياً** لتطوير البنية التحتية:
+هذه الخطة تغطي **16 محوراً رئيسياً** لتطوير البنية التحتية:
 
 | المحور | الوصف | الأولوية |
 |---|---|---|
@@ -23,7 +23,9 @@
 | **M** | الربط مع Power BI Desktop (BI Connector) 🆕 | تحليلي - تحليلات متقدمة بدون تراخيص |
 | **N** | المساعد الذكي المتكامل (AI Copilot) 🆕 | استراتيجي - العقل المدبر للبرنامج |
 | **O** | الوعي الزمني الفائق (Hyper Time Intelligence) | أساسي - البُعد الزمني للذكاء |
-| **P** | مدير الملفات الذكي (Smart File Manager) 🆕 | استراتيجي - إدارة الملفات بالذكاء الاصطناعي |
+| **P** | مدير الملفات الذكي (Smart File Manager) | استراتيجي - إدارة الملفات بالذكاء الاصطناعي |
+| **Q** | إدارة الأجهزة والطابعات (Device & Printer Manager) 🆕 | أساسي - المسح الضوئي والطباعة |
+| **R** | تكامل تطبيقات سطح المكتب (Desktop Apps Integration) 🆕 | مستقبلي - WhatsApp/Telegram |
 
 > **ملاحظة مهمة:** المحور D يعتمد على تحليل ملف `claude/ALL_Libraries.txt` لاستغلال المكتبات المثبتة فعلياً
 
@@ -5436,6 +5438,718 @@ P8 → AI Copilot Integration (تكامل الكوبايلوت) - أوامر ط�
 
 ---
 
+## المحور Q: إدارة الأجهزة والطابعات (Device & Printer Manager) 🆕
+
+> موديول لإدارة الطابعات والماسحات الضوئية المتصلة بالكمبيوتر أو عبر الشبكة أو البلوتوث
+
+### Q1. Printer Management (إدارة الطابعات)
+
+**الميزات الأساسية:**
+```python
+# core/devices/printer/printer_manager.py
+
+import win32print
+import win32api
+from typing import List, Dict, Optional
+from dataclasses import dataclass
+from enum import Enum
+
+class PrinterType(Enum):
+    LOCAL = "local"
+    NETWORK = "network"
+    BLUETOOTH = "bluetooth"
+    VIRTUAL = "virtual"
+
+@dataclass
+class PrinterInfo:
+    """معلومات الطابعة"""
+    name: str
+    port: str
+    driver: str
+    printer_type: PrinterType
+    is_default: bool
+    status: str
+    jobs_count: int
+
+class PrinterManager:
+    """مدير الطابعات"""
+
+    def get_available_printers(self) -> List[PrinterInfo]:
+        """الحصول على قائمة الطابعات المتاحة"""
+        printers = []
+        default_printer = win32print.GetDefaultPrinter()
+
+        for printer in win32print.EnumPrinters(
+            win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS
+        ):
+            name = printer[2]
+            handle = win32print.OpenPrinter(name)
+            try:
+                info = win32print.GetPrinter(handle, 2)
+                printers.append(PrinterInfo(
+                    name=name,
+                    port=info.get('pPortName', ''),
+                    driver=info.get('pDriverName', ''),
+                    printer_type=self._detect_type(info),
+                    is_default=(name == default_printer),
+                    status=self._get_status(info.get('Status', 0)),
+                    jobs_count=info.get('cJobs', 0)
+                ))
+            finally:
+                win32print.ClosePrinter(handle)
+
+        return printers
+
+    def set_default_printer(self, printer_name: str) -> bool:
+        """تعيين الطابعة الافتراضية"""
+        try:
+            win32print.SetDefaultPrinter(printer_name)
+            return True
+        except:
+            return False
+
+    def print_document(self, file_path: str, printer_name: str = None,
+                      copies: int = 1, orientation: str = "portrait",
+                      paper_size: str = "A4") -> Dict:
+        """طباعة مستند"""
+        if not printer_name:
+            printer_name = win32print.GetDefaultPrinter()
+
+        try:
+            # للـ PDF
+            if file_path.lower().endswith('.pdf'):
+                return self._print_pdf(file_path, printer_name, copies)
+
+            # للصور
+            elif file_path.lower().endswith(('.png', '.jpg', '.jpeg')):
+                return self._print_image(file_path, printer_name, copies)
+
+            # لملفات أخرى
+            else:
+                win32api.ShellExecute(
+                    0, "print", file_path,
+                    f'/d:"{printer_name}"', ".", 0
+                )
+                return {"success": True, "printer": printer_name}
+
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def print_raw_data(self, data: bytes, printer_name: str,
+                      doc_name: str = "INTEGRA Print") -> bool:
+        """طباعة بيانات خام (للطابعات الحرارية)"""
+        try:
+            handle = win32print.OpenPrinter(printer_name)
+            try:
+                job = win32print.StartDocPrinter(handle, 1, (doc_name, None, "RAW"))
+                win32print.StartPagePrinter(handle)
+                win32print.WritePrinter(handle, data)
+                win32print.EndPagePrinter(handle)
+                win32print.EndDocPrinter(handle)
+                return True
+            finally:
+                win32print.ClosePrinter(handle)
+        except:
+            return False
+
+    def get_print_queue(self, printer_name: str) -> List[Dict]:
+        """الحصول على قائمة انتظار الطباعة"""
+        handle = win32print.OpenPrinter(printer_name)
+        try:
+            jobs = win32print.EnumJobs(handle, 0, 100, 1)
+            return [{
+                "id": job["JobId"],
+                "document": job["pDocument"],
+                "status": job["Status"],
+                "pages": job["TotalPages"],
+                "submitted": job["Submitted"]
+            } for job in jobs]
+        finally:
+            win32print.ClosePrinter(handle)
+
+    def cancel_job(self, printer_name: str, job_id: int) -> bool:
+        """إلغاء مهمة طباعة"""
+        handle = win32print.OpenPrinter(printer_name)
+        try:
+            win32print.SetJob(handle, job_id, 0, None,
+                            win32print.JOB_CONTROL_DELETE)
+            return True
+        except:
+            return False
+        finally:
+            win32print.ClosePrinter(handle)
+
+    def _detect_type(self, info: dict) -> PrinterType:
+        """اكتشاف نوع الطابعة"""
+        port = info.get('pPortName', '').lower()
+        if 'usb' in port:
+            return PrinterType.LOCAL
+        elif 'bth' in port or 'bluetooth' in port:
+            return PrinterType.BLUETOOTH
+        elif '\\\\' in port or 'tcp' in port:
+            return PrinterType.NETWORK
+        else:
+            return PrinterType.LOCAL
+
+    def _get_status(self, status_code: int) -> str:
+        """تحويل كود الحالة لنص"""
+        statuses = {
+            0: "Ready",
+            1: "Paused",
+            2: "Error",
+            4: "Pending Deletion",
+            8: "Paper Jam",
+            16: "Paper Out",
+            32: "Manual Feed",
+            64: "Paper Problem",
+        }
+        return statuses.get(status_code, "Unknown")
+```
+
+### Q2. Scanner Management (إدارة الماسحات الضوئية)
+
+```python
+# core/devices/scanner/scanner_manager.py
+
+import twain
+from PIL import Image
+from typing import List, Dict, Optional, Tuple
+from dataclasses import dataclass
+from enum import Enum
+
+class ColorMode(Enum):
+    BLACK_WHITE = "bw"
+    GRAYSCALE = "gray"
+    COLOR = "color"
+
+class PaperSource(Enum):
+    FLATBED = "flatbed"
+    ADF = "adf"
+    DUPLEX = "duplex"
+
+@dataclass
+class ScannerInfo:
+    """معلومات الماسح الضوئي"""
+    name: str
+    manufacturer: str
+    has_adf: bool
+    has_duplex: bool
+    max_resolution: int
+
+@dataclass
+class ScanSettings:
+    """إعدادات المسح"""
+    resolution: int = 300  # DPI
+    color_mode: ColorMode = ColorMode.COLOR
+    paper_source: PaperSource = PaperSource.FLATBED
+    paper_size: str = "A4"
+    brightness: int = 0  # -100 to 100
+    contrast: int = 0    # -100 to 100
+    auto_crop: bool = True
+
+class ScannerManager:
+    """مدير الماسحات الضوئية"""
+
+    def __init__(self):
+        self.source_manager = None
+        self.current_source = None
+
+    def get_available_scanners(self) -> List[ScannerInfo]:
+        """الحصول على قائمة الماسحات المتاحة"""
+        scanners = []
+
+        self.source_manager = twain.SourceManager(0)
+        try:
+            sources = self.source_manager.GetSourceList()
+            for source_name in sources:
+                # فتح المصدر للحصول على المعلومات
+                source = self.source_manager.OpenSource(source_name)
+                if source:
+                    try:
+                        caps = source.GetCapability(twain.ICAP_SUPPORTEDSIZES)
+                        has_adf = self._check_adf(source)
+
+                        scanners.append(ScannerInfo(
+                            name=source_name,
+                            manufacturer=self._get_manufacturer(source_name),
+                            has_adf=has_adf,
+                            has_duplex=self._check_duplex(source),
+                            max_resolution=self._get_max_resolution(source)
+                        ))
+                    finally:
+                        source.destroy()
+        finally:
+            self.source_manager.destroy()
+            self.source_manager = None
+
+        return scanners
+
+    def scan(self, scanner_name: str = None,
+            settings: ScanSettings = None,
+            output_path: str = None) -> Dict:
+        """مسح ضوئي"""
+        if settings is None:
+            settings = ScanSettings()
+
+        try:
+            self.source_manager = twain.SourceManager(0)
+
+            # اختيار الماسح
+            if scanner_name:
+                self.current_source = self.source_manager.OpenSource(scanner_name)
+            else:
+                self.current_source = self.source_manager.OpenSource()
+
+            if not self.current_source:
+                return {"success": False, "error": "لم يتم اختيار ماسح ضوئي"}
+
+            # تطبيق الإعدادات
+            self._apply_settings(settings)
+
+            # بدء المسح
+            self.current_source.RequestAcquire(0, 0)
+
+            # الحصول على الصورة
+            images = []
+            while True:
+                try:
+                    (handle, more) = self.current_source.XferImageNatively()
+                    img = twain.DIBToBMFile(handle)
+                    pil_img = Image.open(io.BytesIO(img))
+
+                    # Auto-crop إذا مفعل
+                    if settings.auto_crop:
+                        pil_img = self._auto_crop(pil_img)
+
+                    images.append(pil_img)
+
+                    if not more:
+                        break
+                except twain.excDSTransferCancelled:
+                    break
+
+            # حفظ الصور
+            if output_path:
+                if len(images) == 1:
+                    images[0].save(output_path)
+                else:
+                    # حفظ كـ PDF متعدد الصفحات
+                    if output_path.lower().endswith('.pdf'):
+                        images[0].save(
+                            output_path, "PDF",
+                            save_all=True,
+                            append_images=images[1:]
+                        )
+                    else:
+                        # حفظ كصور منفردة
+                        for i, img in enumerate(images):
+                            name, ext = output_path.rsplit('.', 1)
+                            img.save(f"{name}_{i+1}.{ext}")
+
+            return {
+                "success": True,
+                "pages_scanned": len(images),
+                "output_path": output_path,
+                "images": images if not output_path else None
+            }
+
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+        finally:
+            if self.current_source:
+                self.current_source.destroy()
+            if self.source_manager:
+                self.source_manager.destroy()
+
+    def scan_to_pdf(self, scanner_name: str = None,
+                   output_path: str = "scan.pdf",
+                   settings: ScanSettings = None) -> Dict:
+        """مسح مباشر إلى PDF"""
+        result = self.scan(scanner_name, settings)
+
+        if result["success"] and result.get("images"):
+            images = result["images"]
+            images[0].save(
+                output_path, "PDF",
+                save_all=True,
+                append_images=images[1:] if len(images) > 1 else []
+            )
+            result["output_path"] = output_path
+
+        return result
+
+    def batch_scan(self, scanner_name: str = None,
+                  pages: int = None,
+                  output_folder: str = "scans",
+                  settings: ScanSettings = None) -> Dict:
+        """مسح دفعي لعدة صفحات"""
+        if settings is None:
+            settings = ScanSettings()
+
+        # استخدام ADF إذا متاح
+        settings.paper_source = PaperSource.ADF
+
+        results = []
+        page_count = 0
+
+        while pages is None or page_count < pages:
+            result = self.scan(scanner_name, settings)
+
+            if not result["success"]:
+                break
+
+            for img in result.get("images", []):
+                page_count += 1
+                output_path = f"{output_folder}/page_{page_count:03d}.png"
+                img.save(output_path)
+                results.append(output_path)
+
+            # إذا لم يكن هناك المزيد في ADF
+            if result.get("pages_scanned", 0) == 0:
+                break
+
+        return {
+            "success": True,
+            "total_pages": page_count,
+            "files": results
+        }
+
+    def _apply_settings(self, settings: ScanSettings):
+        """تطبيق إعدادات المسح"""
+        # الدقة
+        self.current_source.SetCapability(
+            twain.ICAP_XRESOLUTION,
+            twain.TWTY_FIX32,
+            settings.resolution
+        )
+        self.current_source.SetCapability(
+            twain.ICAP_YRESOLUTION,
+            twain.TWTY_FIX32,
+            settings.resolution
+        )
+
+        # وضع الألوان
+        color_map = {
+            ColorMode.BLACK_WHITE: twain.TWPT_BW,
+            ColorMode.GRAYSCALE: twain.TWPT_GRAY,
+            ColorMode.COLOR: twain.TWPT_RGB
+        }
+        self.current_source.SetCapability(
+            twain.ICAP_PIXELTYPE,
+            twain.TWTY_UINT16,
+            color_map[settings.color_mode]
+        )
+
+        # مصدر الورق
+        if settings.paper_source == PaperSource.ADF:
+            self.current_source.SetCapability(
+                twain.CAP_FEEDERENABLED,
+                twain.TWTY_BOOL,
+                True
+            )
+
+    def _auto_crop(self, image: Image) -> Image:
+        """قص تلقائي للحواف البيضاء"""
+        # تحويل لـ grayscale للتحليل
+        gray = image.convert('L')
+
+        # البحث عن الحدود
+        bbox = gray.getbbox()
+
+        if bbox:
+            # إضافة هامش صغير
+            margin = 10
+            bbox = (
+                max(0, bbox[0] - margin),
+                max(0, bbox[1] - margin),
+                min(image.width, bbox[2] + margin),
+                min(image.height, bbox[3] + margin)
+            )
+            return image.crop(bbox)
+
+        return image
+
+    def _check_adf(self, source) -> bool:
+        """فحص وجود ADF"""
+        try:
+            return source.GetCapability(twain.CAP_FEEDERENABLED) is not None
+        except:
+            return False
+
+    def _check_duplex(self, source) -> bool:
+        """فحص وجود Duplex"""
+        try:
+            return source.GetCapability(twain.CAP_DUPLEX) is not None
+        except:
+            return False
+
+    def _get_max_resolution(self, source) -> int:
+        """الحصول على أقصى دقة"""
+        try:
+            resolutions = source.GetCapability(twain.ICAP_XRESOLUTION)
+            if isinstance(resolutions, list):
+                return max(resolutions)
+            return 600  # افتراضي
+        except:
+            return 600
+```
+
+### Q3. Bluetooth Management (إدارة البلوتوث)
+
+```python
+# core/devices/bluetooth/bluetooth_manager.py
+
+import asyncio
+from bleak import BleakScanner, BleakClient
+from typing import List, Dict, Optional
+from dataclasses import dataclass
+
+@dataclass
+class BluetoothDevice:
+    """جهاز بلوتوث"""
+    name: str
+    address: str
+    rssi: int  # قوة الإشارة
+    is_paired: bool
+    device_type: str  # printer, scanner, other
+
+class BluetoothManager:
+    """مدير البلوتوث"""
+
+    def __init__(self):
+        self.known_devices: Dict[str, BluetoothDevice] = {}
+
+    async def discover_devices(self, timeout: int = 10) -> List[BluetoothDevice]:
+        """اكتشاف أجهزة البلوتوث"""
+        devices = []
+
+        discovered = await BleakScanner.discover(timeout=timeout)
+
+        for device in discovered:
+            bt_device = BluetoothDevice(
+                name=device.name or "Unknown",
+                address=device.address,
+                rssi=device.rssi,
+                is_paired=device.address in self.known_devices,
+                device_type=self._detect_device_type(device.name)
+            )
+            devices.append(bt_device)
+
+        return devices
+
+    async def pair_device(self, address: str) -> bool:
+        """الاقتران بجهاز"""
+        try:
+            async with BleakClient(address) as client:
+                if client.is_connected:
+                    # حفظ الجهاز
+                    device = await self._get_device_info(client, address)
+                    self.known_devices[address] = device
+                    return True
+        except Exception as e:
+            print(f"Pairing error: {e}")
+            return False
+
+    async def connect(self, address: str) -> Optional[BleakClient]:
+        """الاتصال بجهاز"""
+        try:
+            client = BleakClient(address)
+            await client.connect()
+            return client
+        except:
+            return None
+
+    async def disconnect(self, client: BleakClient):
+        """قطع الاتصال"""
+        if client.is_connected:
+            await client.disconnect()
+
+    def get_known_devices(self) -> List[BluetoothDevice]:
+        """الأجهزة المعروفة"""
+        return list(self.known_devices.values())
+
+    def forget_device(self, address: str):
+        """نسيان جهاز"""
+        if address in self.known_devices:
+            del self.known_devices[address]
+
+    def _detect_device_type(self, name: str) -> str:
+        """اكتشاف نوع الجهاز"""
+        if not name:
+            return "other"
+
+        name_lower = name.lower()
+        if any(x in name_lower for x in ['printer', 'print', 'hp', 'canon', 'brother', 'epson']):
+            return "printer"
+        elif any(x in name_lower for x in ['scanner', 'scan']):
+            return "scanner"
+        else:
+            return "other"
+```
+
+### Q4. Database Schema
+
+```sql
+-- جدول الطابعات المفضلة
+CREATE TABLE favorite_printers (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    printer_name VARCHAR(255) NOT NULL,
+    is_default BOOLEAN DEFAULT FALSE,
+    settings JSONB,  -- إعدادات الطباعة الافتراضية
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(user_id, printer_name)
+);
+
+-- جدول الماسحات المفضلة
+CREATE TABLE favorite_scanners (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    scanner_name VARCHAR(255) NOT NULL,
+    default_settings JSONB,  -- إعدادات المسح الافتراضية
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(user_id, scanner_name)
+);
+
+-- جدول أجهزة البلوتوث المعروفة
+CREATE TABLE known_bluetooth_devices (
+    id SERIAL PRIMARY KEY,
+    address VARCHAR(20) NOT NULL UNIQUE,
+    name VARCHAR(255),
+    device_type VARCHAR(50),
+    last_connected TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- جدول سجل المسح الضوئي
+CREATE TABLE scan_history (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    scanner_name VARCHAR(255),
+    pages_count INTEGER,
+    output_path TEXT,
+    settings JSONB,
+    scanned_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Indexes
+CREATE INDEX idx_fav_printers_user ON favorite_printers(user_id);
+CREATE INDEX idx_fav_scanners_user ON favorite_scanners(user_id);
+CREATE INDEX idx_scan_history_user ON scan_history(user_id, scanned_at DESC);
+```
+
+### Q5. هيكل الملفات
+
+```
+core/devices/
+├── __init__.py
+├── printer/
+│   ├── __init__.py
+│   ├── printer_manager.py      # إدارة الطابعات
+│   ├── print_preview.py        # معاينة الطباعة
+│   ├── print_queue.py          # قائمة الانتظار
+│   └── thermal_printer.py      # طابعات حرارية (مستقبلي)
+├── scanner/
+│   ├── __init__.py
+│   ├── scanner_manager.py      # إدارة الماسحات
+│   ├── twain_wrapper.py        # غلاف TWAIN
+│   ├── wia_wrapper.py          # غلاف WIA
+│   └── scan_processor.py       # معالجة الصور الممسوحة
+├── bluetooth/
+│   ├── __init__.py
+│   ├── bluetooth_manager.py    # إدارة البلوتوث
+│   └── device_pairing.py       # الاقتران بالأجهزة
+└── common/
+    ├── __init__.py
+    ├── device_detector.py      # اكتشاف الأجهزة
+    └── device_status.py        # حالة الأجهزة
+
+ui/dialogs/devices/
+├── __init__.py
+├── printer_dialog.py           # نافذة اختيار الطابعة
+├── print_settings_dialog.py    # إعدادات الطباعة
+├── scanner_dialog.py           # نافذة المسح الضوئي
+├── scan_preview_dialog.py      # معاينة المسح
+└── bluetooth_dialog.py         # إدارة البلوتوث
+```
+
+### Q6. المراحل التنفيذية
+
+```
+Q1 → Printer Discovery (اكتشاف الطابعات) - Local + Network
+Q2 → Print Preview & Settings (المعاينة والإعدادات)
+Q3 → Scanner Discovery (اكتشاف الماسحات) - TWAIN/WIA
+Q4 → Scan to PDF/Image (المسح إلى PDF/صورة)
+Q5 → Batch Scanning (المسح الدفعي) - ADF Support
+Q6 → Bluetooth Management (إدارة البلوتوث)
+Q7 → Integration with PDF Studio (تكامل مع Track P)
+```
+
+### Q7. التوسعات المستقبلية (محجوزة)
+
+| الجهاز | الاستخدام | المرحلة |
+|--------|-----------|---------|
+| Thermal Printers | طباعة فواتير POS | متقدمة |
+| Barcode Scanner | قراءة باركود المنتجات | متقدمة |
+| Label Printer | طباعة ملصقات | متقدمة |
+| Card Reader | قراءة بطاقات الموظفين | متقدمة |
+| Signature Pad | التوقيع الإلكتروني | متقدمة |
+| Digital Scale | الموازين الإلكترونية | متقدمة |
+
+---
+
+## المحور R: تكامل تطبيقات سطح المكتب (Desktop Apps Integration) 🆕
+
+> **⏳ هذا المحور محجوز للمراحل المتقدمة جداً من التطوير**
+
+### نظرة عامة
+
+هذا المحور سيوفر تكامل INTEGRA مع تطبيقات سطح المكتب الشائعة:
+
+| التطبيق | الاستخدام المحتمل |
+|---------|-------------------|
+| **WhatsApp Desktop** | إرسال إشعارات/تقارير للعملاء والموظفين |
+| **Telegram Desktop** | Bot للتنبيهات والاستعلام عن البيانات |
+| **Microsoft Teams** | تكامل مع بيئة العمل المؤسسية |
+| **Slack** | إشعارات للفرق التقنية |
+| **Discord** | قنوات للفرق |
+
+### الأفكار المبدئية
+
+```
+R1 → WhatsApp Desktop Integration
+     - إرسال رسائل تلقائية
+     - إرسال تقارير PDF
+     - استلام ردود
+
+R2 → Telegram Bot Integration
+     - Bot للتنبيهات الفورية
+     - أوامر للاستعلام (/salary, /leave, /tasks)
+     - إشعارات الموافقات
+
+R3 → Microsoft Teams Integration
+     - إشعارات في القنوات
+     - تكامل مع Flow/Power Automate
+
+R4 → Automation Platforms
+     - Zapier Integration
+     - Make (Integromat) Integration
+     - n8n Self-hosted
+```
+
+### 📝 ملاحظة مهمة
+
+**سيتم مناقشة تفاصيل هذا المحور عند الوصول إليه في خطة التطوير.**
+
+الأسباب:
+1. يتطلب APIs وتراخيص خاصة
+2. يعتمد على استقرار المحاور الأخرى
+3. قد تتغير APIs التطبيقات بحلول وقت التنفيذ
+4. يحتاج دراسة أمنية معمقة
+
+---
+
 ## 🚀 أفكار إبداعية لتطوير المنظومة
 
 ### 1. Smart Inbox (صندوق وارد ذكي)
@@ -5596,7 +6310,26 @@ P7 → Attachments (المرفقات) - Hybrid Storage, Versioning
 P8 → AI Copilot Integration (تكامل الكوبايلوت) - أوامر طبيعية للملفات
 ```
 
-### المرحلة 19: التجارية (مستقبلية)
+### المرحلة 19: إدارة الأجهزة والطابعات (Device Manager) 🔴 **جديد**
+```
+Q1 → Printer Discovery (اكتشاف الطابعات) - Local + Network
+Q2 → Print Preview & Settings (المعاينة والإعدادات)
+Q3 → Scanner Discovery (اكتشاف الماسحات) - TWAIN/WIA (Canon, Brother)
+Q4 → Scan to PDF/Image (المسح إلى PDF/صورة)
+Q5 → Batch Scanning (المسح الدفعي) - ADF Support
+Q6 → Bluetooth Management (إدارة البلوتوث)
+Q7 → Integration with PDF Studio (تكامل مع Track P)
+```
+
+### المرحلة 20: تكامل تطبيقات سطح المكتب (Desktop Apps) 🔴 **محجوز للمستقبل**
+```
+R1 → WhatsApp Desktop Integration
+R2 → Telegram Bot Integration
+R3 → Microsoft Teams Integration
+R4 → Automation Platforms (Zapier, Make, n8n)
+```
+
+### المرحلة 21: التجارية (مستقبلية)
 ```
 E1 → Licensing System
 E2 → Auto-Update
@@ -5604,7 +6337,7 @@ E3 → Installer
 E4 → Multi-Company
 ```
 
-### المرحلة 20: التوسع (مستقبلية)
+### المرحلة 22: التوسع (مستقبلية)
 ```
 F1 → API Layer
 F2 → Plugin System
