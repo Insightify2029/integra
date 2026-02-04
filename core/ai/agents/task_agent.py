@@ -1,9 +1,10 @@
 """
 INTEGRA - Task AI Agent
 وكيل المهام الذكي
-المحور H
+المحور H + K
 
 يحلل المهام ويقترح الأولوية والتصنيف والإجراءات.
+متكامل مع منظومة وكلاء AI (Track K).
 
 التاريخ: 4 فبراير 2026
 """
@@ -21,6 +22,18 @@ try:
 except ImportError:
     AI_AVAILABLE = False
     app_logger.warning("AI service not available for task agent")
+
+# Try importing orchestration
+try:
+    from core.ai.orchestration import (
+        BaseAgent, AgentCapability, AgentStatus,
+        get_agent_registry, register_agent
+    )
+    ORCHESTRATION_AVAILABLE = True
+except ImportError:
+    ORCHESTRATION_AVAILABLE = False
+    BaseAgent = object  # Fallback
+    app_logger.debug("Orchestration not available for task agent")
 
 
 @dataclass
@@ -46,7 +59,7 @@ class TaskSuggestion:
     confidence: float = 0.0
 
 
-class TaskAgent:
+class TaskAgent(BaseAgent if ORCHESTRATION_AVAILABLE else object):
     """
     وكيل المهام الذكي
 
@@ -56,9 +69,19 @@ class TaskAgent:
     - اقتراح الإجراء المناسب
     - اكتشاف المهام المتأخرة
     - اقتراح تفويض المهمة
+
+    متكامل مع منظومة التنسيق (Orchestration).
     """
 
     _instance = None
+
+    # قدرات الوكيل للـ Orchestration
+    AGENT_CAPABILITIES = [
+        AgentCapability.TASK_CREATION,
+        AgentCapability.TASK_PRIORITIZATION,
+        AgentCapability.TASK_SCHEDULING,
+        AgentCapability.TASK_ANALYSIS
+    ] if ORCHESTRATION_AVAILABLE else []
 
     # Keywords for classification
     PRIORITY_KEYWORDS = {
@@ -92,7 +115,118 @@ class TaskAgent:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
+            cls._instance._initialized = False
         return cls._instance
+
+    def __init__(self):
+        if getattr(self, '_initialized', False):
+            return
+
+        # تهيئة BaseAgent إذا كان متاحاً
+        if ORCHESTRATION_AVAILABLE:
+            super().__init__(
+                agent_id="task_agent",
+                name="Task Agent",
+                name_ar="وكيل المهام"
+            )
+
+        self._initialized = True
+        app_logger.info("TaskAgent initialized")
+
+    # ═══════════════════════════════════════════════════════════════
+    # Orchestration Integration (BaseAgent methods)
+    # ═══════════════════════════════════════════════════════════════
+
+    @property
+    def capabilities(self) -> List:
+        """قدرات الوكيل"""
+        return self.AGENT_CAPABILITIES
+
+    def can_handle(self, task_type: str, data: Dict[str, Any]) -> bool:
+        """
+        هل يمكن للوكيل معالجة هذه المهمة؟
+
+        Args:
+            task_type: نوع المهمة
+            data: بيانات المهمة
+
+        Returns:
+            True إذا كان يمكنه المعالجة
+        """
+        supported_types = [
+            "analyze_task", "prioritize_task", "create_task",
+            "schedule_task", "task_analysis", "task_prioritization",
+            "task_creation", "task_scheduling"
+        ]
+        return task_type.lower() in supported_types
+
+    def handle(self, task_type: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        معالجة المهمة
+
+        Args:
+            task_type: نوع المهمة
+            data: بيانات المهمة
+
+        Returns:
+            نتيجة المعالجة
+        """
+        task_type_lower = task_type.lower()
+
+        if task_type_lower in ["analyze_task", "task_analysis"]:
+            title = data.get("title", "")
+            description = data.get("description")
+            source = data.get("source")
+            analysis = self.analyze_task(title, description, source)
+            return {
+                "priority": analysis.suggested_priority,
+                "category": analysis.suggested_category,
+                "due_date": analysis.suggested_due_date.isoformat() if analysis.suggested_due_date else None,
+                "action": analysis.suggested_action,
+                "keywords": analysis.keywords,
+                "confidence": analysis.confidence
+            }
+
+        elif task_type_lower in ["prioritize_task", "task_prioritization"]:
+            title = data.get("title", "")
+            description = data.get("description")
+            analysis = self.analyze_task(title, description)
+            return {
+                "priority": analysis.suggested_priority,
+                "priority_score": analysis.priority_score,
+                "reasoning": analysis.reasoning
+            }
+
+        elif task_type_lower in ["schedule_task", "task_scheduling"]:
+            title = data.get("title", "")
+            description = data.get("description")
+            analysis = self.analyze_task(title, description)
+            return {
+                "suggested_due_date": analysis.suggested_due_date.isoformat() if analysis.suggested_due_date else None,
+                "priority": analysis.suggested_priority
+            }
+
+        elif task_type_lower in ["create_task", "task_creation"]:
+            # تحليل وإنشاء مهمة جديدة
+            title = data.get("title", "")
+            description = data.get("description")
+            analysis = self.analyze_task(title, description)
+            return {
+                "title": title,
+                "description": description,
+                "suggested_priority": analysis.suggested_priority,
+                "suggested_category": analysis.suggested_category,
+                "suggested_due_date": analysis.suggested_due_date.isoformat() if analysis.suggested_due_date else None,
+                "suggested_action": analysis.suggested_action,
+                "keywords": analysis.keywords
+            }
+
+        else:
+            raise ValueError(f"Unsupported task type: {task_type}")
+
+    # ═══════════════════════════════════════════════════════════════
+    # Original Task Analysis Methods
+    # ═══════════════════════════════════════════════════════════════
 
     def analyze_task(
         self,
@@ -453,3 +587,32 @@ def detect_overdue_risks(tasks: list) -> List[Dict[str, Any]]:
 def suggest_task_order(tasks: list) -> List[int]:
     """اقتراح ترتيب المهام"""
     return get_task_agent().suggest_task_order(tasks)
+
+
+def register_task_agent() -> bool:
+    """
+    تسجيل وكيل المهام في منظومة التنسيق
+
+    Returns:
+        True إذا تم التسجيل بنجاح
+    """
+    if not ORCHESTRATION_AVAILABLE:
+        app_logger.debug("Orchestration not available, skipping task agent registration")
+        return False
+
+    try:
+        agent = get_task_agent()
+        register_agent(
+            agent_id="task_agent",
+            agent=agent,
+            capabilities=agent.AGENT_CAPABILITIES,
+            name="Task Agent",
+            name_ar="وكيل المهام",
+            description="وكيل ذكي لتحليل المهام واقتراح الأولوية والتصنيف",
+            priority=10
+        )
+        app_logger.info("TaskAgent registered with orchestration")
+        return True
+    except Exception as e:
+        app_logger.error(f"Failed to register TaskAgent: {e}")
+        return False
