@@ -16,6 +16,135 @@
 
 ---
 
+## الجلسة: 4 فبراير 2026 (مساءً) - المحور L: مصمم التقارير والنماذج ✅
+
+### 📋 ملخص الجلسة:
+
+**تم إكمال المحور L بالكامل - مصمم التقارير والنماذج (Report & Form Designer):**
+
+| المهمة | الوصف | الحالة |
+|--------|-------|--------|
+| **L1** | محرك التقارير (Report Engine) - ReportLab + WeasyPrint | ✅ مكتمل |
+| **L2** | مصمم التقارير المرئي (Visual Report Designer) | ✅ مكتمل |
+| **L3** | منشئ النماذج (Form Builder) | ✅ مكتمل |
+| **L4** | محرك القوالب (Template Engine) - Jinja2 | ✅ مكتمل |
+| **L5** | ربط البيانات (Data Binding) | ✅ مكتمل |
+| **L6** | معاينة وطباعة (Preview & Print) | ✅ مكتمل |
+| **L7** | قوالب جاهزة (Built-in Templates) | ✅ مكتمل |
+
+### 📁 الملفات الجديدة:
+
+```
+core/reporting/
+├── __init__.py                    # تصدير كل المكونات
+├── report_engine.py               # محرك التقارير الرئيسي
+├── pdf_generator.py               # مولد PDF مع ReportLab
+├── excel_generator.py             # مولد Excel مع openpyxl
+├── word_generator.py              # مولد Word مع python-docx
+├── template_engine.py             # محرك Jinja2 للقوالب
+├── filters.py                     # فلاتر مخصصة (تنسيق العملات، التواريخ، إلخ)
+├── data_binding.py                # نظام ربط البيانات
+├── preview.py                     # نافذة المعاينة والطباعة
+├── builtin_templates.py           # إدارة القوالب الجاهزة
+└── templates/
+    ├── reports/
+    │   ├── employee_list.html     # قالب قائمة الموظفين
+    │   ├── salary_report.html     # قالب تقرير الرواتب
+    │   └── department_report.html # قالب تقرير الأقسام
+    └── forms/
+        └── employee_form.html     # قالب نموذج الموظف
+
+modules/designer/
+├── __init__.py                    # تصدير كل المكونات
+├── report_designer/
+│   ├── __init__.py
+│   ├── report_designer_window.py  # نافذة مصمم التقارير
+│   ├── design_canvas.py           # لوحة التصميم WYSIWYG
+│   ├── element_palette.py         # لوحة العناصر (سحب وإفلات)
+│   └── property_panel.py          # لوحة الخصائص
+└── form_builder/
+    ├── __init__.py
+    ├── form_builder_window.py     # نافذة منشئ النماذج
+    ├── form_canvas.py             # لوحة تصميم النماذج
+    ├── widget_toolbox.py          # صندوق الأدوات
+    ├── property_editor.py         # محرر الخصائص
+    └── data_binding.py            # ربط بيانات النماذج
+```
+
+### 💡 كيفية الاستخدام:
+
+```python
+# 1. إنشاء تقرير PDF
+from core.reporting import PDFGenerator, PDFConfig
+
+pdf = PDFGenerator()
+pdf.add_header("تقرير الموظفين", subtitle="كشف الرواتب")
+pdf.add_table(employees, headers=["الاسم", "القسم", "الراتب"])
+pdf.add_footer()
+pdf.save("report.pdf")
+
+# 2. إنشاء تقرير Excel
+from core.reporting import ExcelGenerator
+
+excel = ExcelGenerator()
+excel.add_sheet("الموظفين", employees)
+excel.add_chart("توزيع الرواتب", chart_type="pie", data_range="D2:D20")
+excel.save("report.xlsx")
+
+# 3. استخدام محرك القوالب
+from core.reporting import render_template, TemplateConfig
+
+config = TemplateConfig(
+    title="تقرير الموظفين",
+    rtl=True,
+    primary_color="#2563eb"
+)
+html = render_template("reports/employee_list.html", {"employees": employees}, config)
+
+# 4. معاينة وطباعة
+from core.reporting import preview_html, print_html
+
+preview_html(html, title="معاينة التقرير")
+print_html(html)
+
+# 5. استخدام القوالب الجاهزة
+from core.reporting import create_employee_list_report, create_salary_report
+
+data = create_employee_list_report(employees, show_salary=True)
+data = create_salary_report(employees, period={"month_name": "يناير"})
+
+# 6. ربط البيانات
+from core.reporting import get_data_binding_manager, create_employee_source
+
+manager = get_data_binding_manager()
+manager.register_source(create_employee_source())
+employees = manager.fetch_data("employees")
+
+# 7. فتح مصمم التقارير
+from modules.designer import ReportDesignerWindow
+
+designer = ReportDesignerWindow()
+designer.show()
+
+# 8. فتح منشئ النماذج
+from modules.designer import FormBuilderWindow
+
+builder = FormBuilderWindow()
+builder.show()
+```
+
+### 🎯 المميزات الرئيسية:
+
+1. **محرك تقارير متعدد الصيغ**: PDF, Excel, Word, HTML, CSV
+2. **دعم RTL والعربية**: خطوط Cairo، اتجاه من اليمين لليسار
+3. **مصمم WYSIWYG**: سحب وإفلات، تحجيم، محاذاة
+4. **قوالب Jinja2**: فلاتر مخصصة للعملات والتواريخ
+5. **ربط البيانات**: اتصال مباشر بقاعدة البيانات
+6. **معاينة وطباعة**: نافذة معاينة مع تكبير/تصغير
+7. **قوالب جاهزة**: تقارير الموظفين، الرواتب، الأقسام
+
+---
+
 ## الجلسة: 4 فبراير 2026 (فجراً) - المحور K: منظومة وكلاء AI المتكاملة ✅
 
 ### 📋 ملخص الجلسة:

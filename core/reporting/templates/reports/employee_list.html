@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block extra_styles %}
+<style>
+    .report-summary {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .summary-card {
+        background: linear-gradient(135deg, {{ primary_color }}, {{ primary_color }}dd);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        text-align: center;
+        min-width: 150px;
+    }
+
+    .summary-card .value {
+        font-size: 28px;
+        font-weight: bold;
+        display: block;
+    }
+
+    .summary-card .label {
+        font-size: 12px;
+        opacity: 0.9;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-inactive {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-suspended {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .employee-photo {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e5e7eb;
+    }
+
+    .filters-info {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 10px 15px;
+        margin-bottom: 15px;
+        font-size: 12px;
+        color: #64748b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Summary Cards -->
+<div class="report-summary">
+    <div class="summary-card">
+        <span class="value">{{ employees | length }}</span>
+        <span class="label">إجمالي الموظفين</span>
+    </div>
+
+    {% if show_salary_summary %}
+    <div class="summary-card">
+        <span class="value">{{ employees | sum_column('salary') | currency }}</span>
+        <span class="label">إجمالي الرواتب</span>
+    </div>
+
+    <div class="summary-card">
+        <span class="value">{{ employees | avg_column('salary') | currency }}</span>
+        <span class="label">متوسط الراتب</span>
+    </div>
+    {% endif %}
+
+    {% if departments_count %}
+    <div class="summary-card">
+        <span class="value">{{ departments_count }}</span>
+        <span class="label">عدد الأقسام</span>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Applied Filters -->
+{% if filters %}
+<div class="filters-info">
+    <strong>الفلاتر المطبقة:</strong>
+    {% for filter in filters %}
+    <span>{{ filter.label }}: {{ filter.value }}</span>{% if not loop.last %} | {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Employee Table -->
+<table>
+    <thead>
+        <tr>
+            <th style="width: 40px;">#</th>
+            {% if show_photo %}<th style="width: 50px;">الصورة</th>{% endif %}
+            <th>الرقم الوظيفي</th>
+            <th>اسم الموظف</th>
+            {% if show_company %}<th>الشركة</th>{% endif %}
+            <th>القسم</th>
+            <th>المسمى الوظيفي</th>
+            <th>تاريخ التعيين</th>
+            {% if show_salary %}<th>الراتب الأساسي</th>{% endif %}
+            <th>الحالة</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for emp in employees %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            {% if show_photo %}
+            <td>
+                {% if emp.photo %}
+                <img src="{{ emp.photo }}" class="employee-photo" alt="{{ emp.name }}">
+                {% else %}
+                <div class="employee-photo" style="background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af;">👤</div>
+                {% endif %}
+            </td>
+            {% endif %}
+            <td>{{ emp.employee_number | default('-') }}</td>
+            <td><strong>{{ emp.name }}</strong></td>
+            {% if show_company %}<td>{{ emp.company | default('-') }}</td>{% endif %}
+            <td>{{ emp.department | default('-') }}</td>
+            <td>{{ emp.job_title | default('-') }}</td>
+            <td>{{ emp.hire_date | date }}</td>
+            {% if show_salary %}<td>{{ emp.salary | currency }}</td>{% endif %}
+            <td>
+                {% if emp.status == 'نشط' or emp.is_active %}
+                <span class="status-badge status-active">نشط</span>
+                {% elif emp.status == 'معلق' %}
+                <span class="status-badge status-suspended">معلق</span>
+                {% else %}
+                <span class="status-badge status-inactive">غير نشط</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    {% if show_salary %}
+    <tfoot>
+        <tr>
+            <td colspan="{{ 7 if show_company else 6 }}"><strong>الإجمالي</strong></td>
+            <td><strong>{{ employees | sum_column('salary') | currency }}</strong></td>
+            <td></td>
+        </tr>
+    </tfoot>
+    {% endif %}
+</table>
+
+<!-- Page Info -->
+<div class="page-info" style="margin-top: 20px; font-size: 11px; color: #9ca3af; text-align: center;">
+    تم إنشاء التقرير في: {{ generated_at | datetime }} | إجمالي السجلات: {{ employees | length }}
+</div>
+{% endblock %}

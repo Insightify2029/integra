@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block extra_styles %}
+<style>
+    .dept-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .dept-info h2 {
+        color: {{ primary_color }};
+        margin-bottom: 5px;
+    }
+
+    .dept-info .manager {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .dept-stats {
+        display: flex;
+        gap: 20px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 10px 20px;
+        background: #f8fafc;
+        border-radius: 8px;
+    }
+
+    .stat-item .number {
+        font-size: 24px;
+        font-weight: bold;
+        color: {{ primary_color }};
+    }
+
+    .stat-item .text {
+        font-size: 11px;
+        color: #6b7280;
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 25px 0 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .section-title .icon {
+        font-size: 20px;
+    }
+
+    .section-title h3 {
+        margin: 0;
+        color: #374151;
+    }
+
+    .job-breakdown {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .job-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 15px;
+    }
+
+    .job-card .title {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .job-card .count {
+        font-size: 24px;
+        color: {{ primary_color }};
+        font-weight: bold;
+    }
+
+    .job-card .percentage {
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    .experience-chart {
+        display: flex;
+        height: 30px;
+        border-radius: 6px;
+        overflow: hidden;
+        margin: 10px 0;
+    }
+
+    .experience-segment {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .legend {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        font-size: 12px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% for dept in departments %}
+<!-- Department Header -->
+<div class="dept-header">
+    <div class="dept-info">
+        <h2>{{ dept.name }}</h2>
+        {% if dept.manager %}
+        <div class="manager">المدير: {{ dept.manager }}</div>
+        {% endif %}
+    </div>
+    <div class="dept-stats">
+        <div class="stat-item">
+            <div class="number">{{ dept.employees | length }}</div>
+            <div class="text">موظف</div>
+        </div>
+        <div class="stat-item">
+            <div class="number">{{ dept.employees | sum_column('salary') | currency }}</div>
+            <div class="text">إجمالي الرواتب</div>
+        </div>
+        <div class="stat-item">
+            <div class="number">{{ dept.employees | avg_column('salary') | currency }}</div>
+            <div class="text">متوسط الراتب</div>
+        </div>
+    </div>
+</div>
+
+<!-- Job Title Breakdown -->
+{% if dept.job_breakdown %}
+<div class="section-title">
+    <span class="icon">💼</span>
+    <h3>توزيع المسميات الوظيفية</h3>
+</div>
+<div class="job-breakdown">
+    {% for job in dept.job_breakdown %}
+    <div class="job-card">
+        <div class="title">{{ job.title }}</div>
+        <div class="count">{{ job.count }}</div>
+        <div class="percentage">{{ (job.count / dept.employees | length * 100) | round(1) }}% من القسم</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Experience Distribution -->
+{% if dept.experience_distribution %}
+<div class="section-title">
+    <span class="icon">📈</span>
+    <h3>توزيع سنوات الخبرة</h3>
+</div>
+<div class="experience-chart">
+    {% for exp in dept.experience_distribution %}
+    <div class="experience-segment" style="width: {{ exp.percentage }}%; background: {{ exp.color }};">
+        {{ exp.percentage | round(0) }}%
+    </div>
+    {% endfor %}
+</div>
+<div class="legend">
+    {% for exp in dept.experience_distribution %}
+    <div class="legend-item">
+        <div class="legend-color" style="background: {{ exp.color }};"></div>
+        <span>{{ exp.label }} ({{ exp.count }})</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Employee List -->
+<div class="section-title">
+    <span class="icon">👥</span>
+    <h3>قائمة الموظفين</h3>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>الرقم الوظيفي</th>
+            <th>الاسم</th>
+            <th>المسمى الوظيفي</th>
+            <th>تاريخ التعيين</th>
+            <th>سنوات الخدمة</th>
+            {% if show_salary %}<th>الراتب</th>{% endif %}
+            <th>الحالة</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for emp in dept.employees %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ emp.employee_number }}</td>
+            <td>{{ emp.name }}</td>
+            <td>{{ emp.job_title }}</td>
+            <td>{{ emp.hire_date | date }}</td>
+            <td>{{ emp.years_of_service }} سنة</td>
+            {% if show_salary %}<td>{{ emp.salary | currency }}</td>{% endif %}
+            <td>{{ emp.status }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if not loop.last %}
+<div style="page-break-after: always;"></div>
+{% endif %}
+{% endfor %}
+
+<!-- Summary -->
+{% if show_summary %}
+<div class="section-title">
+    <span class="icon">📊</span>
+    <h3>ملخص إجمالي</h3>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>القسم</th>
+            <th>عدد الموظفين</th>
+            <th>إجمالي الرواتب</th>
+            <th>متوسط الراتب</th>
+            <th>النسبة من الإجمالي</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dept in departments %}
+        <tr>
+            <td>{{ dept.name }}</td>
+            <td>{{ dept.employees | length }}</td>
+            <td>{{ dept.employees | sum_column('salary') | currency }}</td>
+            <td>{{ dept.employees | avg_column('salary') | currency }}</td>
+            <td>{{ dept.percentage | percentage }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td><strong>الإجمالي</strong></td>
+            <td><strong>{{ total_employees }}</strong></td>
+            <td><strong>{{ total_salaries | currency }}</strong></td>
+            <td><strong>{{ average_salary | currency }}</strong></td>
+            <td><strong>100%</strong></td>
+        </tr>
+    </tfoot>
+</table>
+{% endif %}
+{% endblock %}
