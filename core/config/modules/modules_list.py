@@ -10,6 +10,9 @@ from . import module_logistics
 from . import module_custody
 from . import module_insurance
 from . import module_email
+from . import module_designer
+from . import module_calendar
+from . import module_dashboard
 
 
 def get_all_modules():
@@ -62,6 +65,30 @@ def get_all_modules():
             'icon': module_email.MODULE_ICON,
             'color': module_email.MODULE_COLOR,
             'enabled': module_email.MODULE_ENABLED
+        },
+        {
+            'id': module_designer.MODULE_ID,
+            'name_ar': module_designer.MODULE_NAME_AR,
+            'name_en': module_designer.MODULE_NAME_EN,
+            'icon': module_designer.MODULE_ICON,
+            'color': module_designer.MODULE_COLOR,
+            'enabled': module_designer.MODULE_ENABLED
+        },
+        {
+            'id': module_calendar.MODULE_ID,
+            'name_ar': module_calendar.MODULE_NAME_AR,
+            'name_en': module_calendar.MODULE_NAME_EN,
+            'icon': module_calendar.MODULE_ICON,
+            'color': module_calendar.MODULE_COLOR,
+            'enabled': module_calendar.MODULE_ENABLED
+        },
+        {
+            'id': module_dashboard.MODULE_ID,
+            'name_ar': module_dashboard.MODULE_NAME_AR,
+            'name_en': module_dashboard.MODULE_NAME_EN,
+            'icon': module_dashboard.MODULE_ICON,
+            'color': module_dashboard.MODULE_COLOR,
+            'enabled': module_dashboard.MODULE_ENABLED
         }
     ]
 
