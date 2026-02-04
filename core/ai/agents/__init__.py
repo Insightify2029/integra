@@ -25,6 +25,20 @@ from .email_agent import (
     EmailPriorityAI
 )
 
+from .alert_agent import (
+    AlertAgent,
+    get_alert_agent,
+    check_all_alerts,
+    get_critical_alerts,
+    get_alert_summary,
+    create_custom_alert,
+    Alert,
+    AlertPriority,
+    AlertCategory,
+    AlertSummary,
+    AlertSignals
+)
+
 __all__ = [
     # Data Agent
     'DataAgent',
@@ -42,5 +56,17 @@ __all__ = [
     'suggest_email_reply',
     'EmailAnalysis',
     'EmailCategory',
-    'EmailPriorityAI'
+    'EmailPriorityAI',
+    # Alert Agent
+    'AlertAgent',
+    'get_alert_agent',
+    'check_all_alerts',
+    'get_critical_alerts',
+    'get_alert_summary',
+    'create_custom_alert',
+    'Alert',
+    'AlertPriority',
+    'AlertCategory',
+    'AlertSummary',
+    'AlertSignals'
 ]

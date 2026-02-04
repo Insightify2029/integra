@@ -50,22 +50,67 @@ from .rbac import (
     ROLE_PERMISSIONS
 )
 
+from .encryption import (
+    # Manager
+    Encryptor,
+    get_encryptor,
+    is_encryption_available,
+    # Basic functions
+    encrypt,
+    decrypt,
+    encrypt_sensitive_fields,
+    decrypt_sensitive_fields,
+    # File encryption
+    encrypt_file,
+    decrypt_file,
+    # Password hashing
+    hash_password,
+    verify_password,
+    # Sensitive data helpers
+    encrypt_iban,
+    decrypt_iban,
+    mask_iban,
+    encrypt_db_password,
+    decrypt_db_password,
+)
+
 __all__ = [
-    # Enums
+    # RBAC - Enums
     'Permission',
     'Role',
-    # Manager
+    # RBAC - Manager
     'AccessControlManager',
-    # Functions
+    # RBAC - Functions
     'login_user',
     'logout_user',
     'is_authenticated',
     'get_current_user',
     'has_permission',
     'has_module_access',
-    # Decorators
+    # RBAC - Decorators
     'require_permission',
     'require_any_permission',
-    # Constants
-    'ROLE_PERMISSIONS'
+    # RBAC - Constants
+    'ROLE_PERMISSIONS',
+    # Encryption - Manager
+    'Encryptor',
+    'get_encryptor',
+    'is_encryption_available',
+    # Encryption - Basic
+    'encrypt',
+    'decrypt',
+    'encrypt_sensitive_fields',
+    'decrypt_sensitive_fields',
+    # Encryption - File
+    'encrypt_file',
+    'decrypt_file',
+    # Encryption - Password
+    'hash_password',
+    'verify_password',
+    # Encryption - Helpers
+    'encrypt_iban',
+    'decrypt_iban',
+    'mask_iban',
+    'encrypt_db_password',
+    'decrypt_db_password',
 ]

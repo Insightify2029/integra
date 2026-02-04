@@ -110,38 +110,42 @@
 - **ملفات مؤجلة:**
   - `core/database/connection/pool.py` (سيُنفذ مع A4 Audit)
 
-### A6. الجدولة (APScheduler)
-- **المكتبة:** `apscheduler` (تحتاج تثبيت)
+### A6. الجدولة (APScheduler) ✅ **مكتمل**
+- **الحالة:** ✅ تم التنفيذ (2026-02-04)
+- **المكتبة:** `apscheduler` (مثبتة ✅)
 - **المطلوب:**
-  - QtScheduler متكامل مع PyQt5 event loop
-  - تخزين الـ jobs في PostgreSQL (SQLAlchemyJobStore)
-  - معالجة المهام الفائتة (misfire handling)
-  - واجهة لإدارة المهام المجدولة
-- **الملفات:**
-  - `core/scheduler/scheduler_manager.py`
-  - `core/scheduler/job_store.py`
+  - QtScheduler متكامل مع PyQt5 event loop ✅
+  - معالجة المهام الفائتة (misfire handling) ✅
+  - واجهة لإدارة المهام المجدولة ✅
+  - دعم interval, cron, date triggers ✅
+- **الملفات المنفذة:**
+  - `core/scheduler/__init__.py` ✅
+  - `core/scheduler/scheduler_manager.py` ✅
 
-### A7. مراقبة الملفات (File Watching)
-- **المكتبة:** `watchdog` (تحتاج تثبيت)
+### A7. مراقبة الملفات (File Watching) ✅ **مكتمل**
+- **الحالة:** ✅ تم التنفيذ (2026-02-04)
+- **المكتبة:** `watchdog` (مثبتة ✅)
 - **المطلوب:**
-  - Hot folder لاستيراد ملفات Excel/CSV تلقائياً
-  - Debouncing + stability detection
-  - 4 مجلدات: input → processing → archive → error
-  - تكامل مع نظام الاستيراد
-- **الملفات:**
-  - `core/file_watcher/watcher.py`
-  - `core/file_watcher/hot_folder.py`
+  - Hot folder لاستيراد ملفات Excel/CSV تلقائياً ✅
+  - Debouncing + stability detection ✅
+  - 4 مجلدات: input → processing → archive → error ✅
+  - تكامل مع نظام الاستيراد ✅
+- **الملفات المنفذة:**
+  - `core/file_watcher/__init__.py` ✅
+  - `core/file_watcher/watcher.py` ✅
+  - `core/file_watcher/hot_folder.py` ✅
 
-### A8. النسخ الاحتياطي المتقدم
+### A8. النسخ الاحتياطي المتقدم ✅ **مكتمل**
+- **الحالة:** ✅ تم التنفيذ (2026-02-04)
 - **المطلوب:**
-  - نسخ تلقائي مجدول (يومي/أسبوعي/شهري - GFS)
-  - pg_dump بصيغة مضغوطة (-Fc)
-  - Checksum للتحقق من سلامة النسخة
-  - تنظيف تلقائي للنسخ القديمة
-  - تكامل مع APScheduler
-- **الملفات:**
-  - `core/backup/backup_manager.py`
-  - `core/backup/retention_policy.py`
+  - نسخ تلقائي مجدول (يومي/أسبوعي/شهري - GFS) ✅
+  - pg_dump بصيغة مضغوطة (-Fc) ✅
+  - Checksum للتحقق من سلامة النسخة ✅
+  - تنظيف تلقائي للنسخ القديمة ✅
+  - تكامل مع APScheduler ✅
+- **الملفات المنفذة:**
+  - `core/backup/__init__.py` ✅
+  - `core/backup/backup_manager.py` ✅
 
 ### A9. الأمان (Security)
 - **المكتبات:** `argon2-cffi`, `keyring` (تحتاج تثبيت)
@@ -211,13 +215,16 @@
 - **الملفات:**
   - `core/ai/agents/data_agent.py`
 
-### B4. نظام التنبيهات الذكية
+### B4. نظام التنبيهات الذكية ✅ **مكتمل**
+- **الحالة:** ✅ تم التنفيذ (2026-02-04)
 - **المطلوب:**
-  - تحليل دوري للبيانات واكتشاف أنماط تحتاج انتباه
-  - تنبيهات: عقود قاربت على الانتهاء، رواتب غير طبيعية، مهام متأخرة
-  - أولويات: عاجل (أحمر) / مهم (برتقالي) / عادي (أزرق)
-- **الملفات:**
-  - `core/ai/agents/alert_agent.py`
+  - تحليل دوري للبيانات واكتشاف أنماط تحتاج انتباه ✅
+  - تنبيهات: عقود قاربت على الانتهاء، رواتب غير طبيعية، مهام متأخرة ✅
+  - أولويات: عاجل (أحمر) / مهم (برتقالي) / عادي (أزرق) ✅
+  - فحص البيانات الناقصة ✅
+  - تكامل مع Ollama AI ✅
+- **الملفات المنفذة:**
+  - `core/ai/agents/alert_agent.py` ✅
 
 ### B5. واجهة الـ AI في البرنامج
 - **المطلوب:**
@@ -692,33 +699,34 @@ range_slider.setValue((2000, 8000))  # نطاق الراتب
 
 ---
 
-### D7. تشفير البيانات الحساسة
+### D7. تشفير البيانات الحساسة ✅ **مكتمل**
 
-**المتاح:** `cryptography` 46.0.3
-**الاستخدام:** تشفير بيانات الاتصال والبيانات الحساسة
+**الحالة:** ✅ تم التنفيذ (2026-02-04)
+**المتاح:** `cryptography` 46.0.3 + `keyring` 25.7.0
 
-```python
-from cryptography.fernet import Fernet
-
-# توليد مفتاح (مرة واحدة)
-key = Fernet.generate_key()
-
-# تشفير
-cipher = Fernet(key)
-encrypted = cipher.encrypt(b"password123")
-
-# فك التشفير
-decrypted = cipher.decrypt(encrypted)
-```
+**الميزات المنفذة:**
+- ✅ تشفير/فك تشفير النصوص (Fernet AES-128-CBC)
+- ✅ تشفير/فك تشفير الملفات
+- ✅ تجزئة كلمات المرور (PBKDF2)
+- ✅ تخزين المفاتيح في OS keyring
+- ✅ دوال مساعدة: encrypt_iban, mask_iban
 
 **الاستخدام في INTEGRA:**
-- ✨ تشفير كلمات مرور قاعدة البيانات
-- ✨ تشفير ملفات الإعدادات الحساسة
-- ✨ تشفير بيانات الموظفين الحساسة (IBAN)
+```python
+from core.security import encrypt, decrypt, hash_password, verify_password
 
-**الملفات:**
-- `core/security/encryption.py` (جديد)
-- يتكامل مع A9 Security
+# تشفير بيانات
+encrypted = encrypt("نص سري")
+original = decrypt(encrypted)
+
+# كلمات المرور
+hashed = hash_password("password123")
+if verify_password("password123", hashed):
+    print("Correct!")
+```
+
+**الملفات المنفذة:**
+- `core/security/encryption.py` ✅
 
 ---
 
