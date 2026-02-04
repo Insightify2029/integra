@@ -6,7 +6,7 @@
 
 ## نظرة عامة
 
-هذه الخطة تغطي **12 محوراً رئيسياً** لتطوير البنية التحتية:
+هذه الخطة تغطي **13 محوراً رئيسياً** لتطوير البنية التحتية:
 
 | المحور | الوصف | الأولوية |
 |---|---|---|
@@ -22,6 +22,7 @@
 | **L** | مصمم التقارير والنماذج (Report & Form Designer) 🆕 | احترافي - تصميم حر للتقارير والنماذج |
 | **M** | الربط مع Power BI Desktop (BI Connector) 🆕 | تحليلي - تحليلات متقدمة بدون تراخيص |
 | **N** | المساعد الذكي المتكامل (AI Copilot) 🆕 | استراتيجي - العقل المدبر للبرنامج |
+| **O** | الوعي الزمني الفائق (Hyper Time Intelligence) 🆕 | أساسي - البُعد الزمني للذكاء |
 
 > **ملاحظة مهمة:** المحور D يعتمد على تحليل ملف `claude/ALL_Libraries.txt` لاستغلال المكتبات المثبتة فعلياً
 
@@ -2887,6 +2888,911 @@ N7 → Audit & History (السجل والتاريخ) - Full action logging
 
 ---
 
+## المحور O: الوعي الزمني الفائق (Hyper Time Intelligence) 🆕
+
+> **المفهوم:** وعي كامل بالزمن والتاريخ والوقت لجعل AI Copilot فائق الذكاء
+> **التاريخ:** 4 فبراير 2026
+> **الأولوية:** أساسي - البُعد الزمني للذكاء
+
+### المفهوم العام
+
+نظام وعي زمني شامل يمكّن AI Copilot من فهم الوقت والتواريخ بذكاء فائق.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    ⏰ INTEGRA Time Intelligence                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  📅 System Time                                                  │
+│  ├── التاريخ الحالي: 4 فبراير 2026                              │
+│  ├── الوقت: 14:35:22                                            │
+│  ├── اليوم: الأربعاء                                            │
+│  ├── الأسبوع: 6                                                  │
+│  └── الربع: Q1                                                   │
+│                                                                  │
+│  🕌 التقويم الهجري                                               │
+│  ├── التاريخ: 5 رجب 1447                                        │
+│  └── المناسبات القادمة: رمضان بعد 52 يوم                        │
+│                                                                  │
+│  🏢 سياق العمل                                                   │
+│  ├── يوم عمل: ✅ نعم                                            │
+│  ├── ساعات العمل: 08:00 - 17:00                                 │
+│  ├── داخل ساعات العمل: ✅                                       │
+│  └── السنة المالية: 2026 (Q1)                                   │
+│                                                                  │
+│  🔮 التنبؤات                                                     │
+│  ├── المهمة دي هتاخد: ~2.5 ساعة                                 │
+│  ├── هل هتلحق الـ Deadline؟ ⚠️                                  │
+│  └── أفضل وقت للعمل: الثلاثاء 10 صباحاً                         │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### لماذا Time Intelligence؟
+
+| الميزة | الوصف |
+|--------|-------|
+| **فهم لغوي** | يفهم "بعد العيد"، "آخر الشهر"، "قبل رمضان" |
+| **مقارنات زمنية** | YoY, MoM, QoQ, YTD - مثل Power BI |
+| **تقويم مزدوج** | ميلادي + هجري مع إجازات الدولة |
+| **توقع التأخير** | ينبهك قبل فوات الـ Deadline |
+| **تعلم الأنماط** | يتعلم أوقات إنتاجيتك العالية |
+| **جدولة ذكية** | إعادة ترتيب تلقائي عند التغيير |
+
+### O1. System Time Core (نواة الوقت)
+
+**قراءة الوقت من الجهاز:**
+```python
+# core/time_intelligence/system_time.py
+
+from datetime import datetime, date, time, timedelta
+from hijri_converter import Hijri, Gregorian
+
+class SystemTime:
+    """نواة الوقت - قراءة الوقت من الجهاز"""
+
+    @property
+    def now(self) -> datetime:
+        """الوقت الحالي"""
+        return datetime.now()
+
+    @property
+    def today(self) -> date:
+        """تاريخ اليوم"""
+        return date.today()
+
+    @property
+    def current_time(self) -> time:
+        """الوقت الحالي"""
+        return datetime.now().time()
+
+    @property
+    def day_of_week(self) -> str:
+        """اليوم من الأسبوع"""
+        days_ar = ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"]
+        return days_ar[self.today.weekday()]
+
+    @property
+    def week_number(self) -> int:
+        """رقم الأسبوع في السنة"""
+        return self.today.isocalendar()[1]
+
+    @property
+    def quarter(self) -> str:
+        """الربع السنوي"""
+        month = self.today.month
+        if month <= 3:
+            return "Q1"
+        elif month <= 6:
+            return "Q2"
+        elif month <= 9:
+            return "Q3"
+        else:
+            return "Q4"
+
+    @property
+    def fiscal_year(self) -> int:
+        """السنة المالية (تبدأ من يناير)"""
+        return self.today.year
+
+    def to_hijri(self, gregorian_date: date = None) -> dict:
+        """تحويل إلى هجري"""
+        if gregorian_date is None:
+            gregorian_date = self.today
+        hijri = Gregorian(
+            gregorian_date.year,
+            gregorian_date.month,
+            gregorian_date.day
+        ).to_hijri()
+        return {
+            "year": hijri.year,
+            "month": hijri.month,
+            "day": hijri.day,
+            "month_name": hijri.month_name(),
+            "formatted": f"{hijri.day} {hijri.month_name()} {hijri.year}"
+        }
+```
+
+**الملفات:**
+- `core/time_intelligence/__init__.py`
+- `core/time_intelligence/system_time.py`
+- `core/time_intelligence/hijri_utils.py`
+
+### O2. Working Calendar (تقويم العمل)
+
+**إعدادات من الدولة وموديول مستحقات:**
+```python
+# core/time_intelligence/working_calendar.py
+
+class WorkingCalendar:
+    """تقويم العمل - أيام العمل والإجازات"""
+
+    def __init__(self):
+        # من إعدادات البرنامج الرئيسية
+        self.country = self.get_country_from_settings()  # "SA", "EG", etc.
+
+        # من إعدادات موديول مستحقات
+        self.working_days = self.get_working_days_from_mostahaqat()  # [0,1,2,3,4] الأحد-الخميس
+        self.working_hours = self.get_working_hours_from_mostahaqat()  # {"start": "08:00", "end": "17:00"}
+        self.weekend_days = self.get_weekend_from_mostahaqat()  # [5,6] الجمعة-السبت
+
+    def is_working_day(self, check_date: date = None) -> bool:
+        """هل هذا يوم عمل؟"""
+        if check_date is None:
+            check_date = date.today()
+
+        # تحقق من الإجازة الأسبوعية
+        if check_date.weekday() in self.weekend_days:
+            return False
+
+        # تحقق من الإجازات الرسمية
+        if self.is_official_holiday(check_date):
+            return False
+
+        return True
+
+    def is_working_hours(self, check_time: time = None) -> bool:
+        """هل نحن في ساعات العمل؟"""
+        if check_time is None:
+            check_time = datetime.now().time()
+
+        start = datetime.strptime(self.working_hours["start"], "%H:%M").time()
+        end = datetime.strptime(self.working_hours["end"], "%H:%M").time()
+
+        return start <= check_time <= end
+
+    def get_official_holidays(self, year: int = None) -> list:
+        """إجازات الدولة الرسمية"""
+        if year is None:
+            year = date.today().year
+
+        # من قاعدة البيانات أو API حسب الدولة
+        return self.load_holidays_for_country(self.country, year)
+
+    def working_days_between(self, start: date, end: date) -> int:
+        """عدد أيام العمل بين تاريخين"""
+        count = 0
+        current = start
+        while current <= end:
+            if self.is_working_day(current):
+                count += 1
+            current += timedelta(days=1)
+        return count
+
+    def next_working_day(self, from_date: date = None) -> date:
+        """أول يوم عمل تالي"""
+        if from_date is None:
+            from_date = date.today()
+
+        next_day = from_date + timedelta(days=1)
+        while not self.is_working_day(next_day):
+            next_day += timedelta(days=1)
+        return next_day
+
+    def add_working_days(self, from_date: date, days: int) -> date:
+        """أضف أيام عمل (مع تجاوز الإجازات)"""
+        current = from_date
+        added = 0
+        while added < days:
+            current += timedelta(days=1)
+            if self.is_working_day(current):
+                added += 1
+        return current
+```
+
+**إجازات الدولة:**
+```python
+# إجازات السعودية 2026 (مثال)
+SA_HOLIDAYS_2026 = [
+    {"date": "2026-02-22", "name": "يوم التأسيس", "type": "national"},
+    {"date": "2026-03-01", "name": "بداية رمضان", "type": "religious", "hijri": True},
+    {"date": "2026-03-30", "name": "عيد الفطر", "type": "religious", "days": 4},
+    {"date": "2026-06-06", "name": "عيد الأضحى", "type": "religious", "days": 4},
+    {"date": "2026-09-23", "name": "اليوم الوطني", "type": "national"},
+]
+```
+
+**الملفات:**
+- `core/time_intelligence/working_calendar.py`
+- `core/time_intelligence/holidays/saudi_arabia.py`
+- `core/time_intelligence/holidays/egypt.py`
+- `core/time_intelligence/holidays/uae.py`
+
+### O3. Natural Language Time Parser (محلل الوقت اللغوي)
+
+**فهم التعبيرات الزمنية:**
+```python
+# core/time_intelligence/time_parser.py
+
+class NaturalTimeParser:
+    """محلل الوقت - فهم اللغة الطبيعية للتواريخ"""
+
+    def parse(self, text: str, reference_date: date = None) -> date:
+        """تحويل نص إلى تاريخ"""
+        if reference_date is None:
+            reference_date = date.today()
+
+        text = text.strip().lower()
+
+        # تعبيرات بسيطة
+        simple_mappings = {
+            "اليوم": reference_date,
+            "أمس": reference_date - timedelta(days=1),
+            "بكرة": reference_date + timedelta(days=1),
+            "بكره": reference_date + timedelta(days=1),
+            "غدا": reference_date + timedelta(days=1),
+            "غداً": reference_date + timedelta(days=1),
+        }
+
+        if text in simple_mappings:
+            return simple_mappings[text]
+
+        # تعبيرات نسبية
+        return self._parse_relative(text, reference_date)
+
+    def _parse_relative(self, text: str, ref: date) -> date:
+        """تحليل التعبيرات النسبية"""
+
+        # "بعد أسبوع"، "بعد شهر"، "بعد 3 أيام"
+        if "بعد" in text:
+            return self._parse_after(text, ref)
+
+        # "قبل أسبوع"، "قبل نهاية الشهر"
+        if "قبل" in text:
+            return self._parse_before(text, ref)
+
+        # "الأسبوع الجاي"، "الشهر الماضي"
+        if "الأسبوع" in text or "الشهر" in text:
+            return self._parse_period(text, ref)
+
+        # "أول يوم عمل"، "آخر خميس"
+        if "أول" in text or "آخر" in text:
+            return self._parse_first_last(text, ref)
+
+        # "بعد العيد"، "قبل رمضان"
+        if any(word in text for word in ["العيد", "رمضان", "الوطني"]):
+            return self._parse_holiday_relative(text, ref)
+
+        return ref
+
+    def parse_examples(self):
+        """أمثلة على التحليل"""
+        examples = {
+            "اليوم": "2026-02-04",
+            "بكرة": "2026-02-05",
+            "بعد أسبوع": "2026-02-11",
+            "بعد 3 أيام": "2026-02-07",
+            "الأسبوع الجاي": "2026-02-09 to 2026-02-15",
+            "الشهر الماضي": "يناير 2026",
+            "أول السنة": "2026-01-01",
+            "نهاية الشهر": "2026-02-28",
+            "قبل نهاية الشهر بأسبوع": "2026-02-21",
+            "أول يوم عمل الشهر الجاي": "2026-03-01 (أو 2026-03-02 إذا كان الأحد)",
+            "آخر خميس في الشهر": "2026-02-26",
+            "بعد العيد": "بعد عيد الفطر 2026",
+            "قبل رمضان": "قبل 1 رمضان 1447",
+        }
+        return examples
+```
+
+**الملفات:**
+- `core/time_intelligence/time_parser.py`
+- `core/time_intelligence/arabic_time_patterns.py`
+
+### O4. Time Intelligence Analytics (تحليلات زمنية)
+
+**مقارنات زمنية احترافية:**
+```python
+# core/time_intelligence/time_analytics.py
+
+class TimeAnalytics:
+    """تحليلات زمنية - مثل Power BI Time Intelligence"""
+
+    def year_over_year(self, current_value: float, last_year_value: float) -> dict:
+        """مقارنة سنوية YoY"""
+        diff = current_value - last_year_value
+        pct = (diff / last_year_value * 100) if last_year_value else 0
+        return {
+            "current": current_value,
+            "previous": last_year_value,
+            "difference": diff,
+            "percentage": round(pct, 2),
+            "trend": "up" if diff > 0 else "down" if diff < 0 else "flat"
+        }
+
+    def month_over_month(self, current_value: float, last_month_value: float) -> dict:
+        """مقارنة شهرية MoM"""
+        diff = current_value - last_month_value
+        pct = (diff / last_month_value * 100) if last_month_value else 0
+        return {
+            "current": current_value,
+            "previous": last_month_value,
+            "difference": diff,
+            "percentage": round(pct, 2),
+            "trend": "up" if diff > 0 else "down" if diff < 0 else "flat"
+        }
+
+    def quarter_over_quarter(self, current_value: float, last_quarter_value: float) -> dict:
+        """مقارنة ربع سنوية QoQ"""
+        diff = current_value - last_quarter_value
+        pct = (diff / last_quarter_value * 100) if last_quarter_value else 0
+        return {
+            "current": current_value,
+            "previous": last_quarter_value,
+            "difference": diff,
+            "percentage": round(pct, 2),
+            "trend": "up" if diff > 0 else "down" if diff < 0 else "flat"
+        }
+
+    def year_to_date(self, values_by_month: list) -> dict:
+        """من أول السنة حتى الآن YTD"""
+        current_month = date.today().month
+        ytd_values = values_by_month[:current_month]
+        return {
+            "total": sum(ytd_values),
+            "average": sum(ytd_values) / len(ytd_values) if ytd_values else 0,
+            "months_included": current_month,
+            "by_month": ytd_values
+        }
+
+    def same_period_last_year(self, current_date: date = None) -> dict:
+        """نفس الفترة من السنة الماضية"""
+        if current_date is None:
+            current_date = date.today()
+
+        last_year = date(
+            current_date.year - 1,
+            current_date.month,
+            min(current_date.day, 28)  # تجنب مشاكل فبراير
+        )
+
+        return {
+            "current_period": current_date,
+            "last_year_period": last_year,
+            "label": f"نفس الفترة {last_year.year}"
+        }
+
+    def rolling_months(self, months: int = 12) -> dict:
+        """آخر N شهر (Rolling)"""
+        today = date.today()
+        start = today - timedelta(days=months * 30)
+        return {
+            "start": start,
+            "end": today,
+            "months": months,
+            "label": f"آخر {months} شهر"
+        }
+```
+
+**الملفات:**
+- `core/time_intelligence/time_analytics.py`
+- `core/time_intelligence/period_calculator.py`
+
+### O5. Productivity Pattern Learning (تعلم أنماط الإنتاجية)
+
+**تعلم من سلوك المستخدم:**
+```python
+# core/time_intelligence/productivity_learner.py
+
+class ProductivityLearner:
+    """تعلم أنماط إنتاجية المستخدم"""
+
+    def __init__(self, user_id: int):
+        self.user_id = user_id
+        self.patterns = self.load_patterns()
+
+    def record_task_completion(self, task_type: str, duration_minutes: int,
+                                completed_at: datetime):
+        """سجل إكمال مهمة للتعلم"""
+        self.patterns["tasks"].append({
+            "type": task_type,
+            "duration": duration_minutes,
+            "hour": completed_at.hour,
+            "day_of_week": completed_at.weekday(),
+            "completed_at": completed_at
+        })
+
+    def get_best_hours(self) -> list:
+        """أفضل ساعات العمل للمستخدم"""
+        # تحليل المهام المكتملة حسب الساعة
+        hour_productivity = {}
+        for task in self.patterns["tasks"]:
+            hour = task["hour"]
+            if hour not in hour_productivity:
+                hour_productivity[hour] = {"count": 0, "total_duration": 0}
+            hour_productivity[hour]["count"] += 1
+            hour_productivity[hour]["total_duration"] += task["duration"]
+
+        # ترتيب حسب الإنتاجية
+        sorted_hours = sorted(
+            hour_productivity.items(),
+            key=lambda x: x[1]["count"],
+            reverse=True
+        )
+
+        return [{"hour": h, "productivity": p} for h, p in sorted_hours[:5]]
+
+    def get_average_duration(self, task_type: str) -> int:
+        """متوسط وقت نوع معين من المهام"""
+        tasks = [t for t in self.patterns["tasks"] if t["type"] == task_type]
+        if not tasks:
+            return 30  # افتراضي 30 دقيقة
+        return sum(t["duration"] for t in tasks) // len(tasks)
+
+    def predict_completion_time(self, task_type: str) -> dict:
+        """توقع وقت إنهاء مهمة"""
+        avg_duration = self.get_average_duration(task_type)
+        best_hours = self.get_best_hours()
+
+        return {
+            "estimated_duration": avg_duration,
+            "best_time_to_start": best_hours[0]["hour"] if best_hours else 10,
+            "confidence": "high" if len(self.patterns["tasks"]) > 20 else "medium"
+        }
+
+    def detect_delay_patterns(self) -> list:
+        """اكتشاف أنماط التأخير"""
+        delayed_tasks = [t for t in self.patterns["tasks"]
+                        if t.get("was_delayed", False)]
+
+        patterns = []
+        # تحليل: هل التأخير يحدث في أيام معينة؟
+        # هل يحدث في نهاية الأسبوع؟
+        # هل يحدث مع أنواع معينة من المهام؟
+
+        return patterns
+```
+
+**الملفات:**
+- `core/time_intelligence/productivity_learner.py`
+- `core/time_intelligence/pattern_analyzer.py`
+
+### O6. Predictive Deadlines (توقع المواعيد النهائية)
+
+**تنبيهات ذكية مبكرة:**
+```python
+# core/time_intelligence/deadline_predictor.py
+
+class DeadlinePredictor:
+    """توقع التأخير قبل حدوثه"""
+
+    def __init__(self, productivity_learner: ProductivityLearner,
+                 working_calendar: WorkingCalendar):
+        self.learner = productivity_learner
+        self.calendar = working_calendar
+
+    def will_meet_deadline(self, task_type: str, deadline: date,
+                           start_date: date = None) -> dict:
+        """هل سيتم إنهاء المهمة في الوقت؟"""
+        if start_date is None:
+            start_date = date.today()
+
+        # احسب الوقت المتاح
+        available_days = self.calendar.working_days_between(start_date, deadline)
+
+        # احسب الوقت المطلوب
+        estimated_duration = self.learner.get_average_duration(task_type)
+        estimated_days = estimated_duration / (8 * 60)  # تحويل دقائق إلى أيام عمل
+
+        # احسب الهامش
+        margin = available_days - estimated_days
+
+        if margin >= 2:
+            status = "safe"
+            message = "✅ وقت كافي لإنهاء المهمة"
+        elif margin >= 0:
+            status = "tight"
+            message = "⚠️ الوقت ضيق - ابدأ قريباً"
+        else:
+            status = "at_risk"
+            message = f"🔴 خطر تأخير! محتاج تبدأ اليوم أو تطلب تمديد"
+
+        return {
+            "status": status,
+            "message": message,
+            "available_days": available_days,
+            "estimated_days": round(estimated_days, 1),
+            "margin_days": round(margin, 1),
+            "recommended_start": self._calculate_recommended_start(
+                deadline, estimated_days
+            )
+        }
+
+    def get_at_risk_tasks(self, tasks: list) -> list:
+        """المهام المعرضة للتأخير"""
+        at_risk = []
+        for task in tasks:
+            prediction = self.will_meet_deadline(
+                task["type"],
+                task["deadline"]
+            )
+            if prediction["status"] in ["tight", "at_risk"]:
+                at_risk.append({
+                    "task": task,
+                    "prediction": prediction
+                })
+        return at_risk
+
+    def generate_alerts(self, tasks: list) -> list:
+        """توليد تنبيهات ذكية"""
+        alerts = []
+
+        for task in tasks:
+            prediction = self.will_meet_deadline(task["type"], task["deadline"])
+
+            if prediction["status"] == "at_risk":
+                alerts.append({
+                    "type": "deadline_risk",
+                    "severity": "high",
+                    "task_id": task["id"],
+                    "message": f"⚠️ مهمة '{task['title']}' معرضة للتأخير!",
+                    "action": "ابدأ اليوم أو اطلب تمديد"
+                })
+            elif prediction["status"] == "tight":
+                alerts.append({
+                    "type": "deadline_warning",
+                    "severity": "medium",
+                    "task_id": task["id"],
+                    "message": f"💡 مهمة '{task['title']}' - الوقت ضيق",
+                    "action": f"ابدأ قبل {prediction['recommended_start']}"
+                })
+
+        return alerts
+```
+
+**الملفات:**
+- `core/time_intelligence/deadline_predictor.py`
+- `core/time_intelligence/alert_generator.py`
+
+### O7. Smart Auto-Rescheduling (إعادة جدولة ذكية)
+
+**إعادة ترتيب تلقائي:**
+```python
+# core/time_intelligence/auto_scheduler.py
+
+class AutoScheduler:
+    """إعادة جدولة ذكية تلقائية"""
+
+    def __init__(self, working_calendar: WorkingCalendar,
+                 productivity_learner: ProductivityLearner):
+        self.calendar = working_calendar
+        self.learner = productivity_learner
+
+    def reschedule_on_delay(self, delayed_task: dict, other_tasks: list) -> list:
+        """إعادة جدولة عند تأخر مهمة"""
+        rescheduled = []
+
+        for task in other_tasks:
+            if task["start_date"] > delayed_task["original_deadline"]:
+                # لا تأثير
+                continue
+
+            # احسب التأخير
+            delay_days = (delayed_task["new_deadline"] -
+                         delayed_task["original_deadline"]).days
+
+            # حرك المهام المتأثرة
+            new_start = task["start_date"] + timedelta(days=delay_days)
+            new_deadline = task["deadline"] + timedelta(days=delay_days)
+
+            rescheduled.append({
+                "task_id": task["id"],
+                "original_start": task["start_date"],
+                "new_start": new_start,
+                "original_deadline": task["deadline"],
+                "new_deadline": new_deadline,
+                "reason": f"تأخر مهمة '{delayed_task['title']}'"
+            })
+
+        return rescheduled
+
+    def optimize_schedule(self, tasks: list) -> list:
+        """تحسين الجدول بناءً على الأولويات والإنتاجية"""
+        optimized = []
+
+        # رتب حسب الأولوية والـ Deadline
+        sorted_tasks = sorted(tasks, key=lambda t: (
+            -t.get("priority", 0),
+            t["deadline"]
+        ))
+
+        # وزع على الأيام مع مراعاة الإنتاجية
+        for task in sorted_tasks:
+            best_slot = self._find_best_slot(task)
+            optimized.append({
+                "task": task,
+                "suggested_start": best_slot["date"],
+                "suggested_time": best_slot["time"],
+                "reason": best_slot["reason"]
+            })
+
+        return optimized
+
+    def suggest_meeting_time(self, duration_minutes: int,
+                            participants: list = None) -> list:
+        """اقتراح وقت مناسب للاجتماع"""
+        suggestions = []
+        today = date.today()
+
+        for day_offset in range(7):  # أسبوع قادم
+            check_date = today + timedelta(days=day_offset)
+
+            if not self.calendar.is_working_day(check_date):
+                continue
+
+            # الأوقات المفضلة للاجتماعات
+            preferred_times = ["10:00", "11:00", "14:00", "15:00"]
+
+            for time_str in preferred_times:
+                suggestions.append({
+                    "date": check_date,
+                    "time": time_str,
+                    "duration": duration_minutes,
+                    "availability": "free"  # يُحسب من التقويم
+                })
+
+        return suggestions[:5]  # أفضل 5 اقتراحات
+```
+
+**الملفات:**
+- `core/time_intelligence/auto_scheduler.py`
+- `core/time_intelligence/schedule_optimizer.py`
+
+### O8. Time-based Triggers (محفزات زمنية)
+
+**أحداث تلقائية بناءً على الوقت:**
+```python
+# core/time_intelligence/time_triggers.py
+
+class TimeTriggers:
+    """محفزات زمنية - أحداث تلقائية"""
+
+    def __init__(self):
+        self.triggers = self.load_triggers()
+
+    def register_trigger(self, trigger: dict):
+        """تسجيل محفز زمني جديد"""
+        # أنواع المحفزات:
+        # - before_date: قبل تاريخ معين بفترة
+        # - after_date: بعد تاريخ معين
+        # - recurring: متكرر (يومي/أسبوعي/شهري)
+        # - condition: عند تحقق شرط زمني
+
+        self.triggers.append({
+            "id": trigger.get("id"),
+            "type": trigger["type"],
+            "target_date": trigger.get("target_date"),
+            "offset_days": trigger.get("offset_days", 0),
+            "action": trigger["action"],
+            "data": trigger.get("data", {}),
+            "enabled": True
+        })
+
+    def check_triggers(self) -> list:
+        """فحص المحفزات وتنفيذ الناضجة"""
+        today = date.today()
+        fired = []
+
+        for trigger in self.triggers:
+            if not trigger["enabled"]:
+                continue
+
+            should_fire = False
+
+            if trigger["type"] == "before_date":
+                target = trigger["target_date"] - timedelta(days=trigger["offset_days"])
+                should_fire = today >= target
+
+            elif trigger["type"] == "on_date":
+                should_fire = today == trigger["target_date"]
+
+            elif trigger["type"] == "recurring":
+                should_fire = self._check_recurring(trigger, today)
+
+            if should_fire:
+                fired.append(trigger)
+                self._execute_trigger(trigger)
+
+        return fired
+
+    def create_contract_expiry_trigger(self, employee_id: int,
+                                       expiry_date: date,
+                                       days_before: int = 30):
+        """محفز انتهاء عقد"""
+        self.register_trigger({
+            "type": "before_date",
+            "target_date": expiry_date,
+            "offset_days": days_before,
+            "action": "notify_contract_expiry",
+            "data": {
+                "employee_id": employee_id,
+                "expiry_date": expiry_date
+            }
+        })
+
+    def create_reminder_trigger(self, reminder_date: date,
+                               message: str, task_id: int = None):
+        """محفز تذكير"""
+        self.register_trigger({
+            "type": "on_date",
+            "target_date": reminder_date,
+            "action": "show_reminder",
+            "data": {
+                "message": message,
+                "task_id": task_id
+            }
+        })
+```
+
+**الملفات:**
+- `core/time_intelligence/time_triggers.py`
+- `core/time_intelligence/trigger_executor.py`
+
+### O9. التكامل مع AI Copilot
+
+**كيف يستخدم AI Copilot الوعي الزمني:**
+```python
+# مثال على استخدام Time Intelligence في AI Copilot
+
+class AICopilotWithTime:
+    def __init__(self):
+        self.time = SystemTime()
+        self.calendar = WorkingCalendar()
+        self.parser = NaturalTimeParser()
+        self.analytics = TimeAnalytics()
+        self.predictor = DeadlinePredictor()
+
+    def process_query(self, query: str) -> str:
+        """معالجة استعلام يحتوي على تعبيرات زمنية"""
+
+        # "كم موظف تعينا الشهر الماضي؟"
+        if "الشهر الماضي" in query:
+            period = self.parser.parse("الشهر الماضي")
+            # استعلام على البيانات مع فلتر التاريخ
+
+        # "قارن رواتب Q1 بـ Q1 السنة الماضية"
+        if "قارن" in query and ("السنة الماضية" in query or "YoY" in query):
+            comparison = self.analytics.year_over_year(current, previous)
+            return self._format_comparison(comparison)
+
+        # "ذكرني أجدد العقود قبل رمضان"
+        if "ذكرني" in query:
+            reminder_date = self.parser.parse(query)
+            self.create_reminder(reminder_date, query)
+
+        # "هل هلحق أخلص المهمة دي؟"
+        if "هل هلحق" in query or "Deadline" in query:
+            prediction = self.predictor.will_meet_deadline(task)
+            return prediction["message"]
+```
+
+### O10. Database Schema
+
+```sql
+-- جدول إجازات الدول
+CREATE TABLE country_holidays (
+    id SERIAL PRIMARY KEY,
+    country_code VARCHAR(2) NOT NULL,  -- "SA", "EG", etc.
+    holiday_date DATE NOT NULL,
+    hijri_date VARCHAR(20),
+    name_ar VARCHAR(255) NOT NULL,
+    name_en VARCHAR(255),
+    holiday_type VARCHAR(50),  -- national, religious, other
+    days_count INTEGER DEFAULT 1,
+    year INTEGER,
+    UNIQUE(country_code, holiday_date)
+);
+
+-- جدول أنماط إنتاجية المستخدم
+CREATE TABLE user_productivity_patterns (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    task_type VARCHAR(100),
+    duration_minutes INTEGER,
+    completed_hour INTEGER,
+    completed_day_of_week INTEGER,
+    was_delayed BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- جدول المحفزات الزمنية
+CREATE TABLE time_triggers (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER,
+    trigger_type VARCHAR(50) NOT NULL,
+    target_date DATE,
+    offset_days INTEGER DEFAULT 0,
+    action_type VARCHAR(100) NOT NULL,
+    action_data JSONB,
+    is_enabled BOOLEAN DEFAULT TRUE,
+    last_fired_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- جدول التذكيرات
+CREATE TABLE reminders (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER,
+    reminder_date DATE NOT NULL,
+    reminder_time TIME,
+    message TEXT NOT NULL,
+    related_task_id INTEGER,
+    related_entity_type VARCHAR(50),
+    related_entity_id INTEGER,
+    is_completed BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Indexes
+CREATE INDEX idx_holidays_country_year ON country_holidays(country_code, year);
+CREATE INDEX idx_productivity_user ON user_productivity_patterns(user_id);
+CREATE INDEX idx_triggers_date ON time_triggers(target_date);
+CREATE INDEX idx_reminders_date ON reminders(reminder_date);
+```
+
+### O11. هيكل الملفات
+
+```
+core/time_intelligence/
+├── __init__.py
+├── system_time.py              # نواة الوقت
+├── hijri_utils.py              # التقويم الهجري
+├── working_calendar.py         # تقويم العمل
+├── time_parser.py              # محلل الوقت اللغوي
+├── arabic_time_patterns.py     # أنماط الوقت العربية
+├── time_analytics.py           # التحليلات الزمنية
+├── period_calculator.py        # حساب الفترات
+├── productivity_learner.py     # تعلم الإنتاجية
+├── pattern_analyzer.py         # تحليل الأنماط
+├── deadline_predictor.py       # توقع المواعيد
+├── alert_generator.py          # توليد التنبيهات
+├── auto_scheduler.py           # الجدولة التلقائية
+├── schedule_optimizer.py       # تحسين الجدول
+├── time_triggers.py            # المحفزات الزمنية
+├── trigger_executor.py         # منفذ المحفزات
+└── holidays/
+    ├── __init__.py
+    ├── saudi_arabia.py         # إجازات السعودية
+    ├── egypt.py                # إجازات مصر
+    ├── uae.py                  # إجازات الإمارات
+    └── holiday_loader.py       # تحميل الإجازات
+```
+
+### O12. المراحل التنفيذية
+
+```
+O1 → System Time Core (نواة الوقت) - Gregorian + Hijri
+O2 → Working Calendar (تقويم العمل) - من إعدادات الدولة ومستحقات
+O3 → Natural Language Parser (المحلل اللغوي) - فهم "بعد العيد"
+O4 → Time Analytics (التحليلات الزمنية) - YoY, MoM, QoQ, YTD
+O5 → Productivity Learning (تعلم الإنتاجية) - أنماط المستخدم
+O6 → Predictive Deadlines (توقع التأخير) - تنبيهات مبكرة
+O7 → Auto-Rescheduling (الجدولة الذكية) - إعادة ترتيب تلقائي
+O8 → Time Triggers (المحفزات الزمنية) - أحداث تلقائية
+```
+
+---
+
 ## 🚀 أفكار إبداعية لتطوير المنظومة
 
 ### 1. Smart Inbox (صندوق وارد ذكي)
@@ -3023,7 +3929,19 @@ N6 → Learning System (نظام التعلم)
 N7 → Audit & History (السجل والتاريخ)
 ```
 
-### المرحلة 17: التجارية (مستقبلية)
+### المرحلة 17: الوعي الزمني الفائق (Time Intelligence) 🔴 **جديد**
+```
+O1 → System Time Core (نواة الوقت) - Gregorian + Hijri
+O2 → Working Calendar (تقويم العمل) - إعدادات الدولة ومستحقات
+O3 → Natural Language Parser (المحلل اللغوي) - "بعد العيد"
+O4 → Time Analytics (التحليلات الزمنية) - YoY, MoM, QoQ, YTD
+O5 → Productivity Learning (تعلم الإنتاجية) - أنماط المستخدم
+O6 → Predictive Deadlines (توقع التأخير) - تنبيهات مبكرة
+O7 → Auto-Rescheduling (الجدولة الذكية) - إعادة ترتيب تلقائي
+O8 → Time Triggers (المحفزات الزمنية) - أحداث تلقائية
+```
+
+### المرحلة 18: التجارية (مستقبلية)
 ```
 E1 → Licensing System
 E2 → Auto-Update
@@ -3031,7 +3949,7 @@ E3 → Installer
 E4 → Multi-Company
 ```
 
-### المرحلة 18: التوسع (مستقبلية)
+### المرحلة 19: التوسع (مستقبلية)
 ```
 F1 → API Layer
 F2 → Plugin System
