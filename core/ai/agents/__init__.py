@@ -50,6 +50,19 @@ from .task_agent import (
     TaskSuggestion
 )
 
+from .calendar_agent import (
+    CalendarAgent,
+    get_calendar_agent,
+    suggest_best_time,
+    check_calendar_conflicts,
+    analyze_work_patterns,
+    suggest_break_times,
+    TimeSlotSuggestion,
+    ConflictAnalysis,
+    WorkPatternAnalysis,
+    ConflictSeverity
+)
+
 __all__ = [
     # Data Agent
     'DataAgent',
@@ -88,5 +101,16 @@ __all__ = [
     'detect_overdue_risks',
     'suggest_task_order',
     'TaskAnalysis',
-    'TaskSuggestion'
+    'TaskSuggestion',
+    # Calendar Agent
+    'CalendarAgent',
+    'get_calendar_agent',
+    'suggest_best_time',
+    'check_calendar_conflicts',
+    'analyze_work_patterns',
+    'suggest_break_times',
+    'TimeSlotSuggestion',
+    'ConflictAnalysis',
+    'WorkPatternAnalysis',
+    'ConflictSeverity'
 ]
