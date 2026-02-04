@@ -87,60 +87,19 @@ task = Task(
 task_id = create_task(task)
 
 # 2. جلب المهام
-from modules.tasks import get_all_tasks, get_tasks_due_today, get_overdue_tasks
+from modules.tasks import get_all_tasks, get_tasks_due_today
 
 all_tasks = get_all_tasks()
 today_tasks = get_tasks_due_today()
-overdue = get_overdue_tasks()
 
-# 3. تغيير الحالة
-from modules.tasks import change_task_status, TaskStatus
-
-change_task_status(task_id, TaskStatus.IN_PROGRESS)
-
-# 4. قائمة التحقق (Checklist)
-from modules.tasks import add_checklist_item, toggle_checklist_item
-
-item_id = add_checklist_item(task_id, "مراجعة الرصيد")
-toggle_checklist_item(item_id)
-
-# 5. المهام المتكررة
-from modules.tasks import RecurrencePattern, RecurrenceType
-
-pattern = RecurrencePattern(
-    type=RecurrenceType.WEEKLY,
-    interval=1,
-    days_of_week=["sunday", "tuesday", "thursday"]
-)
-task.is_recurring = True
-task.recurrence_pattern = pattern
-
-# 6. تكامل التقويم
-from modules.tasks import get_tasks_for_date, task_to_calendar_event
-from datetime import date
-
-events = get_tasks_for_date(date.today())
-event = task_to_calendar_event(task)
-
-# 7. وكيل AI للمهام
-from core.ai.agents import get_task_agent, analyze_task
-
-agent = get_task_agent()
-analysis = agent.analyze_task("مراجعة طلب إجازة أحمد محمد")
-print(f"الأولوية: {analysis.suggested_priority}")
-print(f"التصنيف: {analysis.suggested_category}")
-print(f"الإجراء: {analysis.suggested_action}")
-
-# 8. عرض الواجهة
-from modules.tasks.screens import TaskListScreen, KanbanBoard
-
-# قائمة المهام
-task_list = TaskListScreen()
-task_list.show()
-
-# لوحة كانبان
+# 3. لوحة كانبان (Drag & Drop)
+from modules.tasks.screens import KanbanBoard
 board = KanbanBoard()
-board.show()
+
+# 4. وكيل AI للمهام
+from core.ai.agents import analyze_task
+analysis = analyze_task("مراجعة طلب إجازة أحمد")
+print(f"الأولوية: {analysis.suggested_priority}")
 ```
 
 ### 📋 الحالة الحالية للمحاور:
@@ -151,20 +110,156 @@ board.show()
 | **B (الذكاء الاصطناعي)** | ✅ **100% مكتمل** |
 | **C (موديول الإيميل)** | ✅ **100% مكتمل** |
 | **D (التحسينات)** | ✅ **90%+ مكتمل** |
+| **J (الإشعارات)** | ✅ **100% مكتمل** |
 | **H (موديول المهام)** | ✅ **100% مكتمل** |
 
 ### 🎯 المهمة القادمة:
 
 **المحور I: موديول التقويم (Calendar Module)**
-- I1: نماذج البيانات
-- I2: عرض يومي/أسبوعي/شهري
-- I3: تكامل المهام
-- I4: تذكيرات
 
 ### 🔗 الـ Branch:
 
 ```
 claude/task-models-implementation-8o4e2
+```
+
+---
+
+## الجلسة: 4 فبراير 2026 (متأخر) - المحور J: نظام الإشعارات الذكي 🔔
+
+### 📋 ملخص الجلسة:
+
+**تم إكمال المحور J بالكامل (نظام الإشعارات الذكي):**
+
+| المهمة | الوصف | الحالة |
+|--------|-------|--------|
+| **J1** | نماذج البيانات + جدول PostgreSQL | ✅ مكتمل |
+| **J2** | أيقونة الجرس (Notification Bell) | ✅ مكتمل |
+| **J3** | صفحة مركز الإشعارات | ✅ مكتمل |
+| **J4** | معالج الإجراءات السريعة | ✅ مكتمل |
+| **J5** | تحديد الأولوية بالذكاء (AI) | ✅ مكتمل |
+| **J6** | إشعارات سطح المكتب | ✅ مكتمل |
+
+### 📁 الملفات الجديدة:
+
+```
+modules/notifications/
+├── __init__.py                    # تصدير كل المكونات
+├── models/
+│   ├── __init__.py
+│   └── notification_models.py     # Notification, NotificationType, etc.
+├── widgets/
+│   ├── __init__.py
+│   ├── notification_bell.py       # أيقونة الجرس + Badge
+│   ├── notification_popup.py      # القائمة المنبثقة
+│   └── notification_card.py       # بطاقة الإشعار
+├── screens/
+│   ├── __init__.py
+│   └── notification_center.py     # صفحة مركز الإشعارات
+├── actions/
+│   ├── __init__.py
+│   ├── action_handler.py          # معالج الإجراءات
+│   └── action_registry.py         # سجل الإجراءات
+├── ai/
+│   ├── __init__.py
+│   └── priority_detector.py       # كاشف الأولوية الذكي
+└── desktop/
+    ├── __init__.py
+    └── desktop_notifier.py        # إشعارات Windows
+
+core/database/tables/
+└── notifications.sql              # جدول الإشعارات + functions
+```
+
+### 💡 كيفية الاستخدام:
+
+```python
+# 1. إنشاء إشعار
+from modules.notifications import notify, NotificationType, NotificationPriority
+
+notify(
+    "إيميل جديد",
+    "وصل إيميل من HR بخصوص تسوية الإجازات",
+    NotificationType.EMAIL,
+    NotificationPriority.HIGH
+)
+
+# 2. جلب الإشعارات
+from modules.notifications import get_notifications, get_unread_count
+
+notifications = get_notifications(limit=20)
+unread = get_unread_count()
+
+# 3. أيقونة الجرس (في الـ UI)
+from modules.notifications import create_notification_bell
+
+bell = create_notification_bell(parent=self)
+bell.notification_clicked.connect(self.on_notification_clicked)
+bell.view_all_clicked.connect(self.open_notification_center)
+toolbar.addWidget(bell)
+
+# 4. تحليل الأولوية بالـ AI
+from modules.notifications import analyze_notification
+
+result = analyze_notification(
+    "طلب عاجل: تسوية مستحقات",
+    "يرجى تسوية مستحقات الموظف قبل نهاية اليوم"
+)
+print(f"الأولوية: {result.priority}")      # urgent
+print(f"التصنيف: {result.category}")       # financial
+print(f"المقترح: {result.suggested_action}")
+
+# 5. إشعار سطح المكتب
+from modules.notifications import send_desktop_notification
+
+send_desktop_notification(
+    "تنبيه!",
+    "لديك مهمة تنتهي اليوم",
+    is_urgent=True
+)
+
+# 6. تنفيذ إجراء
+from modules.notifications import execute_action
+
+result = execute_action("navigate_email", {"email_id": 123})
+```
+
+### 🎯 المميزات الرئيسية:
+
+1. **نظام إشعارات مركزي** - يربط الإيميل، المهام، التقويم، النظام
+2. **أيقونة جرس ذكية** - Badge للعدد + قائمة منبثقة
+3. **تحليل AI للأولوية** - كلمات مفتاحية + Ollama
+4. **إجراءات سريعة** - تنفيذ مباشر من الإشعار
+5. **إشعارات Windows** - Toast notifications
+
+### 📋 الحالة الحالية:
+
+| المحور | الحالة |
+|--------|--------|
+| **A-D (الأساسية)** | ✅ **100% مكتمل** |
+| **J (الإشعارات)** | ✅ **100% مكتمل** |
+| **H (المهام)** | 🔴 القادم |
+| **I (التقويم)** | 🔴 القادم |
+| **K (وكلاء AI)** | 🔴 القادم |
+
+### 🎯 المهمة القادمة:
+
+**المحور H: موديول المهام (Tasks)**
+- H1: Task Models + Database
+- H2: Task List Screen
+- H3: Task Board (Kanban)
+- H4: Task Integration with Calendar
+
+### 📝 طريقة بدء الجلسة القادمة:
+
+```
+"كمّل من آخر جلسة - ابدأ المحور H (المهام)"
+```
+
+### 🔗 الـ Branch:
+
+```
+claude/implement-notifications-4a3TD
 ```
 
 ---
