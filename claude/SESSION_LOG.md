@@ -16,6 +16,167 @@
 
 ---
 
+## الجلسة: 4 فبراير 2026 (فجراً) - المحور K: منظومة وكلاء AI المتكاملة ✅
+
+### 📋 ملخص الجلسة:
+
+**تم إكمال المحور K بالكامل - منظومة وكلاء AI المتكاملة (AI Orchestration):**
+
+| المهمة | الوصف | الحالة |
+|--------|-------|--------|
+| **K1** | المنسق الرئيسي (Coordinator Agent + Event Bus + Registry) | ✅ مكتمل |
+| **K2** | تحديث وكيل المهام للتكامل | ✅ مكتمل |
+| **K3** | وكيل النماذج (Form Agent) | ✅ مكتمل |
+| **K4** | وكيل الإجراءات (Action Agent) | ✅ مكتمل |
+| **K5** | وكيل التعلم (Learning Agent) | ✅ مكتمل |
+| **K6** | محرك سير العمل (Workflow Engine) | ✅ مكتمل |
+
+### 📁 الملفات الجديدة:
+
+```
+core/ai/orchestration/
+├── __init__.py                     # تصدير كل المكونات
+├── event_bus.py                    # نظام الأحداث المركزي (EventType, EventBus)
+├── agent_registry.py               # سجل الوكلاء (AgentCapability, AgentRegistry)
+└── coordinator_agent.py            # المنسق الرئيسي (RequestType, CoordinatorAgent)
+
+core/ai/workflow/
+├── __init__.py                     # تصدير المكونات
+└── workflow_engine.py              # محرك سير العمل (Workflow, Step, Condition)
+
+core/ai/agents/
+├── form_agent.py                   # وكيل النماذج (FormType, FormAgent)
+├── action_agent.py                 # وكيل الإجراءات (ActionType, ActionAgent)
+└── learning_agent.py               # وكيل التعلم (LearningAgent)
+```
+
+### 💡 كيفية الاستخدام:
+
+```python
+# 1. بدء منظومة التنسيق
+from core.ai.orchestration import start_coordinator, stop_coordinator
+
+start_coordinator()  # عند بدء التطبيق
+
+# 2. نشر حدث
+from core.ai.orchestration import publish_event, EventType
+
+publish_event(EventType.NEW_EMAIL, data={"email": email_obj})
+
+# 3. معالجة طلب مباشر
+from core.ai.orchestration import process, RequestType
+
+response = process(RequestType.ANALYZE_EMAIL, data={"email": email_obj})
+print(f"النتيجة: {response.data}")
+
+# 4. تسجيل وكيل مخصص
+from core.ai.orchestration import register_agent, AgentCapability
+
+register_agent(
+    agent_id="my_agent",
+    agent=my_agent_instance,
+    capabilities=[AgentCapability.DATA_ANALYSIS]
+)
+
+# 5. استخدام وكيل النماذج
+from core.ai.agents import detect_form_type, fill_form, FormType
+
+# اكتشاف نوع النموذج من نص
+result = detect_form_type("طلب تسوية إجازة للموظف أحمد")
+print(f"النوع: {result.form_type}")  # VACATION_SETTLEMENT
+
+# ملء النموذج تلقائياً
+form_result = fill_form(
+    FormType.VACATION_SETTLEMENT,
+    text="الموظف رقم 123 - أحمد محمد",
+    employee_data={"employee_id": 123, "employee_name": "أحمد محمد"}
+)
+
+# 6. استخدام وكيل الإجراءات
+from core.ai.agents import execute_action, approve_action, ActionType
+
+# تنفيذ إجراء
+result = execute_action(ActionType.NOTIFY_USER, {"title": "تنبيه", "message": "..."})
+
+# للإجراءات عالية الخطورة
+result = execute_action(ActionType.DB_DELETE, {"table": "...", "id": 123})
+if not result.success:
+    # يحتاج موافقة
+    approved = approve_action(result.action_id, approved_by="admin")
+
+# 7. استخدام وكيل التعلم
+from core.ai.agents import learn_preference, get_preference, record_feedback
+
+# تعلم تفضيل
+learn_preference("default_priority", "high", category="tasks")
+
+# جلب تفضيل
+priority = get_preference("default_priority", default="normal")
+
+# تسجيل رد فعل
+record_feedback(
+    suggestion_type="priority",
+    suggestion_value="high",
+    accepted=True
+)
+
+# 8. استخدام محرك سير العمل
+from core.ai.workflow import start_workflow, get_available_workflows
+
+# عرض السيرات المتاحة
+workflows = get_available_workflows()
+for wf in workflows:
+    print(f"{wf['name_ar']}: {wf['id']}")
+
+# بدء سير عمل
+instance_id = start_workflow("vacation_settlement", context={"email": email_data})
+
+# 9. إنشاء سير عمل مخصص
+from core.ai.workflow import Workflow, register_workflow
+
+def my_workflow_factory():
+    wf = Workflow("my_workflow", "My Workflow", "سير عمل مخصص")
+    wf.add_step("step1", "Step 1", "الخطوة الأولى", handler=my_handler)
+    return wf
+
+register_workflow("my_workflow", my_workflow_factory)
+```
+
+### 🎯 المميزات الرئيسية:
+
+1. **Event Bus** - نظام أحداث مركزي (publish/subscribe)
+2. **Agent Registry** - سجل وكلاء مع قدرات ومستويات
+3. **Coordinator** - توجيه تلقائي للوكيل المناسب
+4. **Form Agent** - اكتشاف وملء النماذج تلقائياً
+5. **Action Agent** - تنفيذ الإجراءات مع مستويات خطورة
+6. **Learning Agent** - تعلم من أنماط المستخدم
+7. **Workflow Engine** - سيناريوهات عمل آلية
+
+### 📋 الحالة الحالية للمحاور:
+
+| المحور | الحالة |
+|--------|--------|
+| **A (البنية التحتية)** | ✅ **100% مكتمل** |
+| **B (الذكاء الاصطناعي)** | ✅ **100% مكتمل** |
+| **C (موديول الإيميل)** | ✅ **100% مكتمل** |
+| **D (التحسينات)** | ✅ **90%+ مكتمل** |
+| **J (الإشعارات)** | ✅ **100% مكتمل** |
+| **H (موديول المهام)** | ✅ **100% مكتمل** |
+| **I (موديول التقويم)** | ✅ **100% مكتمل** |
+| **K (وكلاء AI)** | ✅ **100% مكتمل** |
+
+### 🎯 المهمة القادمة:
+
+**المحور L: مصمم التقارير والنماذج (Report & Form Designer)**
+
+### 🔗 الـ Branch:
+
+```
+claude/ai-agent-integration-00vOX
+```
+
+---
+
 ## الجلسة: 4 فبراير 2026 (ليلاً جداً) - المحور I: موديول التقويم ✅
 
 ### 📋 ملخص الجلسة:

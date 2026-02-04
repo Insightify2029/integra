@@ -63,6 +63,51 @@ from .calendar_agent import (
     ConflictSeverity
 )
 
+# Track K - AI Orchestration Agents
+from .form_agent import (
+    FormAgent,
+    get_form_agent,
+    detect_form_type,
+    fill_form,
+    extract_form_data,
+    validate_form,
+    register_form_agent,
+    FormType,
+    FormField,
+    FormDetectionResult,
+    FormFillingResult
+)
+
+from .action_agent import (
+    ActionAgent,
+    get_action_agent,
+    execute_action,
+    approve_action,
+    reject_action,
+    get_pending_actions,
+    register_action_handler,
+    register_action_agent,
+    ActionType,
+    ActionLevel,
+    ActionStatus,
+    Action,
+    ActionResult
+)
+
+from .learning_agent import (
+    LearningAgent,
+    get_learning_agent,
+    learn_preference,
+    get_preference,
+    record_feedback,
+    get_preferred_value,
+    register_learning_agent,
+    UserPreference,
+    UserPattern,
+    Feedback,
+    LearningInsight
+)
+
 __all__ = [
     # Data Agent
     'DataAgent',
@@ -112,5 +157,43 @@ __all__ = [
     'TimeSlotSuggestion',
     'ConflictAnalysis',
     'WorkPatternAnalysis',
-    'ConflictSeverity'
+    'ConflictSeverity',
+    # Form Agent (Track K)
+    'FormAgent',
+    'get_form_agent',
+    'detect_form_type',
+    'fill_form',
+    'extract_form_data',
+    'validate_form',
+    'register_form_agent',
+    'FormType',
+    'FormField',
+    'FormDetectionResult',
+    'FormFillingResult',
+    # Action Agent (Track K)
+    'ActionAgent',
+    'get_action_agent',
+    'execute_action',
+    'approve_action',
+    'reject_action',
+    'get_pending_actions',
+    'register_action_handler',
+    'register_action_agent',
+    'ActionType',
+    'ActionLevel',
+    'ActionStatus',
+    'Action',
+    'ActionResult',
+    # Learning Agent (Track K)
+    'LearningAgent',
+    'get_learning_agent',
+    'learn_preference',
+    'get_preference',
+    'record_feedback',
+    'get_preferred_value',
+    'register_learning_agent',
+    'UserPreference',
+    'UserPattern',
+    'Feedback',
+    'LearningInsight'
 ]
