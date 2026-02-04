@@ -39,6 +39,17 @@ from .alert_agent import (
     AlertSignals
 )
 
+from .task_agent import (
+    TaskAgent,
+    get_task_agent,
+    analyze_task,
+    get_task_suggestions,
+    detect_overdue_risks,
+    suggest_task_order,
+    TaskAnalysis,
+    TaskSuggestion
+)
+
 __all__ = [
     # Data Agent
     'DataAgent',
@@ -68,5 +79,14 @@ __all__ = [
     'AlertPriority',
     'AlertCategory',
     'AlertSummary',
-    'AlertSignals'
+    'AlertSignals',
+    # Task Agent
+    'TaskAgent',
+    'get_task_agent',
+    'analyze_task',
+    'get_task_suggestions',
+    'detect_overdue_risks',
+    'suggest_task_order',
+    'TaskAnalysis',
+    'TaskSuggestion'
 ]
