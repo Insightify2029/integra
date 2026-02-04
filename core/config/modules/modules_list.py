@@ -13,6 +13,7 @@ from . import module_email
 from . import module_designer
 from . import module_calendar
 from . import module_dashboard
+from . import module_bi
 
 
 def get_all_modules():
@@ -89,6 +90,14 @@ def get_all_modules():
             'icon': module_dashboard.MODULE_ICON,
             'color': module_dashboard.MODULE_COLOR,
             'enabled': module_dashboard.MODULE_ENABLED
+        },
+        {
+            'id': module_bi.MODULE_ID,
+            'name_ar': module_bi.MODULE_NAME_AR,
+            'name_en': module_bi.MODULE_NAME_EN,
+            'icon': module_bi.MODULE_ICON,
+            'color': module_bi.MODULE_COLOR,
+            'enabled': module_bi.MODULE_ENABLED
         }
     ]
 

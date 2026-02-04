@@ -7,6 +7,7 @@ All application dialogs.
 from .settings import SettingsDialog
 from .themes import ThemesDialog
 from .sync_settings import SyncSettingsDialog
+from .bi_settings import BISettingsDialog
 from .message import show_info, show_warning, show_error, show_success, confirm
 
 # Toast notifications (modern, non-blocking)
@@ -21,6 +22,7 @@ __all__ = [
     'SettingsDialog',
     'ThemesDialog',
     'SyncSettingsDialog',
+    'BISettingsDialog',
     # Modal dialogs (blocking)
     'show_info',
     'show_warning',

@@ -16,6 +16,125 @@
 
 ---
 
+## الجلسة: 4 فبراير 2026 (ليلاً) - المحور M: تكامل Power BI Desktop ✅
+
+### 📋 ملخص الجلسة:
+
+**تم إكمال المحور M بالكامل - الربط مع Power BI Desktop (BI Connector):**
+
+| المهمة | الوصف | الحالة |
+|--------|-------|--------|
+| **M1** | إعداد الاتصال (Connection Config) | ✅ مكتمل |
+| **M2** | BI Views - عروض SQL محسّنة للتحليلات | ✅ مكتمل |
+| **M3** | تصدير تلقائي (Auto Export) - CSV/Excel | ✅ مكتمل |
+| **M4** | قوالب Power BI جاهزة (Template Manager) | ✅ مكتمل |
+| **M5** | واجهة إدارة BI (BI Settings Dialog) | ✅ مكتمل |
+| **M6** | التوثيق (Documentation) | ✅ مكتمل |
+
+### 📁 الملفات الجديدة:
+
+```
+core/bi/
+├── __init__.py                    # تصدير كل المكونات
+├── connection_config.py           # إعدادات الاتصال + التصدير + القوالب
+├── views_manager.py               # إدارة BI Views في PostgreSQL
+├── data_exporter.py               # تصدير البيانات إلى CSV/Excel
+├── export_scheduler.py            # جدولة التصدير التلقائي
+└── template_manager.py            # إدارة قوالب Power BI
+
+ui/dialogs/bi_settings/
+├── __init__.py
+└── bi_settings_dialog.py          # واجهة إدارة BI كاملة
+
+core/config/modules/
+└── module_bi.py                   # تسجيل موديول BI
+
+docs/
+└── power_bi_setup.md              # دليل إعداد Power BI
+
+templates/power_bi/                # مجلد قوالب .pbit
+exports/bi_data/                   # مجلد التصدير
+```
+
+### 💡 كيفية الاستخدام:
+
+```python
+# 1. إنشاء BI Views في قاعدة البيانات
+from core.bi import get_bi_views_manager
+
+manager = get_bi_views_manager()
+success, failed = manager.create_all_views()
+
+# 2. تصدير البيانات إلى CSV
+from core.bi import get_bi_exporter
+
+exporter = get_bi_exporter()
+result = exporter.export_to_csv("employees_summary")
+print(f"Exported to: {result.file_path}")
+
+# 3. تصدير كل Views إلى Excel
+result = exporter.export_all_views_excel()
+print(f"Excel file: {result.file_path}")
+
+# 4. جدولة التصدير التلقائي
+from core.bi import get_export_scheduler, ExportFrequency
+from datetime import time
+
+scheduler = get_export_scheduler()
+scheduler.configure(
+    enabled=True,
+    frequency=ExportFrequency.DAILY,
+    time_of_day=time(6, 0),
+    export_format="csv"
+)
+scheduler.start()
+
+# 5. إدارة قوالب Power BI
+from core.bi import get_template_manager
+
+tm = get_template_manager()
+templates = tm.get_all_templates()
+for t in templates:
+    print(f"{t.name_ar}: {t.file_name}")
+
+# فتح قالب في Power BI Desktop
+tm.open_template("employees_dashboard")
+
+# 6. فتح واجهة BI Settings من الكود
+from ui.dialogs.bi_settings import BISettingsDialog
+dialog = BISettingsDialog(parent)
+dialog.exec_()
+```
+
+### 🎯 المميزات الرئيسية:
+
+1. **BI Views محسّنة**: 7 Views جاهزة للتحليلات (employees_summary, department_stats, payroll_analysis, إلخ)
+2. **تصدير متعدد الصيغ**: CSV مع دعم العربية، Excel مع sheets متعددة
+3. **جدولة تلقائية**: تصدير يومي/أسبوعي/بالساعة
+4. **قوالب جاهزة**: 5 قوالب Power BI للتقارير الشائعة
+5. **واجهة متكاملة**: 5 تبويبات (الاتصال، التصدير، Views، القوالب، الدليل)
+6. **دليل مفصّل**: خطوات إعداد Power BI Desktop بالعربية والإنجليزية
+
+### 📊 Views المتاحة:
+
+| View | الوصف |
+|------|-------|
+| `employees_summary` | بيانات الموظفين الشاملة مع كل الجداول المرتبطة |
+| `department_stats` | إحصائيات الأقسام (العدد، المتوسط، المجموع) |
+| `payroll_analysis` | تحليل الرواتب حسب الشركة/القسم/المسمى |
+| `monthly_trends` | اتجاهات التوظيف والإنهاء الشهرية |
+| `company_summary` | ملخص الشركة (الموظفين، الأقسام، الرواتب) |
+| `job_title_analysis` | تحليل المسميات الوظيفية |
+| `nationality_distribution` | توزيع الجنسيات |
+
+### 🔄 التغييرات الأخرى:
+
+- تحديث الإصدار إلى v3.1.0
+- إضافة موديول BI إلى Launcher (10 موديولات الآن)
+- تحديث modules_list.py
+
+---
+
 ## الجلسة: 4 فبراير 2026 (مساءً) - المحور L: مصمم التقارير والنماذج ✅
 
 ### 📋 ملخص الجلسة:
