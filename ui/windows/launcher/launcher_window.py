@@ -112,6 +112,11 @@ class LauncherWindow(BaseWindow):
             from ui.dialogs.bi_settings import BISettingsDialog
             dialog = BISettingsDialog(self)
             dialog.exec_()
+        elif module_id == "copilot":
+            from modules.copilot.window import CopilotMainWindow
+            window = CopilotMainWindow()
+            window.show()
+            self._open_windows[module_id] = window
         else:
             from ui.dialogs import show_info
             show_info(self, "قريباً", f"موديول {module_id} قيد التطوير")
