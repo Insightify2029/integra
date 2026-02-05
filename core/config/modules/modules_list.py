@@ -16,6 +16,7 @@ from . import module_dashboard
 from . import module_bi
 from . import module_copilot
 from . import module_time_intelligence
+from . import module_file_manager
 
 
 def get_all_modules():
@@ -116,6 +117,14 @@ def get_all_modules():
             'icon': module_time_intelligence.MODULE_ICON,
             'color': module_time_intelligence.MODULE_COLOR,
             'enabled': module_time_intelligence.MODULE_ENABLED
+        },
+        {
+            'id': module_file_manager.MODULE_ID,
+            'name_ar': module_file_manager.MODULE_NAME_AR,
+            'name_en': module_file_manager.MODULE_NAME_EN,
+            'icon': module_file_manager.MODULE_ICON,
+            'color': module_file_manager.MODULE_COLOR,
+            'enabled': module_file_manager.MODULE_ENABLED
         }
     ]
 

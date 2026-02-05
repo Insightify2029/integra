@@ -16,6 +16,140 @@
 
 ---
 
+## الجلسة: 5 فبراير 2026 - المحور P: مدير الملفات الذكي (Smart File Manager) ✅
+
+### ملخص الجلسة:
+
+**تم إكمال المحور P بالكامل - Smart File Manager:**
+
+| المهمة | الوصف | الحالة |
+|--------|-------|--------|
+| **P1** | Excel AI Engine (محرك Excel الذكي - استيراد، تحليل، تنظيف، ربط) | ✅ مكتمل |
+| **P2** | PDF AI Studio (فصل، دمج، ضغط، OCR، علامة مائية، تشفير) | ✅ مكتمل |
+| **P3** | Image Tools (تغيير حجم، تحويل، ضغط، معالجة دفعية) | ✅ مكتمل |
+| **P4** | Word Document Engine (قراءة، كتابة، تحويل PDF) | ✅ مكتمل |
+| **P5** | File Browser (مستكشف ملفات، وسوم، بحث، عمليات جماعية) | ✅ مكتمل |
+| **P6** | Cloud Storage Integration (Google Drive, OneDrive, Dropbox) | ✅ مكتمل |
+| **P7** | Document Attachments (تخزين هجين BLOB/Local/Cloud، إصدارات) | ✅ مكتمل |
+
+### الملفات الجديدة:
+
+```
+core/file_manager/
+├── __init__.py                          # تصدير كل المكونات
+├── excel/
+│   ├── __init__.py
+│   ├── excel_ai_engine.py               # محرك Excel الرئيسي
+│   ├── column_detector.py               # اكتشاف أنواع الأعمدة بالذكاء
+│   ├── data_cleaner.py                  # تنظيف البيانات تلقائياً
+│   └── db_importer.py                   # استيراد لقاعدة البيانات
+├── pdf/
+│   ├── __init__.py
+│   ├── pdf_ai_studio.py                 # استوديو PDF الشامل
+│   └── pdf_tools.py                     # أدوات PDF الأساسية
+├── image/
+│   ├── __init__.py
+│   └── image_tools.py                   # أدوات معالجة الصور
+├── word/
+│   ├── __init__.py
+│   └── word_engine.py                   # محرك مستندات Word
+├── browser/
+│   ├── __init__.py
+│   ├── file_browser.py                  # مستكشف الملفات
+│   ├── file_search.py                   # بحث متقدم
+│   └── bulk_operations.py               # عمليات جماعية
+├── cloud/
+│   ├── __init__.py
+│   └── cloud_storage.py                 # تخزين سحابي موحد
+├── attachments/
+│   ├── __init__.py
+│   └── attachment_manager.py            # مدير المرفقات
+└── ocr/
+    └── __init__.py
+
+modules/file_manager/
+├── __init__.py
+├── window/
+│   ├── __init__.py
+│   └── file_manager_window.py           # النافذة الرئيسية (Tabbed UI)
+├── screens/
+│   ├── pdf_studio/
+│   ├── excel_manager/
+│   └── document_browser/
+└── widgets/
+
+core/config/modules/
+└── module_file_manager.py               # تسجيل الموديول
+
+ui/dialogs/file_manager/
+└── __init__.py
+```
+
+### كيفية الاستخدام:
+
+```python
+# 1. Excel AI Engine
+from core.file_manager.excel import ExcelAIEngine
+engine = ExcelAIEngine("data.xlsx")
+engine.load()
+analyses = engine.analyze_columns()     # تحليل ذكي
+engine.clean_data()                     # تنظيف تلقائي
+engine.import_to_database("employees", mapping)
+
+# 2. PDF AI Studio
+from core.file_manager.pdf import PDFAIStudio
+studio = PDFAIStudio()
+doc_id = studio.open("document.pdf")
+studio.split_all(doc_id, "output/")     # فصل الصفحات
+studio.merge(["a.pdf", "b.pdf"], "merged.pdf")
+studio.compress(doc_id, "small.pdf")    # ضغط
+studio.ocr_page(doc_id, 0)             # OCR عربي+إنجليزي
+studio.add_watermark(doc_id, "سري", "marked.pdf")
+studio.encrypt(doc_id, "pass", "secure.pdf")
+
+# 3. Image Tools
+from core.file_manager.image import ImageTools
+ImageTools.resize("photo.jpg", "resized.jpg", size=(800, 600))
+ImageTools.convert("photo.png", "photo.jpg", "JPEG")
+ImageTools.compress("photo.jpg", "small.jpg", quality=85)
+ImageTools.batch_process(files, "output/", operations)
+
+# 4. Word Engine
+from core.file_manager.word import WordEngine
+doc = WordEngine("report.docx")
+text = doc.read_text()
+tables = doc.read_tables()
+doc.to_pdf("report.pdf")
+
+# 5. File Browser
+from core.file_manager.browser import FileBrowser
+browser = FileBrowser()
+files = browser.list_directory("/path")
+browser.add_tag("/path/file.pdf", "important")
+
+# 6. Cloud Storage
+from core.file_manager.cloud import CloudStorageManager, GoogleDriveStorage
+manager = CloudStorageManager()
+manager.add_provider(CloudProvider.GOOGLE_DRIVE, GoogleDriveStorage("creds.json"))
+
+# 7. Attachments
+from core.file_manager.attachments import AttachmentManager
+am = AttachmentManager()
+am.attach_file("contract.pdf", "employees", 123)
+```
+
+### الميزات الرئيسية:
+- **Excel الذكي:** اكتشاف تلقائي لأنواع الأعمدة (هاتف، إيميل، IBAN، تاريخ)
+- **تنظيف بيانات:** إزالة مسافات، توحيد أرقام، حذف مكررات
+- **PDF Studio:** فصل، دمج، ضغط، OCR عربي+إنجليزي، علامة مائية، تشفير
+- **أدوات صور:** تغيير حجم، تحويل صيغ، ضغط، معالجة دفعية
+- **Word Engine:** قراءة نصوص وجداول، تحويل PDF
+- **مستكشف ملفات:** تصفح، بحث، وسوم، مفضلة، عمليات جماعية
+- **تخزين سحابي:** Google Drive + OneDrive + Dropbox (واجهة موحدة)
+- **مرفقات:** تخزين هجين (BLOB/Local/Cloud) مع إصدارات وchecksum
+
+---
+
 ## الجلسة: 5 فبراير 2026 - المحور O: الوعي الزمني الفائق (Hyper Time Intelligence) ✅
 
 ### ملخص الجلسة:
