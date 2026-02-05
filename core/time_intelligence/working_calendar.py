@@ -39,7 +39,7 @@ class WorkingCalendar:
         working_days: Optional[list] = None,
         weekend_days: Optional[list] = None,
         working_hours_start: str = "08:00",
-        working_hours_end: str = "17:00",
+        working_hours_end: str = "16:00",
     ):
         self.country_code = country_code.upper()
         self.holiday_loader = HolidayLoader(self.country_code)
