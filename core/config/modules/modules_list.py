@@ -14,6 +14,7 @@ from . import module_designer
 from . import module_calendar
 from . import module_dashboard
 from . import module_bi
+from . import module_copilot
 
 
 def get_all_modules():
@@ -98,6 +99,14 @@ def get_all_modules():
             'icon': module_bi.MODULE_ICON,
             'color': module_bi.MODULE_COLOR,
             'enabled': module_bi.MODULE_ENABLED
+        },
+        {
+            'id': module_copilot.MODULE_ID,
+            'name_ar': module_copilot.MODULE_NAME_AR,
+            'name_en': module_copilot.MODULE_NAME_EN,
+            'icon': module_copilot.MODULE_ICON,
+            'color': module_copilot.MODULE_COLOR,
+            'enabled': module_copilot.MODULE_ENABLED
         }
     ]
 

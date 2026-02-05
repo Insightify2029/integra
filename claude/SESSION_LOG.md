@@ -16,6 +16,143 @@
 
 ---
 
+## الجلسة: 5 فبراير 2026 - المحور N: المساعد الذكي المتكامل (AI Copilot) ✅
+
+### 📋 ملخص الجلسة:
+
+**تم إكمال المحور N بالكامل - AI Copilot:**
+
+| المهمة | الوصف | الحالة |
+|--------|-------|--------|
+| **N1** | Knowledge Engine (محرك المعرفة) | ✅ مكتمل |
+| **N2** | Chat Interface (واجهة المحادثة) | ✅ مكتمل |
+| **N3** | Context Awareness (الوعي بالسياق) | ✅ مكتمل |
+| **N4** | Action Sandbox (بيئة المسودات) | ✅ مكتمل |
+| **N5** | Approval Workflow (سير الموافقات) | ✅ مكتمل |
+| **N6** | Learning System (نظام التعلم) | ✅ مكتمل |
+| **N7** | Audit & History (السجل والتاريخ) | ✅ مكتمل |
+
+### 📁 الملفات الجديدة:
+
+```
+modules/copilot/
+├── __init__.py                    # تصدير كل المكونات
+├── knowledge/
+│   ├── __init__.py
+│   ├── engine.py                  # محرك المعرفة الرئيسي
+│   ├── indexer.py                 # فهرسة المعرفة
+│   ├── searcher.py                # البحث في المعرفة
+│   └── sources.py                 # مصادر المعرفة المختلفة
+├── context/
+│   ├── __init__.py
+│   ├── manager.py                 # إدارة السياق
+│   ├── tracker.py                 # تتبع أحداث التطبيق
+│   └── types.py                   # أنواع السياق
+├── sandbox/
+│   ├── __init__.py
+│   ├── manager.py                 # إدارة المسودات
+│   └── types.py                   # أنواع الإجراءات
+├── approval/
+│   ├── __init__.py
+│   ├── manager.py                 # إدارة الموافقات
+│   └── types.py                   # سياسات الموافقة
+├── learning/
+│   ├── __init__.py
+│   ├── manager.py                 # نظام التعلم
+│   └── types.py                   # أنماط التعلم
+├── history/
+│   ├── __init__.py
+│   ├── manager.py                 # إدارة السجل
+│   └── types.py                   # أنواع السجل
+├── components/
+│   ├── __init__.py
+│   ├── chat_sidebar.py            # شريط المحادثة الجانبي
+│   ├── chat_window.py             # نافذة المحادثة المنفصلة
+│   ├── action_preview.py          # معاينة الإجراءات
+│   └── suggestion_panel.py        # لوحة الاقتراحات
+└── window/
+    ├── __init__.py
+    └── main_window.py             # النافذة الرئيسية للموديول
+
+core/config/modules/
+└── module_copilot.py              # تسجيل موديول Copilot
+```
+
+### 💡 كيفية الاستخدام:
+
+```python
+# 1. استخدام محرك المعرفة
+from modules.copilot.knowledge import get_knowledge_engine
+
+engine = get_knowledge_engine()
+engine.initialize()
+response = engine.query("كيف أضيف موظف؟")
+print(response.context_text)
+
+# 2. تتبع السياق
+from modules.copilot.context import get_context_manager
+
+cm = get_context_manager()
+cm.initialize()
+cm.update_screen(ScreenType.MODULE, "mostahaqat", "الموظفين")
+context = cm.get_prompt_context()
+
+# 3. إنشاء إجراء في المسودة
+from modules.copilot.sandbox import get_action_sandbox, ActionCategory
+
+sandbox = get_action_sandbox()
+action = sandbox.create_action(
+    category=ActionCategory.DATA_UPDATE,
+    title="تحديث بيانات موظف",
+    target_type="employee"
+)
+action.add_change("salary", 5000, 6000)
+sandbox.submit_for_approval(action.id)
+
+# 4. طلب موافقة
+from modules.copilot.approval import get_approval_manager
+
+am = get_approval_manager()
+request = am.create_request(
+    action_id=action.id,
+    action_title="تحديث راتب",
+    risk_level=RiskLevel.MEDIUM
+)
+
+# 5. تسجيل في سجل التعلم
+from modules.copilot.learning import get_learning_system, EventType
+
+ls = get_learning_system()
+ls.initialize()
+ls.record_event(EventType.ACTION_APPROVED, action="update", category="employee")
+
+# 6. تسجيل المحادثات
+from modules.copilot.history import get_history_manager
+
+hm = get_history_manager()
+hm.initialize()
+hm.record_query("كيف أضيف موظف؟")
+hm.record_response("يمكنك إضافة موظف من...")
+```
+
+### 🎯 المميزات:
+
+1. **محرك المعرفة**: فهرسة وبحث ذكي في معرفة التطبيق
+2. **واجهة المحادثة**: Sidebar + نافذة منفصلة مع دعم Streaming
+3. **الوعي بالسياق**: تتبع الشاشة الحالية والتحديدات والإجراءات
+4. **المسودات**: معاينة الإجراءات قبل التنفيذ
+5. **سير الموافقات**: سياسات للموافقة التلقائية أو اليدوية
+6. **نظام التعلم**: تعلم من سلوك المستخدم وتفضيلاته
+7. **السجل**: تاريخ كامل للمحادثات والإجراءات
+
+### 🔄 التحديثات الأخرى:
+
+- تحديث `modules_list.py` لإضافة موديول Copilot
+- تحديث `launcher_window.py` لفتح موديول Copilot
+- إنشاء مجلد `data/copilot/` لتخزين بيانات التعلم والسجل
+
+---
+
 ## الجلسة: 4 فبراير 2026 (ليلاً) - المحور M: تكامل Power BI Desktop ✅
 
 ### 📋 ملخص الجلسة:
