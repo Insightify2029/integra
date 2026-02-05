@@ -117,6 +117,11 @@ class LauncherWindow(BaseWindow):
             window = CopilotMainWindow()
             window.show()
             self._open_windows[module_id] = window
+        elif module_id == "time_intelligence":
+            from modules.time_intelligence import TimeIntelligenceWindow
+            window = TimeIntelligenceWindow()
+            window.show()
+            self._open_windows[module_id] = window
         else:
             from ui.dialogs import show_info
             show_info(self, "قريباً", f"موديول {module_id} قيد التطوير")

@@ -15,6 +15,7 @@ from . import module_calendar
 from . import module_dashboard
 from . import module_bi
 from . import module_copilot
+from . import module_time_intelligence
 
 
 def get_all_modules():
@@ -107,6 +108,14 @@ def get_all_modules():
             'icon': module_copilot.MODULE_ICON,
             'color': module_copilot.MODULE_COLOR,
             'enabled': module_copilot.MODULE_ENABLED
+        },
+        {
+            'id': module_time_intelligence.MODULE_ID,
+            'name_ar': module_time_intelligence.MODULE_NAME_AR,
+            'name_en': module_time_intelligence.MODULE_NAME_EN,
+            'icon': module_time_intelligence.MODULE_ICON,
+            'color': module_time_intelligence.MODULE_COLOR,
+            'enabled': module_time_intelligence.MODULE_ENABLED
         }
     ]
 
