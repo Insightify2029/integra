@@ -16,6 +16,133 @@
 
 ---
 
+## الجلسة: 6 فبراير 2026 - المحور Q: إدارة الأجهزة والطابعات (Device Manager) ✅
+
+### ملخص الجلسة:
+
+**تم إكمال المحور Q بالكامل - Device & Printer Manager:**
+
+| المهمة | الوصف | الحالة |
+|--------|-------|--------|
+| **Q1** | Printer Discovery (اكتشاف الطابعات المحلية + الشبكة) | ✅ مكتمل |
+| **Q2** | Print Preview & Settings (إعدادات الطباعة، أحجام الورق، الجودة، الوجهين) | ✅ مكتمل |
+| **Q3** | Scanner Discovery (اكتشاف الماسحات - TWAIN/WIA/SANE) | ✅ مكتمل |
+| **Q4** | Scan to PDF/Image (المسح الضوئي مع دعم OCR) | ✅ مكتمل |
+| **Q5** | Batch Scanning (المسح الدفعي - ADF مع كشف الصفحات الفارغة) | ✅ مكتمل |
+| **Q6** | Bluetooth Management (اكتشاف، اقتران، اتصال) | ✅ مكتمل |
+| **Q7** | Integration with PDF Studio (مسح → PDF → OCR → ضغط) | ✅ مكتمل |
+
+### الملفات الجديدة:
+
+```
+core/device_manager/
+├── __init__.py                          # تصدير كل المكونات
+├── printer/
+│   ├── __init__.py
+│   ├── printer_discovery.py             # Q1: اكتشاف الطابعات (Local + Network)
+│   └── print_manager.py                 # Q2: إدارة الطباعة والإعدادات
+├── scanner/
+│   ├── __init__.py
+│   ├── scanner_discovery.py             # Q3: اكتشاف الماسحات (WIA/TWAIN/SANE)
+│   ├── scan_engine.py                   # Q4: محرك المسح الضوئي
+│   └── batch_scanner.py                 # Q5: المسح الدفعي مع ADF
+├── bluetooth/
+│   ├── __init__.py
+│   └── bluetooth_manager.py             # Q6: إدارة البلوتوث
+└── integration/
+    ├── __init__.py
+    └── pdf_studio_bridge.py             # Q7: تكامل مع PDF AI Studio
+
+modules/device_manager/
+├── __init__.py
+├── window/
+│   ├── __init__.py
+│   └── device_manager_window.py         # النافذة الرئيسية (Tabbed UI)
+└── screens/
+    └── __init__.py
+
+core/config/modules/
+└── module_device_manager.py             # تسجيل الموديول
+```
+
+### الميزات الرئيسية:
+
+**الطابعات (Printers):**
+- اكتشاف تلقائي للطابعات المحلية (USB/LPT) والشبكة (IPP/LPD/RAW)
+- دعم Windows (win32print/PowerShell) و Linux (CUPS/lpstat)
+- إعدادات طباعة متكاملة (حجم ورق، اتجاه، جودة، ألوان، وجهين)
+- طباعة ملفات PDF/Text/HTML مع معاينة
+
+**الماسحات الضوئية (Scanners):**
+- اكتشاف عبر WIA (Windows)، TWAIN (Windows)، SANE (Linux)
+- مسح ضوئي بدقات مختلفة (75-1200 DPI)
+- دعم ألوان / رمادي / أبيض وأسود
+- مسح إلى PNG/JPEG/TIFF/BMP/PDF
+- قص تلقائي + تعديل ميل تلقائي
+- مسح دفعي عبر ADF مع كشف الصفحات الفارغة
+- دمج صفحات في PDF واحد أو TIFF متعدد الصفحات
+
+**البلوتوث (Bluetooth):**
+- فحص حالة المحول (تشغيل/إيقاف)
+- اكتشاف الأجهزة القريبة مع تصنيف تلقائي
+- اقتران واتصال وقطع الاتصال
+- دعم Windows (PowerShell) و Linux (bluetoothctl)
+- عرض معلومات: نوع الجهاز، قوة الإشارة، البطارية
+
+**تكامل PDF Studio (Track P):**
+- مسح → PDF قابل للبحث مع OCR
+- مسح دفعي → PDF واحد مع OCR
+- طباعة PDF بإعدادات متقدمة
+- مسح ودمج مع PDF موجود
+- مسح مع ضغط PDF
+
+### كيفية الاستخدام:
+
+```python
+# 1. Printer Discovery
+from core.device_manager import PrinterDiscovery
+discovery = PrinterDiscovery()
+printers = discovery.discover_all()
+for p in printers:
+    print(f"{p.name} - {p.status_text_ar} - {p.type_text_ar}")
+
+# 2. Print File
+from core.device_manager import PrintManager
+from core.device_manager.printer import PrintSettings
+manager = PrintManager()
+settings = PrintSettings(printer_name="HP LaserJet", copies=2)
+job = manager.print_file("document.pdf", settings)
+
+# 3. Scanner Discovery
+from core.device_manager import ScannerDiscovery
+scanners = ScannerDiscovery().discover_all()
+
+# 4. Scan to PDF
+from core.device_manager.scanner import ScanEngine, ScanSettings, ScanFormat
+engine = ScanEngine()
+settings = ScanSettings(resolution_dpi=300, output_format=ScanFormat.PDF)
+result = engine.scan(settings)
+
+# 5. Batch Scan (ADF)
+from core.device_manager.scanner import BatchScanner, BatchScanSettings
+batch = BatchScanner()
+settings = BatchScanSettings(source=ScanSource.ADF_FRONT)
+job = batch.start_batch(settings)
+
+# 6. Bluetooth
+from core.device_manager import BluetoothManager
+bt = BluetoothManager()
+devices = bt.discover_devices(timeout=10)
+bt.pair_device(devices[0].address)
+
+# 7. PDF Bridge
+from core.device_manager import PDFStudioBridge
+bridge = PDFStudioBridge()
+result = bridge.scan_to_searchable_pdf(ocr_lang="ara+eng")
+```
+
+---
+
 ## الجلسة: 5 فبراير 2026 - المحور P: مدير الملفات الذكي (Smart File Manager) ✅
 
 ### ملخص الجلسة:
