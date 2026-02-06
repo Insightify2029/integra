@@ -557,9 +557,10 @@ class ActionAgent(BaseAgent if ORCHESTRATION_AVAILABLE else object):
 
     def _add_to_history(self, action: Action):
         """إضافة للتاريخ"""
-        self._action_history.append(action)
-        if len(self._action_history) > self._max_history:
-            self._action_history = self._action_history[-self._max_history:]
+        with self._lock:
+            self._action_history.append(action)
+            if len(self._action_history) > self._max_history:
+                self._action_history = self._action_history[-self._max_history:]
 
     def get_pending_actions(self) -> List[Action]:
         """جلب الإجراءات المعلقة"""
@@ -568,19 +569,20 @@ class ActionAgent(BaseAgent if ORCHESTRATION_AVAILABLE else object):
 
     def get_action_history(self, limit: int = 100) -> List[Action]:
         """جلب تاريخ الإجراءات"""
-        return list(reversed(self._action_history[-limit:]))
+        with self._lock:
+            return list(reversed(self._action_history[-limit:]))
 
     def get_action(self, action_id: str) -> Optional[Action]:
         """جلب إجراء بالمعرف"""
-        # البحث في المعلقة
         with self._lock:
+            # البحث في المعلقة
             if action_id in self._pending_actions:
                 return self._pending_actions[action_id]
 
-        # البحث في التاريخ
-        for action in self._action_history:
-            if action.id == action_id:
-                return action
+            # البحث في التاريخ
+            for action in self._action_history:
+                if action.id == action_id:
+                    return action
 
         return None
 

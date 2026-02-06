@@ -59,6 +59,7 @@ class ExportScheduler:
         self._config = ScheduleConfig()
         self._timer: Optional[threading.Timer] = None
         self._running = False
+        self._lock = threading.Lock()
         self._last_export: Optional[datetime] = None
         self._on_export_complete: Optional[Callable] = None
         self._on_export_error: Optional[Callable] = None
@@ -66,7 +67,8 @@ class ExportScheduler:
     @property
     def is_running(self) -> bool:
         """Check if scheduler is running."""
-        return self._running
+        with self._lock:
+            return self._running
 
     @property
     def config(self) -> ScheduleConfig:
@@ -126,38 +128,41 @@ class ExportScheduler:
             app_logger.info("Export scheduler is disabled")
             return False
 
-        if self._running:
-            return True
+        with self._lock:
+            if self._running:
+                return True
+            self._running = True
 
-        self._running = True
         self._schedule_next_export()
         app_logger.info("Export scheduler started")
         return True
 
     def stop(self) -> None:
         """Stop the scheduler."""
-        self._running = False
-        if self._timer:
-            self._timer.cancel()
-            self._timer = None
+        with self._lock:
+            self._running = False
+            if self._timer:
+                self._timer.cancel()
+                self._timer = None
         app_logger.info("Export scheduler stopped")
 
     def _schedule_next_export(self) -> None:
         """Schedule the next export based on configuration."""
-        if not self._running:
-            return
+        with self._lock:
+            if not self._running:
+                return
 
-        # Calculate seconds until next export
-        now = datetime.now()
-        seconds_until_export = self._calculate_seconds_until_next(now)
+            # Calculate seconds until next export
+            now = datetime.now()
+            seconds_until_export = self._calculate_seconds_until_next(now)
 
-        if seconds_until_export <= 0:
-            seconds_until_export = 60  # Minimum 1 minute
+            if seconds_until_export <= 0:
+                seconds_until_export = 60  # Minimum 1 minute
 
-        # Schedule timer
-        self._timer = threading.Timer(seconds_until_export, self._execute_export)
-        self._timer.daemon = True
-        self._timer.start()
+            # Schedule timer
+            self._timer = threading.Timer(seconds_until_export, self._execute_export)
+            self._timer.daemon = True
+            self._timer.start()
 
         next_time = datetime.fromtimestamp(now.timestamp() + seconds_until_export)
         app_logger.debug(f"Next export scheduled for: {next_time}")
@@ -209,8 +214,9 @@ class ExportScheduler:
 
     def _execute_export(self) -> None:
         """Execute the scheduled export."""
-        if not self._running:
-            return
+        with self._lock:
+            if not self._running:
+                return
 
         app_logger.info("Starting scheduled BI export")
 
@@ -258,9 +264,11 @@ class ExportScheduler:
 
     def get_status(self) -> dict:
         """Get scheduler status information."""
+        with self._lock:
+            running = self._running
         return {
             "enabled": self._config.enabled,
-            "running": self._running,
+            "running": running,
             "frequency": self._config.frequency.value,
             "time_of_day": self._config.time_of_day.strftime("%H:%M"),
             "export_format": self._config.export_format,

@@ -107,23 +107,28 @@
 ## الجلسة 4: المشاكل العالية - Threading + تسرب ذاكرة
 **المدة المتوقعة:** جلسة واحدة
 **الهدف:** إصلاح سباقات الخيوط وتسريبات الذاكرة
+**الحالة:** ✅ مكتمل (2026-02-06)
 
 | # | المشكلة | الخطورة | الملفات | الحالة |
 |---|---------|---------|---------|--------|
-| HIGH-05 | `_action_history` بدون قفل | عالي | `core/ai/agents/action_agent.py` | 🔴 |
-| HIGH-06 | ConversationContext غير آمنة | عالي | `core/ai/ai_service.py` | 🔴 |
-| HIGH-07 | `_running` flag بدون قفل | عالي | `core/bi/export_scheduler.py` | 🔴 |
-| HIGH-12 | تسرب ذاكرة النوافذ المفتوحة | عالي | `ui/windows/launcher/launcher_window.py` | 🔴 |
-| HIGH-13 | حذف widget لا ينظف البيانات | عالي | `modules/designer/form_builder/form_canvas.py` | 🔴 |
-| MED-06 | عداد التنبيهات غير آمن | متوسط | `core/ai/agents/alert_agent.py` | 🔴 |
-| MED-07 | `get_insights()` بدون قفل | متوسط | `core/ai/agents/learning_agent.py` | 🔴 |
-| MED-22 | ExportWorker بدون إدارة دورة حياة | متوسط | `ui/dialogs/bi_settings/bi_settings_dialog.py` | 🔴 |
+| HIGH-05 | `_action_history` بدون قفل | عالي | `core/ai/agents/action_agent.py` | ✅ |
+| HIGH-06 | ConversationContext غير آمنة | عالي | `core/ai/ai_service.py` | ✅ |
+| HIGH-07 | `_running` flag بدون قفل | عالي | `core/bi/export_scheduler.py` | ✅ |
+| HIGH-12 | تسرب ذاكرة النوافذ المفتوحة | عالي | `ui/windows/launcher/launcher_window.py` | ✅ |
+| HIGH-13 | حذف widget لا ينظف البيانات | عالي | `modules/designer/form_builder/form_canvas.py` | ✅ |
+| MED-06 | عداد التنبيهات غير آمن | متوسط | `core/ai/agents/alert_agent.py` | ✅ |
+| MED-07 | `get_insights()` بدون قفل | متوسط | `core/ai/agents/learning_agent.py` | ✅ |
+| MED-22 | ExportWorker بدون إدارة دورة حياة | متوسط | `ui/dialogs/bi_settings/bi_settings_dialog.py` | ✅ |
 
-**الإصلاحات:**
-- HIGH-05/06/07, MED-06/07: إضافة `threading.Lock()` مع `with self._lock:`
-- HIGH-12: استخدام `weakref.WeakSet` أو تنظيف عند `closeEvent`
-- HIGH-13: إزالة Widget من `_widgets` قبل `deleteLater()`
-- MED-22: حفظ مرجع للـ Worker + تنظيف عند الإغلاق
+**الإصلاحات المنفذة:**
+- HIGH-05: إضافة `with self._lock:` في `_add_to_history()`, `get_action_history()`, `get_action()` (كان القفل موجوداً لكن غير مُستخدم في هذه الدوال)
+- HIGH-06: إضافة `threading.Lock` كـ field في `ConversationContext` مع حماية `add_message()`, `get_context()`, `clear()`
+- HIGH-07: إضافة `threading.Lock()` في `ExportScheduler` مع حماية `_running` في `start()`, `stop()`, `_schedule_next_export()`, `_execute_export()`, `is_running`, `get_status()`
+- HIGH-12: تنظيف النوافذ المغلقة في `_open_module()` + استدعاء `deleteLater()` و `clear()` في `closeEvent()`
+- HIGH-13: إضافة signal `delete_requested` في `DesignWidgetItem` + ربطه بـ `FormCanvas.remove_widget()` بدل `deleteLater()` المباشر
+- MED-06: إضافة `threading.Lock()` في `AlertAgent` مع حماية `_generate_id()`, `_add_alert()`, `get_alerts()`, `get_summary()`, `mark_as_read()`, `dismiss_alert()`, `clear_alerts()`
+- MED-07: حماية `get_insights()` بأخذ snapshot من `_feedback_history` و `_patterns` داخل `self._lock`
+- MED-22: منع بدء تصدير جديد أثناء تنفيذ آخر + إضافة `closeEvent()` لتنظيف Worker عند إغلاق Dialog
 
 ---
 
@@ -245,7 +250,7 @@
 | 1 | انهيارات التطبيق | 6 | ✅ |
 | 2 | أمان + Import + واجهة | 7 | ✅ |
 | 3 | وظائف معطلة | 7 | ✅ |
-| 4 | Threading + تسرب ذاكرة | 8 | 🔴 |
+| 4 | Threading + تسرب ذاكرة | 8 | ✅ |
 | 5 | أمان + واجهة | 8 | 🔴 |
 | 6 | منطق + أداء + تقويم | 8 | 🔴 |
 | 7 | متوسطة متبقية | 8 | 🔴 |

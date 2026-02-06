@@ -31,6 +31,7 @@ from typing import Optional, List, Dict, Any, Callable
 from dataclasses import dataclass, field
 from enum import Enum
 import json
+import threading
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
@@ -152,6 +153,7 @@ class AlertAgent:
         self._signals = AlertSignals()
         self._alerts: Dict[str, Alert] = {}
         self._alert_counter = 0
+        self._lock = threading.Lock()
 
         # Custom alert handlers
         self._custom_handlers: Dict[str, Callable] = {}
@@ -163,12 +165,14 @@ class AlertAgent:
 
     def _generate_id(self) -> str:
         """توليد ID فريد للتنبيه"""
-        self._alert_counter += 1
-        return f"alert_{datetime.now().strftime('%Y%m%d%H%M%S')}_{self._alert_counter}"
+        with self._lock:
+            self._alert_counter += 1
+            return f"alert_{datetime.now().strftime('%Y%m%d%H%M%S')}_{self._alert_counter}"
 
     def _add_alert(self, alert: Alert):
         """إضافة تنبيه"""
-        self._alerts[alert.id] = alert
+        with self._lock:
+            self._alerts[alert.id] = alert
         self._signals.alert_created.emit(alert)
         self._signals.alerts_updated.emit(len(self._alerts))
 
@@ -561,7 +565,8 @@ class AlertAgent:
         limit: int = 100
     ) -> List[Alert]:
         """الحصول على التنبيهات"""
-        alerts = list(self._alerts.values())
+        with self._lock:
+            alerts = list(self._alerts.values())
 
         if priority:
             alerts = [a for a in alerts if a.priority == priority]
@@ -583,7 +588,8 @@ class AlertAgent:
 
     def get_summary(self) -> AlertSummary:
         """ملخص التنبيهات"""
-        alerts = list(self._alerts.values())
+        with self._lock:
+            alerts = list(self._alerts.values())
 
         by_category = {}
         for alert in alerts:
@@ -601,24 +607,27 @@ class AlertAgent:
 
     def mark_as_read(self, alert_id: str):
         """تحديد كمقروء"""
-        if alert_id in self._alerts:
-            self._alerts[alert_id].is_read = True
+        with self._lock:
+            if alert_id in self._alerts:
+                self._alerts[alert_id].is_read = True
 
     def dismiss_alert(self, alert_id: str):
         """تجاهل تنبيه"""
-        if alert_id in self._alerts:
-            self._alerts[alert_id].is_dismissed = True
-            self._signals.alert_dismissed.emit(alert_id)
+        with self._lock:
+            if alert_id in self._alerts:
+                self._alerts[alert_id].is_dismissed = True
+        self._signals.alert_dismissed.emit(alert_id)
 
     def clear_alerts(self, category: Optional[AlertCategory] = None):
         """مسح التنبيهات"""
-        if category:
-            self._alerts = {
-                k: v for k, v in self._alerts.items()
-                if v.category != category
-            }
-        else:
-            self._alerts.clear()
+        with self._lock:
+            if category:
+                self._alerts = {
+                    k: v for k, v in self._alerts.items()
+                    if v.category != category
+                }
+            else:
+                self._alerts.clear()
 
         self._signals.alerts_updated.emit(len(self._alerts))
 
