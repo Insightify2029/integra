@@ -940,6 +940,7 @@ class FileManagerWindow(BaseWindow):
             self, "حفظ الملف المدمج", "", "PDF Files (*.pdf)"
         )
         if output:
+            from core.file_manager.pdf import PDFAIStudio
             studio = PDFAIStudio() if not self._current_pdf_studio else self._current_pdf_studio
             if studio.merge(files, output):
                 self.pdf_results.setText(f"تم دمج {len(files)} ملفات في:\n{output}")

@@ -246,8 +246,14 @@ class TaskRepository:
 
     def get_by_employee(self, employee_id: int, include_completed: bool = False) -> List[Task]:
         """جلب مهام موظف معين"""
-        status_filter = None if include_completed else TaskStatus.PENDING
-        return self.get_all(employee_id=employee_id, status=status_filter)
+        if include_completed:
+            return self.get_all(employee_id=employee_id)
+        # Return PENDING and IN_PROGRESS tasks (exclude COMPLETED and CANCELLED)
+        all_tasks = self.get_all(employee_id=employee_id)
+        return [
+            t for t in all_tasks
+            if t.status not in (TaskStatus.COMPLETED, TaskStatus.CANCELLED)
+        ]
 
     def get_recurring(self) -> List[Task]:
         """جلب المهام المتكررة"""

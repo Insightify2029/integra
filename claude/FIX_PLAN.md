@@ -81,25 +81,26 @@
 ## الجلسة 3: المشاكل العالية - وظائف معطلة
 **المدة المتوقعة:** جلسة واحدة
 **الهدف:** إصلاح الوظائف التي لا تعمل أصلاً
+**الحالة:** ✅ مكتمل (2026-02-06)
 
 | # | المشكلة | الخطورة | الملفات | الحالة |
 |---|---------|---------|---------|--------|
-| HIGH-08 | زر "حفظ" لا يحفظ | عالي | `ui/dialogs/settings/settings_dialog.py` | 🔴 |
-| HIGH-09 | "اختبار الاتصال" لا يختبر المدخلات | عالي | `ui/dialogs/settings/settings_dialog.py` | 🔴 |
-| HIGH-10 | فلاتر "اليوم" و"المتأخرة" لا تعمل | عالي | `modules/tasks/screens/task_list/task_list_screen.py` | 🔴 |
-| HIGH-11 | `get_by_employee()` تستثني IN_PROGRESS | عالي | `modules/tasks/repository/task_repository.py` | 🔴 |
-| HIGH-14 | PDFAIStudio غير مستوردة | عالي | `modules/file_manager/window/file_manager_window.py` | 🔴 |
-| HIGH-03 | ActionType ValueError غير محمي | عالي | `core/ai/agents/action_agent.py` | 🔴 |
-| HIGH-04 | Singleton يتجاهل host | عالي | `core/ai/ollama_client.py` | 🔴 |
+| HIGH-08 | زر "حفظ" لا يحفظ | عالي | `ui/dialogs/settings/settings_dialog.py` | ✅ |
+| HIGH-09 | "اختبار الاتصال" لا يختبر المدخلات | عالي | `ui/dialogs/settings/settings_dialog.py` | ✅ |
+| HIGH-10 | فلاتر "اليوم" و"المتأخرة" لا تعمل | عالي | `modules/tasks/screens/task_list/task_list_screen.py` | ✅ |
+| HIGH-11 | `get_by_employee()` تستثني IN_PROGRESS | عالي | `modules/tasks/repository/task_repository.py` | ✅ |
+| HIGH-14 | PDFAIStudio غير مستوردة | عالي | `modules/file_manager/window/file_manager_window.py` | ✅ |
+| HIGH-03 | ActionType ValueError غير محمي | عالي | `core/ai/agents/action_agent.py` | ✅ |
+| HIGH-04 | Singleton يتجاهل host | عالي | `core/ai/ollama_client.py` | ✅ |
 
-**الإصلاحات:**
-- HIGH-08: ربط save_btn بدالة حفظ فعلية تكتب الإعدادات
-- HIGH-09: إنشاء اتصال جديد بالقيم المدخلة واختباره
-- HIGH-10: تنفيذ منطق الفلترة بدل `pass`
-- HIGH-11: إضافة `IN_PROGRESS` لاستعلام `get_by_employee()`
-- HIGH-14: إضافة `from ... import PDFAIStudio` في المكان الصحيح
-- HIGH-03: لف `ActionType()` بـ `try/except ValueError`
-- HIGH-04: مقارنة host الجديد مع المثيل الحالي
+**الإصلاحات المنفذة:**
+- HIGH-08: ربط `save_btn` بدالة `_save_settings()` تحفظ الإعدادات في ملف `.env` + تحميل القيم الحالية من `core.config`
+- HIGH-09: استخدام `psycopg2.connect()` مباشرةً مع القيم المدخلة من المستخدم + `connect_timeout=5` بدل فحص الاتصال الحالي
+- HIGH-10: استخدام `get_tasks_due_today()` و `get_overdue_tasks()` عبر مفتاح `_quick` في الفلاتر بدل `pass`
+- HIGH-11: تغيير المنطق لفلترة `COMPLETED` و `CANCELLED` في Python بدل تقييد الاستعلام بـ `PENDING` فقط
+- HIGH-14: إضافة `from core.file_manager.pdf import PDFAIStudio` في `_pdf_merge()` كاستيراد محلي
+- HIGH-03: لف `ActionType(action_type_str)` بـ `try/except ValueError` مع إرجاع رسالة خطأ واضحة
+- HIGH-04: مقارنة `new_host != self._host` في `__init__` وإعادة التهيئة عند التغيير + تحديث `get_ollama_client()` للتعامل مع host جديد
 
 ---
 
@@ -243,7 +244,7 @@
 |--------|-------|-------------|--------|
 | 1 | انهيارات التطبيق | 6 | ✅ |
 | 2 | أمان + Import + واجهة | 7 | ✅ |
-| 3 | وظائف معطلة | 7 | 🔴 |
+| 3 | وظائف معطلة | 7 | ✅ |
 | 4 | Threading + تسرب ذاكرة | 8 | 🔴 |
 | 5 | أمان + واجهة | 8 | 🔴 |
 | 6 | منطق + أداء + تقويم | 8 | 🔴 |
