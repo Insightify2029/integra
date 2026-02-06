@@ -58,7 +58,7 @@ def connect():
         _connection.autocommit = False
         app_logger.info("Database connected (single connection)")
         print("✅ Database connected successfully")
-        return _connection
+        return True
     except Exception as e:
         app_logger.error(f"Database connection error: {e}")
         print(f"❌ Database connection error: {e}")
@@ -84,6 +84,16 @@ def get_connection():
     # Fallback to single connection
     if _connection is None or _connection.closed:
         connect()
+    if _connection is None:
+        app_logger.warning("Database connection unavailable")
+    return _connection
+
+
+def get_raw_connection():
+    """
+    Get the raw single connection object (for internal use).
+    Use get_connection() for normal operations.
+    """
     return _connection
 
 
@@ -91,6 +101,7 @@ def get_connection():
 __all__ = [
     'connect',
     'get_connection',
+    'get_raw_connection',
     'get_pooled_connection',
     'get_pool_status',
     'is_pool_initialized',

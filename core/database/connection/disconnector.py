@@ -15,7 +15,8 @@ def disconnect():
     try:
         # Import here to avoid circular imports
         from .pool import dispose_pool, is_pool_initialized
-        from .connector import _connection
+        from .connector import get_raw_connection
+        _connection = get_raw_connection()
 
         # Dispose pool if initialized
         if is_pool_initialized():

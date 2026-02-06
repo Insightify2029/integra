@@ -297,9 +297,10 @@ def check_postgresql():
                 results.append("")
                 results.append("  📊 جداول البيانات:")
                 
+                from psycopg2 import sql as psycopg2_sql
                 for table in important_tables:
                     if table in tables:
-                        cursor.execute(f"SELECT COUNT(*) FROM {table}")
+                        cursor.execute(psycopg2_sql.SQL("SELECT COUNT(*) FROM {}").format(psycopg2_sql.Identifier(table)))
                         count = cursor.fetchone()[0]
                         log(PASS, "TABLE", f"{table}: {count} سجل")
                     else:

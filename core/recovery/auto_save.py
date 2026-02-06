@@ -32,6 +32,7 @@ Usage:
 
 import json
 import os
+import sys
 from datetime import datetime
 from typing import Callable, Optional, Any, Dict
 from pathlib import Path
@@ -152,7 +153,20 @@ class AutoSaveManager(QObject):
             }
 
             with open(recovery_file, 'w', encoding='utf-8') as f:
-                json.dump(recovery_data, f, ensure_ascii=False, indent=2)
+                # File locking to prevent corruption from concurrent writes
+                if sys.platform == 'win32':
+                    import msvcrt
+                    msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                try:
+                    json.dump(recovery_data, f, ensure_ascii=False, indent=2)
+                finally:
+                    if sys.platform == 'win32':
+                        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+                    else:
+                        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
             self._last_saved_data = current_data
             app_logger.info(f"Auto-saved {self.form_id} to {recovery_file}")

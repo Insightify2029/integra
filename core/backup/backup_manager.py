@@ -225,7 +225,7 @@ class BackupManager:
             file_path = BACKUP_DIR / filename
 
             # تنفيذ pg_dump
-            cmd = self._build_pg_dump_command(
+            cmd, env = self._build_pg_dump_command(
                 db_config,
                 str(file_path),
                 compress=compress
@@ -235,7 +235,8 @@ class BackupManager:
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=600  # 10 دقائق
+                timeout=600,  # 10 دقائق
+                env=env
             )
 
             if result.returncode != 0:
@@ -337,16 +338,17 @@ class BackupManager:
 
             if is_compressed:
                 # pg_restore for compressed dumps
-                cmd = self._build_pg_restore_command(db_config, file_path)
+                cmd, env = self._build_pg_restore_command(db_config, file_path)
             else:
                 # psql for plain SQL
-                cmd = self._build_psql_command(db_config, file_path)
+                cmd, env = self._build_psql_command(db_config, file_path)
 
             result = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=1800  # 30 دقيقة
+                timeout=1800,  # 30 دقيقة
+                env=env
             )
 
             if result.returncode != 0:
@@ -590,8 +592,8 @@ class BackupManager:
         config: Dict,
         output_path: str,
         compress: bool = True
-    ) -> List[str]:
-        """بناء أمر pg_dump"""
+    ) -> tuple:
+        """بناء أمر pg_dump. Returns (cmd, env)."""
         cmd = ['pg_dump']
 
         cmd.extend(['-h', config['host']])
@@ -606,17 +608,18 @@ class BackupManager:
 
         cmd.extend(['-f', output_path])
 
-        # Set password via environment
-        os.environ['PGPASSWORD'] = config.get('password', '')
+        # Set password via subprocess environment only
+        env = os.environ.copy()
+        env['PGPASSWORD'] = config.get('password', '')
 
-        return cmd
+        return cmd, env
 
     def _build_pg_restore_command(
         self,
         config: Dict,
         input_path: str
-    ) -> List[str]:
-        """بناء أمر pg_restore"""
+    ) -> tuple:
+        """بناء أمر pg_restore. Returns (cmd, env)."""
         cmd = ['pg_restore']
 
         cmd.extend(['-h', config['host']])
@@ -627,16 +630,17 @@ class BackupManager:
         cmd.extend(['--if-exists'])  # Don't error if objects don't exist
         cmd.append(input_path)
 
-        os.environ['PGPASSWORD'] = config.get('password', '')
+        env = os.environ.copy()
+        env['PGPASSWORD'] = config.get('password', '')
 
-        return cmd
+        return cmd, env
 
     def _build_psql_command(
         self,
         config: Dict,
         input_path: str
-    ) -> List[str]:
-        """بناء أمر psql"""
+    ) -> tuple:
+        """بناء أمر psql. Returns (cmd, env)."""
         cmd = ['psql']
 
         cmd.extend(['-h', config['host']])
@@ -645,9 +649,10 @@ class BackupManager:
         cmd.extend(['-d', config['database']])
         cmd.extend(['-f', input_path])
 
-        os.environ['PGPASSWORD'] = config.get('password', '')
+        env = os.environ.copy()
+        env['PGPASSWORD'] = config.get('password', '')
 
-        return cmd
+        return cmd, env
 
     def _calculate_checksum(self, file_path: str) -> str:
         """حساب checksum للملف"""

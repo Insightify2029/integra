@@ -27,6 +27,8 @@ Usage:
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 
+from psycopg2 import sql as psycopg2_sql
+
 from core.database import select_all, get_connection
 from core.logging import app_logger, audit_logger
 
@@ -196,8 +198,18 @@ class AuditManager:
             conn = self._get_connection()
             cursor = conn.cursor()
 
-            sql = AUDIT_TRIGGER_SQL.format(table=table_name, schema=schema)
-            cursor.execute(sql)
+            trigger_name = f"audit_trigger_{table_name}"
+            trigger_sql = psycopg2_sql.SQL(
+                "DROP TRIGGER IF EXISTS {trigger} ON {schema}.{table};"
+                " CREATE TRIGGER {trigger}"
+                " AFTER INSERT OR UPDATE OR DELETE ON {schema}.{table}"
+                " FOR EACH ROW EXECUTE FUNCTION audit.log_changes();"
+            ).format(
+                trigger=psycopg2_sql.Identifier(trigger_name),
+                schema=psycopg2_sql.Identifier(schema),
+                table=psycopg2_sql.Identifier(table_name),
+            )
+            cursor.execute(trigger_sql)
 
             conn.commit()
             cursor.close()
@@ -226,8 +238,15 @@ class AuditManager:
             conn = self._get_connection()
             cursor = conn.cursor()
 
-            sql = f"DROP TRIGGER IF EXISTS audit_trigger_{table_name} ON {schema}.{table_name};"
-            cursor.execute(sql)
+            trigger_name = f"audit_trigger_{table_name}"
+            drop_sql = psycopg2_sql.SQL(
+                "DROP TRIGGER IF EXISTS {} ON {}.{};"
+            ).format(
+                psycopg2_sql.Identifier(trigger_name),
+                psycopg2_sql.Identifier(schema),
+                psycopg2_sql.Identifier(table_name),
+            )
+            cursor.execute(drop_sql)
 
             conn.commit()
             cursor.close()
@@ -252,8 +271,8 @@ class AuditManager:
             conn = self._get_connection()
             cursor = conn.cursor()
 
-            cursor.execute(f"SET LOCAL app.current_user = %s", (user_name,))
-            cursor.execute(f"SET LOCAL app.current_user_id = %s", (str(user_id),))
+            cursor.execute("SET LOCAL app.current_user = %s", (user_name,))
+            cursor.execute("SET LOCAL app.current_user_id = %s", (str(user_id),))
 
             cursor.close()
 
