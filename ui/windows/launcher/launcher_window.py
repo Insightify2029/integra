@@ -132,6 +132,11 @@ class LauncherWindow(BaseWindow):
             window = DeviceManagerWindow()
             window.show()
             self._open_windows[module_id] = window
+        elif module_id == "desktop_apps":
+            from modules.desktop_apps import DesktopAppsWindow
+            window = DesktopAppsWindow()
+            window.show()
+            self._open_windows[module_id] = window
         else:
             from ui.dialogs import show_info
             show_info(self, "قريباً", f"موديول {module_id} قيد التطوير")
