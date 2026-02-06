@@ -37,7 +37,7 @@ class CopilotWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._drag_position: Optional[QPoint] = None
-        self._always_on_top = False
+        self._always_on_top = True  # متزامن مع WindowStaysOnTopHint
 
         self.setWindowTitle("المساعد الذكي")
         self.setMinimumSize(380, 500)
@@ -127,8 +127,8 @@ class CopilotWindow(QMainWindow):
             }
         """
 
-        # Pin button
-        self.pin_btn = QPushButton("📌")
+        # Pin button (starts pinned since WindowStaysOnTopHint is set)
+        self.pin_btn = QPushButton("📍")
         self.pin_btn.setStyleSheet(btn_style)
         self.pin_btn.setToolTip("تثبيت في الأعلى")
         self.pin_btn.clicked.connect(self._toggle_always_on_top)

@@ -64,10 +64,9 @@ class StreamWorker(QThread):
                 if self._stopped:
                     break
                 self.chunk_received.emit(chunk)
+            self.finished.emit()
         except Exception as e:
             self.error.emit(str(e))
-        finally:
-            self.finished.emit()
 
     def stop(self):
         """Stop the streaming."""
@@ -453,6 +452,13 @@ class AIChatPanel(QWidget):
 
         if self._current_bubble:
             self._current_bubble.set_text("حدث خطأ أثناء الرد. الرجاء المحاولة مرة أخرى.")
+
+        # إعادة تمكين حقل الإدخال (لأن finished لا يُرسل عند الخطأ)
+        self.input_field.setEnabled(True)
+        self.send_btn.setEnabled(True)
+        self.input_field.setFocus()
+        self._current_worker = None
+        self._current_bubble = None
 
     def clear_chat(self):
         """Clear all messages."""

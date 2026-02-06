@@ -752,5 +752,6 @@ class DayEvents:
     @property
     def day_name(self) -> str:
         """اسم اليوم بالعربي"""
-        day_names = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"]
+        # weekday() returns Monday=0, ..., Sunday=6
+        day_names = ["الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"]
         return day_names[self.date.weekday()]

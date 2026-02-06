@@ -135,13 +135,8 @@ class CalendarHeader(QFrame):
 
     def _update_display(self):
         """تحديث عرض التاريخ"""
-        month_name = MONTH_NAMES_AR[self.current_date.month - 1]
-        year = self.current_date.year
-
-        if self.view_type == CalendarView.MONTH:
-            self.date_label.setText(f"{month_name} {year}")
-        elif self.view_type == CalendarView.WEEK:
-            # حساب نطاق الأسبوع
+        if self.view_type == CalendarView.WEEK:
+            # حساب نطاق الأسبوع - استخدام week_start وليس current_date
             days_since_sunday = (self.current_date.weekday() + 1) % 7
             week_start = self.current_date - timedelta(days=days_since_sunday)
             week_end = week_start + timedelta(days=6)
@@ -149,13 +144,18 @@ class CalendarHeader(QFrame):
             end_month = MONTH_NAMES_AR[week_end.month - 1]
             if week_start.month == week_end.month:
                 self.date_label.setText(f"{week_start.day} - {week_end.day} {start_month} {week_start.year}")
+            elif week_start.year != week_end.year:
+                self.date_label.setText(f"{week_start.day} {start_month} {week_start.year} - {week_end.day} {end_month} {week_end.year}")
             else:
-                self.date_label.setText(f"{week_start.day} {start_month} - {week_end.day} {end_month} {week_end.year}")
+                self.date_label.setText(f"{week_start.day} {start_month} - {week_end.day} {end_month} {week_start.year}")
         elif self.view_type == CalendarView.DAY:
+            month_name = MONTH_NAMES_AR[self.current_date.month - 1]
             day_name = DAY_NAMES_AR[(self.current_date.weekday() + 1) % 7]
-            self.date_label.setText(f"{day_name}، {self.current_date.day} {month_name} {year}")
+            self.date_label.setText(f"{day_name}، {self.current_date.day} {month_name} {self.current_date.year}")
         else:
-            self.date_label.setText(f"{month_name} {year}")
+            # MONTH and AGENDA views
+            month_name = MONTH_NAMES_AR[self.current_date.month - 1]
+            self.date_label.setText(f"{month_name} {self.current_date.year}")
 
     def set_date(self, new_date: date):
         """تغيير التاريخ"""
