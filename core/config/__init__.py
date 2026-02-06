@@ -20,7 +20,6 @@ __all__ = [
     'DB_PORT',
     'DB_NAME',
     'DB_USER',
-    'DB_PASSWORD',
     # Window
     'WINDOW_MIN_WIDTH',
     'WINDOW_MIN_HEIGHT',

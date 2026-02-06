@@ -30,7 +30,9 @@ INTEGRA - نظام تشفير البيانات الحساسة
 import os
 import base64
 import json
+import hmac
 import hashlib
+import logging
 from pathlib import Path
 from typing import Optional, Union, Dict, Any
 from datetime import datetime
@@ -121,12 +123,15 @@ def _get_key_from_keyring() -> Optional[bytes]:
 
 def _store_key_in_file(key: bytes):
     """تخزين المفتاح في ملف (أقل أماناً)"""
+    logger = logging.getLogger(__name__)
+    logger.warning("Storing encryption key in file (keyring unavailable). "
+                   "Consider installing keyring for better security.")
     KEY_FILE.write_bytes(key)
     # تعيين صلاحيات محدودة (owner only)
     try:
         os.chmod(KEY_FILE, 0o600)
     except Exception:
-        pass
+        logger.warning("Could not set restricted permissions on key file")
 
 
 def _get_key_from_file() -> Optional[bytes]:
@@ -178,6 +183,12 @@ class Encryptor:
         # ثم من الملف
         if not self._key:
             self._key = _get_key_from_file()
+            # محاولة ترحيل المفتاح من الملف إلى keyring
+            if self._key and _store_key_in_keyring(self._key):
+                try:
+                    KEY_FILE.unlink()
+                except Exception:
+                    pass
 
         # إنشاء مفتاح جديد
         if not self._key:
@@ -364,7 +375,7 @@ class Encryptor:
         Returns:
             True إذا تطابقت
         """
-        return self.hash_password(password) == hashed
+        return hmac.compare_digest(self.hash_password(password), hashed)
 
     def rotate_key(self, new_key: Optional[bytes] = None) -> bytes:
         """

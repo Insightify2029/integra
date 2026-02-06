@@ -331,12 +331,24 @@ class TaskFormDialog(QDialog):
 
     def _validate(self) -> bool:
         """التحقق من صحة البيانات"""
+        # Reset any previous error styling
+        self._style_input(self.title_input)
+
         title = self.title_input.text().strip()
         if not title:
             self.title_input.setFocus()
-            self.title_input.setStyleSheet(
-                self.title_input.styleSheet() + "border-color: #dc3545;"
-            )
+            self.title_input.setStyleSheet("""
+                QLineEdit, QTextEdit, QDateTimeEdit, QSpinBox {
+                    border: 1px solid #dc3545;
+                    border-radius: 6px;
+                    padding: 8px;
+                    font-size: 13px;
+                    background-color: white;
+                }
+                QLineEdit:focus, QTextEdit:focus, QDateTimeEdit:focus {
+                    border-color: #dc3545;
+                }
+            """)
             return False
         return True
 

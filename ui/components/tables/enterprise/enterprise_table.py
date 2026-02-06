@@ -35,20 +35,29 @@ class EnterpriseTableDelegate(QStyledItemDelegate):
     Custom delegate for table cells.
     Handles cell styling and rendering.
     """
-    
+
     def __init__(self, parent=None):
         super().__init__(parent)
-    
+
     def paint(self, painter, option, index):
         """Custom paint for cells."""
+        theme = get_current_theme()
+
+        if theme == 'dark':
+            hover_color = QColor("#334155")
+            selected_color = QColor("#2563eb")
+        else:
+            hover_color = QColor("#f1f5f9")
+            selected_color = QColor("#2563eb")
+
         # Highlight on hover
         if option.state & QStyle.State_MouseOver:
-            painter.fillRect(option.rect, QColor("#334155"))
-        
+            painter.fillRect(option.rect, hover_color)
+
         # Selected row
         if option.state & QStyle.State_Selected:
-            painter.fillRect(option.rect, QColor("#2563eb"))
-        
+            painter.fillRect(option.rect, selected_color)
+
         super().paint(painter, option, index)
 
 

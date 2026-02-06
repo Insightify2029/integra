@@ -4,6 +4,7 @@ Email Viewer Widget
 Displays email content with full details.
 """
 
+import html
 from typing import Optional, List
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
@@ -371,7 +372,8 @@ class EmailViewerWidget(QWidget):
             self.body_browser.setHtml(email.body_html)
         else:
             # Convert plain text to HTML with proper formatting
-            text = email.body.replace('\n', '<br>')
+            # Escape HTML entities to prevent injection from plain text emails
+            text = html.escape(email.body).replace('\n', '<br>')
             self.body_browser.setHtml(f"<div style='white-space: pre-wrap;'>{text}</div>")
 
         # AI Panel
