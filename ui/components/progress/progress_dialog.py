@@ -31,6 +31,7 @@ class ProgressDialog(QDialog):
         self._start_time = time.time()
         self._show_time = show_time
         self._last_percent = 0
+        self._processing_events = False
         
         self._setup_ui(title, show_cancel)
         self._apply_style()
@@ -114,8 +115,13 @@ class ProgressDialog(QDialog):
                 self._time_label.setText(f"انتهى في {elapsed:.1f} ثانية")
         
         self._last_percent = percent
-        from PyQt5.QtWidgets import QApplication
-        QApplication.processEvents()
+        if not self._processing_events:
+            self._processing_events = True
+            try:
+                from PyQt5.QtWidgets import QApplication
+                QApplication.processEvents()
+            finally:
+                self._processing_events = False
     
     def set_title(self, title: str):
         self._title_label.setText(title)

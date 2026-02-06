@@ -16,6 +16,7 @@ from PyQt5.QtGui import QIcon
 
 from core.ai import is_ollama_available, get_ai_service
 from core.logging import app_logger
+from core.themes import get_current_theme
 
 try:
     from core.utils import Icons, icon
@@ -76,12 +77,15 @@ class AIToolbar(QFrame):
 
     def _setup_ui(self):
         """Setup toolbar UI."""
-        self.setStyleSheet("""
-            AIToolbar {
-                background-color: #f0f5ff;
-                border: 1px solid #c5d5ff;
+        self._is_dark = get_current_theme() == 'dark'
+        tb_bg = "#1e293b" if self._is_dark else "#f0f5ff"
+        tb_border = "#334155" if self._is_dark else "#c5d5ff"
+        self.setStyleSheet(f"""
+            AIToolbar {{
+                background-color: {tb_bg};
+                border: 1px solid {tb_border};
                 border-radius: 8px;
-            }
+            }}
         """)
 
         layout = QHBoxLayout(self)
@@ -102,7 +106,8 @@ class AIToolbar(QFrame):
         # Separator
         sep = QFrame()
         sep.setFrameShape(QFrame.VLine)
-        sep.setStyleSheet("background-color: #c5d5ff;")
+        sep_color = "#475569" if self._is_dark else "#c5d5ff"
+        sep.setStyleSheet(f"background-color: {sep_color};")
         layout.addWidget(sep)
 
         # Action buttons
@@ -143,41 +148,48 @@ class AIToolbar(QFrame):
         return btn
 
     def _get_button_style(self, primary: bool = False) -> str:
-        """Get button stylesheet."""
+        """Get button stylesheet (theme-aware)."""
+        is_dark = getattr(self, '_is_dark', False)
         if primary:
-            return """
-                QPushButton {
-                    background-color: #0066cc;
+            disabled = "#475569" if is_dark else "#ccc"
+            return f"""
+                QPushButton {{
+                    background-color: #2563eb;
                     color: white;
                     border: none;
                     border-radius: 4px;
                     padding: 6px 12px;
                     font-size: 12px;
-                }
-                QPushButton:hover {
-                    background-color: #0052a3;
-                }
-                QPushButton:disabled {
-                    background-color: #ccc;
-                }
+                }}
+                QPushButton:hover {{
+                    background-color: #3b82f6;
+                }}
+                QPushButton:disabled {{
+                    background-color: {disabled};
+                }}
             """
         else:
-            return """
-                QPushButton, QToolButton {
+            border = "#475569" if is_dark else "#c5d5ff"
+            color = "#93c5fd" if is_dark else "#0066cc"
+            hover = "#334155" if is_dark else "#e0ebff"
+            disabled_color = "#64748b" if is_dark else "#999"
+            disabled_border = "#334155" if is_dark else "#ddd"
+            return f"""
+                QPushButton, QToolButton {{
                     background-color: transparent;
-                    border: 1px solid #c5d5ff;
+                    border: 1px solid {border};
                     border-radius: 4px;
                     padding: 6px 10px;
                     font-size: 12px;
-                    color: #0066cc;
-                }
-                QPushButton:hover, QToolButton:hover {
-                    background-color: #e0ebff;
-                }
-                QPushButton:disabled, QToolButton:disabled {
-                    color: #999;
-                    border-color: #ddd;
-                }
+                    color: {color};
+                }}
+                QPushButton:hover, QToolButton:hover {{
+                    background-color: {hover};
+                }}
+                QPushButton:disabled, QToolButton:disabled {{
+                    color: {disabled_color};
+                    border-color: {disabled_border};
+                }}
             """
 
     def _update_status(self):

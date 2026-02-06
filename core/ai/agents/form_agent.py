@@ -535,8 +535,9 @@ class FormAgent(BaseAgent if ORCHESTRATION_AVAILABLE else object):
         return errors
 
     def get_form_template(self, form_type: FormType) -> List[FormField]:
-        """جلب قالب النموذج"""
-        return self.FORM_TEMPLATES.get(form_type, [])
+        """جلب قالب النموذج (نسخة عميقة لمنع تعديل القالب الأصلي)"""
+        import copy
+        return copy.deepcopy(self.FORM_TEMPLATES.get(form_type, []))
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -544,13 +545,16 @@ class FormAgent(BaseAgent if ORCHESTRATION_AVAILABLE else object):
 # ═══════════════════════════════════════════════════════════════
 
 _agent: Optional[FormAgent] = None
+_agent_lock = __import__('threading').Lock()
 
 
 def get_form_agent() -> FormAgent:
-    """الحصول على instance الوكيل"""
+    """الحصول على instance الوكيل (thread-safe)"""
     global _agent
     if _agent is None:
-        _agent = FormAgent()
+        with _agent_lock:
+            if _agent is None:
+                _agent = FormAgent()
     return _agent
 
 

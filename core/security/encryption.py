@@ -153,12 +153,15 @@ class Encryptor:
     """
 
     _instance = None
+    _cls_lock = __import__('threading').Lock()
 
     def __new__(cls):
-        """Singleton pattern"""
+        """Singleton pattern (thread-safe)"""
         if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._initialized = False
+            with cls._cls_lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+                    cls._instance._initialized = False
         return cls._instance
 
     def __init__(self):
@@ -377,18 +380,37 @@ class Encryptor:
         """
         return hmac.compare_digest(self.hash_password(password), hashed)
 
-    def rotate_key(self, new_key: Optional[bytes] = None) -> bytes:
+    def rotate_key(
+        self,
+        new_key: Optional[bytes] = None,
+        re_encrypt_values: Optional[list] = None
+    ) -> tuple:
         """
-        تدوير المفتاح (إنشاء مفتاح جديد)
-
-        تحذير: البيانات المشفرة بالمفتاح القديم لن تُفك!
+        تدوير المفتاح مع إعادة تشفير البيانات اختيارياً
 
         Args:
-            new_key: مفتاح جديد (اختياري)
+            new_key: مفتاح جديد (اختياري، يُولّد تلقائياً)
+            re_encrypt_values: قائمة نصوص مشفرة بالمفتاح القديم لإعادة تشفيرها
 
         Returns:
-            المفتاح الجديد
+            tuple: (المفتاح الجديد, قائمة القيم المعاد تشفيرها أو None)
         """
+        old_fernet = self._fernet
+        re_encrypted = None
+
+        # فك تشفير البيانات بالمفتاح القديم أولاً
+        if re_encrypt_values and old_fernet:
+            decrypted_values = []
+            for val in re_encrypt_values:
+                try:
+                    decrypted = old_fernet.decrypt(val.encode('utf-8')).decode('utf-8')
+                    decrypted_values.append(decrypted)
+                except Exception:
+                    decrypted_values.append(None)
+        else:
+            decrypted_values = None
+
+        # تحديث المفتاح
         if new_key is None:
             new_key = _generate_key()
 
@@ -399,7 +421,16 @@ class Encryptor:
         if not _store_key_in_keyring(self._key):
             _store_key_in_file(self._key)
 
-        return self._key
+        # إعادة تشفير بالمفتاح الجديد
+        if decrypted_values is not None:
+            re_encrypted = []
+            for val in decrypted_values:
+                if val is not None:
+                    re_encrypted.append(self.encrypt(val))
+                else:
+                    re_encrypted.append(None)
+
+        return self._key, re_encrypted
 
 
 # ============================================================
@@ -407,18 +438,21 @@ class Encryptor:
 # ============================================================
 
 _encryptor: Optional[Encryptor] = None
+_encryptor_lock = __import__('threading').Lock()
 
 
 def get_encryptor() -> Encryptor:
     """
-    الحصول على مدير التشفير
+    الحصول على مدير التشفير (thread-safe)
 
     Returns:
         Encryptor singleton instance
     """
     global _encryptor
     if _encryptor is None:
-        _encryptor = Encryptor()
+        with _encryptor_lock:
+            if _encryptor is None:
+                _encryptor = Encryptor()
     return _encryptor
 
 

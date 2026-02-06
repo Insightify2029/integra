@@ -19,6 +19,7 @@ from core.email import (
     get_email_cache, cache_emails
 )
 from core.logging import app_logger
+from core.themes import get_current_theme
 
 # Try to import AI
 try:
@@ -292,6 +293,7 @@ class EmailPanel(QWidget):
         self._current_email: Optional[Email] = None
         self._load_worker: Optional[EmailLoadWorker] = None
         self._ai_worker: Optional[AIAnalyzeWorker] = None
+        self._is_dark = get_current_theme() == 'dark'
         self._setup_ui()
 
     def _setup_ui(self):
@@ -306,11 +308,12 @@ class EmailPanel(QWidget):
 
         # Splitter for list and viewer
         splitter = QSplitter(Qt.Horizontal)
-        splitter.setStyleSheet("""
-            QSplitter::handle {
-                background-color: #e8e8e8;
+        splitter_color = "#334155" if self._is_dark else "#e8e8e8"
+        splitter.setStyleSheet(f"""
+            QSplitter::handle {{
+                background-color: {splitter_color};
                 width: 1px;
-            }
+            }}
         """)
 
         # Email list
@@ -341,11 +344,13 @@ class EmailPanel(QWidget):
     def _create_topbar(self) -> QWidget:
         """Create top bar with folder selection."""
         topbar = QFrame()
-        topbar.setStyleSheet("""
-            QFrame {
-                background-color: #f0f0f0;
-                border-bottom: 1px solid #ddd;
-            }
+        topbar_bg = "#1e293b" if self._is_dark else "#f0f0f0"
+        topbar_border = "#334155" if self._is_dark else "#ddd"
+        topbar.setStyleSheet(f"""
+            QFrame {{
+                background-color: {topbar_bg};
+                border-bottom: 1px solid {topbar_border};
+            }}
         """)
 
         layout = QHBoxLayout(topbar)
@@ -358,16 +363,22 @@ class EmailPanel(QWidget):
 
         # Folder selector
         folder_label = QLabel("المجلد:")
-        folder_label.setStyleSheet("font-size: 12px;")
+        fl_color = "#f1f5f9" if self._is_dark else "#333"
+        folder_label.setStyleSheet(f"font-size: 12px; color: {fl_color};")
 
+        combo_bg = "#0f172a" if self._is_dark else "white"
+        combo_border = "#475569" if self._is_dark else "#ccc"
+        combo_color = "#f1f5f9" if self._is_dark else "#333"
         self.folder_combo = QComboBox()
-        self.folder_combo.setStyleSheet("""
-            QComboBox {
-                border: 1px solid #ccc;
+        self.folder_combo.setStyleSheet(f"""
+            QComboBox {{
+                border: 1px solid {combo_border};
                 border-radius: 4px;
                 padding: 6px 12px;
                 min-width: 150px;
-            }
+                background-color: {combo_bg};
+                color: {combo_color};
+            }}
         """)
         self.folder_combo.addItem("📥 الوارد", FolderType.INBOX)
         self.folder_combo.addItem("📤 المرسل", FolderType.SENT)
@@ -379,7 +390,7 @@ class EmailPanel(QWidget):
         compose_btn = QPushButton("✉️ رسالة جديدة")
         compose_btn.setStyleSheet("""
             QPushButton {
-                background-color: #0078d4;
+                background-color: #2563eb;
                 color: white;
                 border: none;
                 border-radius: 4px;
@@ -387,7 +398,7 @@ class EmailPanel(QWidget):
                 font-weight: bold;
             }
             QPushButton:hover {
-                background-color: #106ebe;
+                background-color: #3b82f6;
             }
         """)
         compose_btn.clicked.connect(self._on_compose)
@@ -403,13 +414,16 @@ class EmailPanel(QWidget):
     def _create_status_bar(self) -> QWidget:
         """Create status bar."""
         status = QFrame()
-        status.setStyleSheet("background-color: #f8f8f8; border-top: 1px solid #ddd;")
+        sb_bg = "#0f172a" if self._is_dark else "#f8f8f8"
+        sb_border = "#334155" if self._is_dark else "#ddd"
+        status.setStyleSheet(f"background-color: {sb_bg}; border-top: 1px solid {sb_border};")
 
         layout = QHBoxLayout(status)
         layout.setContentsMargins(12, 6, 12, 6)
 
         self.status_label = QLabel("جاهز")
-        self.status_label.setStyleSheet("font-size: 11px; color: #666;")
+        sl_color = "#94a3b8" if self._is_dark else "#666"
+        self.status_label.setStyleSheet(f"font-size: 11px; color: {sl_color};")
 
         # AI status
         self.ai_status = QLabel()

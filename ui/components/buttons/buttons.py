@@ -5,6 +5,7 @@ Styled button widgets.
 """
 
 from PyQt5.QtWidgets import QPushButton
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 
 from core.themes import get_current_theme
@@ -19,7 +20,7 @@ class PrimaryButton(QPushButton):
 
     def _setup(self):
         self.setFont(QFont("Cairo", 13))
-        self.setCursor(0)  # Arrow cursor
+        self.setCursor(Qt.ArrowCursor)
         
         self.setStyleSheet("""
             QPushButton {

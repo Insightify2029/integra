@@ -343,16 +343,9 @@ class AIService:
         )
 
 
-# Singleton instance
-_service: Optional[AIService] = None
-
-
 def get_ai_service() -> AIService:
-    """Get the singleton AI service instance."""
-    global _service
-    if _service is None:
-        _service = AIService()
-    return _service
+    """Get the singleton AI service instance (delegates to AIService.__new__)."""
+    return AIService()
 
 
 def chat(message: str, **kwargs) -> Optional[str]:

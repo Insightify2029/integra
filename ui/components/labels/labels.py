@@ -35,7 +35,7 @@ class LogoLabel(QLabel):
         self._setup()
     
     def _setup(self):
-        self.setFont(QFont("Segoe UI", 72, QFont.Bold))
+        self.setFont(QFont("Cairo", 72, QFont.Bold))
         self.setAlignment(Qt.AlignCenter)
         self.setStyleSheet("color: #2563eb; background: transparent; letter-spacing: 8px;")
 

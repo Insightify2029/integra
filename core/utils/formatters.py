@@ -32,12 +32,22 @@ from datetime import datetime, timedelta
 from typing import Union, Optional
 
 
-# Initialize Arabic locale
-try:
-    humanize.activate("ar")
-    _arabic_available = True
-except Exception:
-    _arabic_available = False
+# Arabic locale (deferred activation to avoid side effects at import)
+_arabic_available = False
+_arabic_activated = False
+
+
+def _ensure_arabic():
+    """Activate Arabic locale on first use (lazy initialization)."""
+    global _arabic_available, _arabic_activated
+    if _arabic_activated:
+        return
+    _arabic_activated = True
+    try:
+        humanize.activate("ar")
+        _arabic_available = True
+    except Exception:
+        _arabic_available = False
 
 
 # ========== Number Formatting ==========
@@ -57,6 +67,7 @@ def format_number(value: Union[int, float], use_comma: bool = True) -> str:
         return "0"
 
     try:
+        _ensure_arabic()
         if use_comma:
             return humanize.intcomma(int(value))
         return str(int(value))
@@ -105,6 +116,7 @@ def format_currency(
         return f"0 {currency}"
 
     try:
+        _ensure_arabic()
         if decimals > 0:
             formatted = f"{float(value):,.{decimals}f}"
         else:
@@ -148,6 +160,7 @@ def format_large_number(value: Union[int, float]) -> str:
         return "0"
 
     try:
+        _ensure_arabic()
         return humanize.intword(int(value))
     except (ValueError, TypeError):
         return str(value)
@@ -202,29 +215,29 @@ def format_date(
         return str(date)
 
 
-def format_time(time: Union[datetime, str], include_seconds: bool = False) -> str:
+def format_time(dt: Union[datetime, str], include_seconds: bool = False) -> str:
     """
     Format time.
 
     Args:
-        time: Time to format
+        dt: Time to format
         include_seconds: Include seconds
 
     Returns:
         Formatted string (e.g., "14:30")
     """
-    if time is None:
+    if dt is None:
         return ""
 
     try:
-        if isinstance(time, str):
-            time = datetime.fromisoformat(time)
+        if isinstance(dt, str):
+            dt = datetime.fromisoformat(dt)
 
         if include_seconds:
-            return time.strftime("%H:%M:%S")
-        return time.strftime("%H:%M")
+            return dt.strftime("%H:%M:%S")
+        return dt.strftime("%H:%M")
     except Exception:
-        return str(time)
+        return str(dt)
 
 
 def format_datetime(dt: Union[datetime, str]) -> str:
@@ -276,6 +289,7 @@ def format_time_ago(
         diff = now - dt
 
         # Use humanize for Arabic
+        _ensure_arabic()
         result = humanize.naturaltime(dt)
 
         # Manual fallback if humanize fails
@@ -358,6 +372,7 @@ def format_file_size(size_bytes: int, binary: bool = True) -> str:
         return "0 B"
 
     try:
+        _ensure_arabic()
         return humanize.naturalsize(size_bytes, binary=binary)
     except Exception:
         return f"{size_bytes} B"
@@ -455,6 +470,7 @@ def format_ordinal(number: int) -> str:
         return ""
 
     try:
+        _ensure_arabic()
         return humanize.ordinal(number)
     except Exception:
         return f"#{number}"

@@ -379,11 +379,14 @@ For more information, see docs/power_bi_setup.md
 # =============================================================================
 
 _template_manager_instance: Optional[BITemplateManager] = None
+_template_manager_lock = __import__('threading').Lock()
 
 
 def get_template_manager() -> BITemplateManager:
-    """Get the singleton BITemplateManager instance."""
+    """Get the singleton BITemplateManager instance (thread-safe)."""
     global _template_manager_instance
     if _template_manager_instance is None:
-        _template_manager_instance = BITemplateManager()
+        with _template_manager_lock:
+            if _template_manager_instance is None:
+                _template_manager_instance = BITemplateManager()
     return _template_manager_instance

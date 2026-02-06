@@ -21,7 +21,7 @@
 ### رموز الحالة:
 | الرمز | المعنى |
 |-------|--------|
-| 🔴 | لم يبدأ |
+| ✅ | لم يبدأ |
 | 🟡 | قيد التنفيذ |
 | ✅ | مكتمل |
 | ⏭️ | مؤجل (مع سبب) |
@@ -222,27 +222,47 @@
 
 | # | المشكلة | الخطورة | الملفات | الحالة |
 |---|---------|---------|---------|--------|
-| LOW-01 | `humanize.activate("ar")` عند الاستيراد | منخفض | `core/utils/formatters.py` | 🔴 |
-| LOW-02 | معامل `time` يخفي الوحدة | منخفض | `core/utils/formatters.py` | 🔴 |
-| LOW-03 | القالب المشترك بمرجع مباشر | منخفض | `core/ai/agents/form_agent.py` | 🔴 |
-| LOW-04 | استيراد دائري محتمل | منخفض | `core/threading/worker.py` | 🔴 |
-| LOW-06 | ملفات لا تُغلق في main.py | منخفض | `main.py` | 🔴 |
-| LOW-07 | خط Segoe UI متاح فقط على Windows | منخفض | `ui/components/labels/labels.py` | 🔴 |
-| LOW-08 | `setCursor(0)` بدل Qt.ArrowCursor | منخفض | `ui/components/buttons/buttons.py` | 🔴 |
-| LOW-09 | `processEvents()` قد يسبب إعادة دخول | منخفض | `ui/components/progress/progress_dialog.py` | 🔴 |
-| LOW-10 | `_include_headers` لا تُفحص | منخفض | `ui/components/tables/enterprise/export_manager.py` | 🔴 |
-| LOW-11 | bare except | منخفض | `ui/components/tables/enterprise/export_manager.py` | 🔴 |
-| LOW-12 | اتصال DB لا يُغلق عند الإغلاق | منخفض | `ui/windows/launcher/launcher_window.py` | 🔴 |
-| LOW-13 | Debounce بدون إلغاء السابقة | منخفض | `modules/tasks/screens/task_list/task_list_screen.py` | 🔴 |
-| LOW-14 | لا يوجد timeout لطلبات AI | منخفض | `modules/copilot/components/chat_sidebar.py` | 🔴 |
-| LOW-15 | Singletons غير آمنة | منخفض | ملفات متعددة | 🔴 |
-| LOW-17 | Singleton مزدوج في AIService | منخفض | `core/ai/ai_service.py` | 🔴 |
-| LOW-18 | تدوير المفاتيح بدون re-encrypt | منخفض | `core/security/encryption.py` | 🔴 |
-| MED-18 | مكونات AI/Email لا تحترم السمة | متوسط | 5+ ملفات | 🔴 |
+| LOW-01 | `humanize.activate("ar")` عند الاستيراد | منخفض | `core/utils/formatters.py` | ✅ |
+| LOW-02 | معامل `time` يخفي الوحدة | منخفض | `core/utils/formatters.py` | ✅ |
+| LOW-03 | القالب المشترك بمرجع مباشر | منخفض | `core/ai/agents/form_agent.py` | ✅ |
+| LOW-04 | استيراد دائري محتمل | منخفض | `core/threading/worker.py` | ✅ |
+| LOW-06 | ملفات لا تُغلق في main.py | منخفض | `main.py` | ✅ |
+| LOW-07 | خط Segoe UI متاح فقط على Windows | منخفض | `ui/components/labels/labels.py` | ✅ |
+| LOW-08 | `setCursor(0)` بدل Qt.ArrowCursor | منخفض | `ui/components/buttons/buttons.py` | ✅ |
+| LOW-09 | `processEvents()` قد يسبب إعادة دخول | منخفض | `ui/components/progress/progress_dialog.py` | ✅ |
+| LOW-10 | `_include_headers` لا تُفحص | منخفض | `ui/components/tables/enterprise/export_manager.py` | ✅ |
+| LOW-11 | bare except | منخفض | `ui/components/tables/enterprise/export_manager.py` | ✅ |
+| LOW-12 | اتصال DB لا يُغلق عند الإغلاق | منخفض | `ui/windows/launcher/launcher_window.py` | ✅ |
+| LOW-13 | Debounce بدون إلغاء السابقة | منخفض | `modules/tasks/screens/task_list/task_list_screen.py` | ✅ |
+| LOW-14 | لا يوجد timeout لطلبات AI | منخفض | `modules/copilot/components/chat_sidebar.py` | ✅ |
+| LOW-15 | Singletons غير آمنة | منخفض | ملفات متعددة | ✅ |
+| LOW-17 | Singleton مزدوج في AIService | منخفض | `core/ai/ai_service.py` | ✅ |
+| LOW-18 | تدوير المفاتيح بدون re-encrypt | منخفض | `core/security/encryption.py` | ✅ |
+| MED-18 | مكونات AI/Email لا تحترم السمة | متوسط | 5+ ملفات | ✅ |
 
 **ملاحظات:**
 - LOW-05 (win32com) و LOW-16 (Emoji) لا تحتاج إصلاح - قيود منصة
 - MED-18 مؤجلة لهنا لأنها تحتاج تعديل 5+ ملفات
+- LOW-04: الاستيراد الدائري محلول مسبقاً عبر lazy import في worker.py
+
+**الإصلاحات المنفذة (تاريخ: 2026-02-06):**
+- LOW-01: تأجيل `humanize.activate("ar")` من import-time إلى lazy initialization عبر `_ensure_arabic()`
+- LOW-02: إعادة تسمية معامل `time` إلى `dt` لتجنب إخفاء وحدة Python المدمجة
+- LOW-03: إرجاع `copy.deepcopy()` من `get_form_template()` لمنع تعديل القوالب الأصلية
+- LOW-04: تم التحقق - محلول مسبقاً عبر lazy import في `worker.py:201`
+- LOW-06: إضافة `atexit.register(_close_streams)` لإغلاق ملفات stdout/stderr عند الخروج
+- LOW-07: استبدال خط "Segoe UI" (Windows فقط) بـ "Cairo" (متعدد المنصات)
+- LOW-08: استبدال `setCursor(0)` بـ `setCursor(Qt.ArrowCursor)`
+- LOW-09: إضافة guard flag `_processing_events` لمنع إعادة الدخول في `processEvents()`
+- LOW-10: تمرير `include_headers` checkbox إلى `ExportWorker` وتطبيقه في Excel/CSV/PDF
+- LOW-11: استبدال `except:` المطلق بـ `except (TypeError, AttributeError):`
+- LOW-12: إضافة `disconnect()` في `closeEvent()` لإغلاق اتصال قاعدة البيانات
+- LOW-13: استبدال `QTimer.singleShot()` المتكرر بـ `QTimer` واحد مُعاد الاستخدام مع `start()`
+- LOW-14: إضافة timeout (60 ثانية) لطلبات AI عبر `time.monotonic()` في حلقة streaming
+- LOW-15: إضافة double-checked locking بـ `threading.Lock()` لكل singletons في: template_manager, views_manager, data_exporter, export_scheduler, watcher, encryption, form_agent
+- LOW-17: توحيد singleton AIService - إزالة المتغير الوسيط `_service` واستخدام `AIService.__new__()` مباشرة
+- LOW-18: إضافة `re_encrypt_values` parameter في `rotate_key()` لإعادة التشفير عند تدوير المفاتيح
+- MED-18: إضافة دعم السمة (Dark/Light) لـ 5 مكونات: `chat_panel.py`, `ai_toolbar.py`, `email_panel.py`, `email_viewer.py`, `email_list.py`
 
 ---
 
@@ -257,7 +277,7 @@
 | 5 | أمان + واجهة | 8 | ✅ |
 | 6 | منطق + أداء + تقويم | 8 | ✅ |
 | 7 | متوسطة متبقية | 8 | ✅ |
-| 8 | منخفضة + تحسينات نهائية | 17 | 🔴 |
+| 8 | منخفضة + تحسينات نهائية | 17 | ✅ |
 | **المجموع** | | **69 إصلاح فريد** | |
 
 > **ملاحظة:** بعض المشاكل في التقرير الأصلي (95) تتداخل أو هي توصيات معمارية وليست أخطاء مباشرة. تم تقليصها لـ 69 إصلاح فعلي قابل للتنفيذ.

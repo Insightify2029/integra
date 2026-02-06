@@ -374,11 +374,14 @@ class BIDataExporter:
 # =============================================================================
 
 _exporter_instance: Optional[BIDataExporter] = None
+_exporter_lock = __import__('threading').Lock()
 
 
 def get_bi_exporter() -> BIDataExporter:
-    """Get the singleton BIDataExporter instance."""
+    """Get the singleton BIDataExporter instance (thread-safe)."""
     global _exporter_instance
     if _exporter_instance is None:
-        _exporter_instance = BIDataExporter()
+        with _exporter_lock:
+            if _exporter_instance is None:
+                _exporter_instance = BIDataExporter()
     return _exporter_instance
