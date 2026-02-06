@@ -258,8 +258,17 @@ class DayCell(QFrame):
     def set_events(self, events: List[CalendarEvent]):
         """تحديث الأحداث"""
         self.events = events
+        # مسح layout القديم قبل إنشاء الجديد
+        old_layout = self.layout()
+        if old_layout is not None:
+            while old_layout.count():
+                item = old_layout.takeAt(0)
+                widget = item.widget()
+                if widget is not None:
+                    widget.deleteLater()
+            # نقل layout القديم لـ widget مؤقت لحذفه
+            QWidget().setLayout(old_layout)
         # إعادة بناء الواجهة
-        # (يمكن تحسين هذا بتحديث العناصر بدلاً من إعادة البناء)
         self._setup_ui()
         self._apply_style()
 

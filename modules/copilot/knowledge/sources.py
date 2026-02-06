@@ -12,6 +12,8 @@ from enum import Enum
 import json
 import os
 
+from core.logging import app_logger
+
 
 class SourceType(Enum):
     """Types of knowledge sources."""
@@ -131,8 +133,8 @@ class DocumentSource(KnowledgeSource):
                                 "source": self.name
                             }
                         ))
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        app_logger.error(f"Failed to read document {file_path}: {e}")
 
         return items
 
@@ -191,8 +193,8 @@ class DatabaseSource(KnowledgeSource):
                         "source": "database_schema"
                     }
                 ))
-        except Exception:
-            pass
+        except Exception as e:
+            app_logger.error(f"Failed to extract database schema knowledge: {e}")
 
         return items
 
@@ -226,8 +228,8 @@ class DatabaseSource(KnowledgeSource):
                     {"name": r[0], "type": r[1], "nullable": r[2]}
                     for r in col_rows
                 ]
-        except Exception:
-            pass
+        except Exception as e:
+            app_logger.error(f"Failed to get tables info: {e}")
 
         return tables
 
@@ -278,8 +280,8 @@ class ModuleSource(KnowledgeSource):
                         "source": "modules"
                     }
                 ))
-        except Exception:
-            pass
+        except Exception as e:
+            app_logger.error(f"Failed to extract module knowledge: {e}")
 
         return items
 

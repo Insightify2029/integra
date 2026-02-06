@@ -126,9 +126,11 @@ class BIDataExporter:
                         elif isinstance(val, datetime):
                             formatted.append(val.strftime('%Y-%m-%d %H:%M:%S'))
                         else:
-                            # Escape quotes and handle special characters
-                            str_val = str(val).replace('"', '""')
-                            if delimiter in str_val or '"' in str_val or '\n' in str_val:
+                            # فحص علامات الاقتباس قبل الاستبدال (RFC 4180)
+                            str_val = str(val)
+                            needs_quoting = delimiter in str_val or '"' in str_val or '\n' in str_val
+                            str_val = str_val.replace('"', '""')
+                            if needs_quoting:
                                 str_val = f'"{str_val}"'
                             formatted.append(str_val)
                     f.write(delimiter.join(formatted) + '\n')

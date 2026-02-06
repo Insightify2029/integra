@@ -181,6 +181,17 @@ BI_TEMPLATES_CONFIG = {
 _settings_cache: Optional[Dict[str, Any]] = None
 
 
+def _deep_merge(base: dict, override: dict) -> dict:
+    """Deep merge override into base dict."""
+    result = base.copy()
+    for key, value in override.items():
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            result[key] = _deep_merge(result[key], value)
+        else:
+            result[key] = value
+    return result
+
+
 def _load_settings() -> Dict[str, Any]:
     """Load BI settings from file or create default."""
     global _settings_cache
@@ -199,10 +210,10 @@ def _load_settings() -> Dict[str, Any]:
         try:
             with open(BI_SETTINGS_FILE, 'r', encoding='utf-8') as f:
                 loaded = json.load(f)
-                # Merge with defaults
+                # Deep merge with defaults to preserve nested structures
                 for key in default_settings:
                     if key in loaded:
-                        default_settings[key].update(loaded[key])
+                        default_settings[key] = _deep_merge(default_settings[key], loaded[key])
         except Exception:
             pass
 

@@ -16,6 +16,41 @@
 
 ---
 
+## الجلسة: 6 فبراير 2026 - الجلسة 6 من خطة الإصلاح (منطق + أداء + تقويم)
+
+### ملخص الجلسة:
+
+**تم إصلاح 8 مشاكل متوسطة - أخطاء منطق وأداء وتقويم:**
+
+| # | المشكلة | الإصلاح |
+|---|---------|---------|
+| MED-14 | أسماء الأيام خاطئة | تصحيح ترتيب المصفوفة لتتوافق مع `weekday()` (الإثنين=0) |
+| MED-15 | DayCell layouts متكررة | مسح layout القديم + `deleteLater()` قبل إعادة البناء |
+| MED-16 | شهر خاطئ في عرض الأسبوع | حساب الشهر من `week_start` + معالجة حدود السنة |
+| MED-19 | `_always_on_top` متناقض | مزامنة `_always_on_top = True` مع `WindowStaysOnTopHint` + تحديث أيقونة pin |
+| MED-20 | `except: pass` يبتلع الأخطاء | استبدال `pass` بـ `app_logger.error()` في 4 مواقع |
+| MED-23 | خطأ تدفق في StreamWorker | نقل `finished.emit()` لداخل `try` + إعادة تمكين الإدخال عند الخطأ |
+| MED-01 | منطق اقتباس CSV خاطئ | فحص `needs_quoting` قبل `replace('"', '""')` (RFC 4180) |
+| MED-02 | دمج إعدادات BI سطحي | إضافة `_deep_merge()` بدل `.update()` السطحي |
+
+### الملفات المعدّلة:
+| الملف | نوع التعديل |
+|-------|-------------|
+| `modules/calendar/models/calendar_models.py` | تصحيح ترتيب مصفوفة أسماء الأيام |
+| `modules/calendar/widgets/day_cell.py` | مسح layout قبل إعادة البناء في `set_events()` |
+| `modules/calendar/widgets/calendar_header.py` | إصلاح عرض الشهر/السنة في الأسبوع |
+| `modules/copilot/components/chat_window.py` | مزامنة `_always_on_top` مع window flags |
+| `modules/copilot/knowledge/sources.py` | استبدال `except: pass` بـ logging |
+| `ui/components/ai/chat_panel.py` | إصلاح تدفق StreamWorker (finished/error) |
+| `core/bi/data_exporter.py` | إصلاح منطق اقتباس CSV |
+| `core/bi/connection_config.py` | إضافة `_deep_merge()` لدمج الإعدادات |
+
+### الحالة بعد الجلسة:
+- الجلسات 1-6 مكتملة (44 إصلاح من 69)
+- الجلسة التالية: الجلسة 7 (متوسطة متبقية - 8 مشاكل)
+
+---
+
 ## الجلسة: 6 فبراير 2026 - الجلسة 5 من خطة الإصلاح (أمان + واجهة)
 
 ### ملخص الجلسة:
