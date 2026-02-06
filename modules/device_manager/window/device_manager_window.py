@@ -24,6 +24,7 @@ from PyQt5.QtCore import Qt, QTimer, pyqtSignal
 
 from ui.windows.base import BaseWindow
 from core.logging import app_logger
+from core.threading import run_in_background
 
 
 # ═══════════════════════════════════════════════════════
@@ -697,10 +698,15 @@ class DeviceManagerWindow(BaseWindow):
     # ═══════════════════════════════════════════════════════
 
     def _refresh_printers(self):
-        """Refresh printer list."""
+        """Refresh printer list (runs in background thread)."""
         self._update_status("جاري البحث عن الطابعات...")
-        try:
-            printers = self.printer_discovery.refresh()
+        self._find_button("btn_refresh_printers").setEnabled(False)
+
+        def _do_discover():
+            return self.printer_discovery.refresh()
+
+        def _on_done(printers):
+            self._find_button("btn_refresh_printers").setEnabled(True)
             self.printer_table.setRowCount(0)
 
             for printer in printers:
@@ -713,7 +719,6 @@ class DeviceManagerWindow(BaseWindow):
                 self.printer_table.setItem(row, 1, type_item)
 
                 status_item = QTableWidgetItem(printer.status_text_ar)
-                status_color = STATUS_COLORS.get(printer.status_text_ar, '#6b7280')
                 status_item.setForeground(Qt.white)
                 self.printer_table.setItem(row, 2, status_item)
 
@@ -725,19 +730,25 @@ class DeviceManagerWindow(BaseWindow):
             self.lbl_printer_count.setText(f"الطابعات: {len(printers)}")
             self._update_status(f"تم اكتشاف {len(printers)} طابعة")
 
-        except Exception as e:
-            app_logger.error(f"Error refreshing printers: {e}")
-            self._update_status(f"خطأ في اكتشاف الطابعات: {e}")
+        def _on_error(error_type, error_msg, tb):
+            self._find_button("btn_refresh_printers").setEnabled(True)
+            app_logger.error(f"Error refreshing printers: {error_msg}")
+            self._update_status(f"خطأ في اكتشاف الطابعات: {error_msg}")
+
+        run_in_background(_do_discover, on_finished=_on_done, on_error=_on_error, task_name="printer_discovery")
 
     def _print_test_page(self):
-        """Print a test page on selected printer."""
+        """Print a test page on selected printer (runs in background)."""
         row = self.printer_table.currentRow()
         if row < 0:
             self._show_warning("تنبيه", "يرجى اختيار طابعة أولاً")
             return
 
         printer_name = self.printer_table.item(row, 0).text()
-        try:
+        self._find_button("btn_print_test").setEnabled(False)
+        self._update_status(f"جاري طباعة صفحة اختبار على {printer_name}...")
+
+        def _do_print():
             from core.device_manager.printer.print_manager import PrintSettings
             settings = PrintSettings(printer_name=printer_name)
             test_html = f"""
@@ -754,13 +765,20 @@ class DeviceManagerWindow(BaseWindow):
             </body>
             </html>
             """
-            job = self.print_manager.print_html(test_html, settings)
+            return self.print_manager.print_html(test_html, settings)
+
+        def _on_done(job):
+            self._find_button("btn_print_test").setEnabled(True)
             self._update_status(f"طباعة اختبار: {job.status_text_ar}")
-        except Exception as e:
-            self._update_status(f"خطأ في الطباعة: {e}")
+
+        def _on_error(error_type, error_msg, tb):
+            self._find_button("btn_print_test").setEnabled(True)
+            self._update_status(f"خطأ في الطباعة: {error_msg}")
+
+        run_in_background(_do_print, on_finished=_on_done, on_error=_on_error, task_name="print_test_page")
 
     def _print_file(self):
-        """Open file dialog and print selected file."""
+        """Open file dialog and print selected file (runs in background)."""
         file_path, _ = QFileDialog.getOpenFileName(
             self, "اختر ملف للطباعة", "",
             "كل الملفات (*);;PDF (*.pdf);;نصوص (*.txt);;صور (*.png *.jpg *.bmp)"
@@ -773,26 +791,42 @@ class DeviceManagerWindow(BaseWindow):
         if row >= 0:
             printer_name = self.printer_table.item(row, 0).text()
 
-        try:
+        copies = self.spin_copies.value()
+        self._find_button("btn_print_file").setEnabled(False)
+        self._update_status(f"جاري طباعة {os.path.basename(file_path)}...")
+
+        def _do_print():
             from core.device_manager.printer.print_manager import PrintSettings
             settings = PrintSettings(
                 printer_name=printer_name,
-                copies=self.spin_copies.value(),
+                copies=copies,
             )
-            job = self.print_manager.print_file(file_path, settings)
+            return self.print_manager.print_file(file_path, settings)
+
+        def _on_done(job):
+            self._find_button("btn_print_file").setEnabled(True)
             self._update_status(f"طباعة: {job.status_text_ar} - {os.path.basename(file_path)}")
-        except Exception as e:
-            self._update_status(f"خطأ في الطباعة: {e}")
+
+        def _on_error(error_type, error_msg, tb):
+            self._find_button("btn_print_file").setEnabled(True)
+            self._update_status(f"خطأ في الطباعة: {error_msg}")
+
+        run_in_background(_do_print, on_finished=_on_done, on_error=_on_error, task_name="print_file")
 
     # ═══════════════════════════════════════════════════════
     # Scanner Actions
     # ═══════════════════════════════════════════════════════
 
     def _refresh_scanners(self):
-        """Refresh scanner list."""
+        """Refresh scanner list (runs in background thread)."""
         self._update_status("جاري البحث عن الماسحات الضوئية...")
-        try:
-            scanners = self.scanner_discovery.refresh()
+        self._find_button("btn_refresh_scanners").setEnabled(False)
+
+        def _do_discover():
+            return self.scanner_discovery.refresh()
+
+        def _on_done(scanners):
+            self._find_button("btn_refresh_scanners").setEnabled(True)
             self.scanner_table.setRowCount(0)
 
             for scanner in scanners:
@@ -813,9 +847,12 @@ class DeviceManagerWindow(BaseWindow):
             self.lbl_scanner_count.setText(f"الماسحات: {len(scanners)}")
             self._update_status(f"تم اكتشاف {len(scanners)} ماسح ضوئي")
 
-        except Exception as e:
-            app_logger.error(f"Error refreshing scanners: {e}")
-            self._update_status(f"خطأ في اكتشاف الماسحات: {e}")
+        def _on_error(error_type, error_msg, tb):
+            self._find_button("btn_refresh_scanners").setEnabled(True)
+            app_logger.error(f"Error refreshing scanners: {error_msg}")
+            self._update_status(f"خطأ في اكتشاف الماسحات: {error_msg}")
+
+        run_in_background(_do_discover, on_finished=_on_done, on_error=_on_error, task_name="scanner_discovery")
 
     def _get_scan_settings(self):
         """Build ScanSettings from UI controls."""
@@ -845,32 +882,46 @@ class DeviceManagerWindow(BaseWindow):
         )
 
     def _scan_single(self):
-        """Perform a single scan."""
+        """Perform a single scan (runs in background thread)."""
         settings = self._get_scan_settings()
 
         self.scan_progress.setVisible(True)
         self.scan_progress.setValue(0)
         self._update_status("جاري المسح الضوئي...")
+        self._find_button("btn_scan").setEnabled(False)
 
-        def on_progress(pct, msg):
-            self.scan_progress.setValue(pct)
-            self._update_status(msg)
+        def _do_scan(progress_callback):
+            def on_prog(pct, msg):
+                progress_callback(pct, msg)
+            return self.scan_engine.scan(settings, on_progress=on_prog)
 
-        try:
-            result = self.scan_engine.scan(settings, on_progress=on_progress)
+        def _on_done(result):
+            self._find_button("btn_scan").setEnabled(True)
+            self.scan_progress.setVisible(False)
             if result.success:
                 self._update_status(f"تم المسح: {result.file_path} ({result.file_size_text})")
                 self._show_info("نجاح", f"تم المسح الضوئي بنجاح\n{result.file_path}\nالحجم: {result.file_size_text}")
             else:
                 self._update_status(f"فشل المسح: {result.error_message}")
                 self._show_warning("خطأ", f"فشل المسح الضوئي:\n{result.error_message}")
-        except Exception as e:
-            self._update_status(f"خطأ: {e}")
-        finally:
+
+        def _on_error(error_type, error_msg, tb):
+            self._find_button("btn_scan").setEnabled(True)
             self.scan_progress.setVisible(False)
+            self._update_status(f"خطأ: {error_msg}")
+
+        def _on_progress(pct, msg):
+            self.scan_progress.setValue(pct)
+            self._update_status(msg)
+
+        run_in_background(
+            _do_scan, use_progress=True,
+            on_finished=_on_done, on_error=_on_error, on_progress=_on_progress,
+            task_name="scan_single",
+        )
 
     def _batch_scan(self):
-        """Perform batch scanning via ADF."""
+        """Perform batch scanning via ADF (runs in background thread)."""
         from core.device_manager.scanner.batch_scanner import BatchScanSettings, OutputMode
         from core.device_manager.scanner.scan_engine import ScanColorMode, ScanSource
 
@@ -892,13 +943,16 @@ class DeviceManagerWindow(BaseWindow):
         self.scan_progress.setVisible(True)
         self.scan_progress.setValue(0)
         self._update_status("جاري المسح الدفعي...")
+        self._find_button("btn_batch_scan").setEnabled(False)
 
-        def on_progress(pct, msg, job):
-            self.scan_progress.setValue(pct)
-            self._update_status(msg)
+        def _do_batch(progress_callback):
+            def on_prog(pct, msg, job):
+                progress_callback(pct, msg)
+            return self.batch_scanner.start_batch(batch_settings, on_progress=on_prog)
 
-        try:
-            job = self.batch_scanner.start_batch(batch_settings, on_progress=on_progress)
+        def _on_done(job):
+            self._find_button("btn_batch_scan").setEnabled(True)
+            self.scan_progress.setVisible(False)
             if job.status.value == "completed":
                 self._update_status(f"تم مسح {job.total_pages_included} صفحة")
                 self._show_info(
@@ -909,13 +963,24 @@ class DeviceManagerWindow(BaseWindow):
                 )
             else:
                 self._update_status(f"فشل المسح الدفعي: {job.error_message}")
-        except Exception as e:
-            self._update_status(f"خطأ: {e}")
-        finally:
+
+        def _on_error(error_type, error_msg, tb):
+            self._find_button("btn_batch_scan").setEnabled(True)
             self.scan_progress.setVisible(False)
+            self._update_status(f"خطأ: {error_msg}")
+
+        def _on_progress(pct, msg):
+            self.scan_progress.setValue(pct)
+            self._update_status(msg)
+
+        run_in_background(
+            _do_batch, use_progress=True,
+            on_finished=_on_done, on_error=_on_error, on_progress=_on_progress,
+            task_name="batch_scan",
+        )
 
     def _scan_to_pdf(self):
-        """Scan to searchable PDF with OCR."""
+        """Scan to searchable PDF with OCR (runs in background thread)."""
         row = self.scanner_table.currentRow()
         scanner_name = self.scanner_table.item(row, 0).text() if row >= 0 else ""
 
@@ -925,39 +990,57 @@ class DeviceManagerWindow(BaseWindow):
         if not save_path:
             return
 
+        resolution_dpi = int(self.combo_resolution.currentText())
         self.scan_progress.setVisible(True)
         self.scan_progress.setValue(0)
         self._update_status("جاري المسح إلى PDF...")
+        self._find_button("btn_scan_to_pdf").setEnabled(False)
 
-        def on_progress(pct, msg):
-            self.scan_progress.setValue(pct)
-            self._update_status(msg)
-
-        try:
-            result = self.pdf_bridge.scan_to_searchable_pdf(
+        def _do_scan(progress_callback):
+            def on_prog(pct, msg):
+                progress_callback(pct, msg)
+            return self.pdf_bridge.scan_to_searchable_pdf(
                 scanner_name=scanner_name,
                 output_path=save_path,
-                resolution_dpi=int(self.combo_resolution.currentText()),
-                on_progress=on_progress,
+                resolution_dpi=resolution_dpi,
+                on_progress=on_prog,
             )
+
+        def _on_done(result):
+            self._find_button("btn_scan_to_pdf").setEnabled(True)
+            self.scan_progress.setVisible(False)
             if result.get('success'):
                 self._update_status(f"تم الحفظ: {save_path}")
                 self._show_info("نجاح", f"تم المسح وحفظ PDF\n{save_path}")
             else:
                 self._update_status(f"فشل: {result.get('error', '')}")
-        except Exception as e:
-            self._update_status(f"خطأ: {e}")
-        finally:
+
+        def _on_error(error_type, error_msg, tb):
+            self._find_button("btn_scan_to_pdf").setEnabled(True)
             self.scan_progress.setVisible(False)
+            self._update_status(f"خطأ: {error_msg}")
+
+        def _on_progress(pct, msg):
+            self.scan_progress.setValue(pct)
+            self._update_status(msg)
+
+        run_in_background(
+            _do_scan, use_progress=True,
+            on_finished=_on_done, on_error=_on_error, on_progress=_on_progress,
+            task_name="scan_to_pdf",
+        )
 
     # ═══════════════════════════════════════════════════════
     # Bluetooth Actions
     # ═══════════════════════════════════════════════════════
 
     def _bt_check_adapter(self):
-        """Check Bluetooth adapter status."""
-        try:
-            status = self.bluetooth_manager.get_adapter_status()
+        """Check Bluetooth adapter status (runs in background thread)."""
+
+        def _do_check():
+            return self.bluetooth_manager.get_adapter_status()
+
+        def _on_done(status):
             status_text = {
                 'on': "محول البلوتوث: يعمل",
                 'off': "محول البلوتوث: متوقف",
@@ -980,40 +1063,66 @@ class DeviceManagerWindow(BaseWindow):
             if status.value == 'on':
                 self._bt_load_paired()
 
-        except Exception as e:
-            self.lbl_bt_adapter.setText(f"محول البلوتوث: خطأ - {e}")
+        def _on_error(error_type, error_msg, tb):
+            self.lbl_bt_adapter.setText(f"محول البلوتوث: خطأ - {error_msg}")
+
+        run_in_background(_do_check, on_finished=_on_done, on_error=_on_error, task_name="bt_check_adapter")
 
     def _bt_toggle(self):
-        """Toggle Bluetooth adapter on/off."""
-        try:
+        """Toggle Bluetooth adapter on/off (runs in background thread)."""
+        self._find_button("btn_bt_toggle").setEnabled(False)
+
+        def _do_toggle():
             status = self.bluetooth_manager.get_adapter_status()
             if status.value == 'on':
                 self.bluetooth_manager.disable_adapter()
             else:
                 self.bluetooth_manager.enable_adapter()
+
+        def _on_done(_result):
+            self._find_button("btn_bt_toggle").setEnabled(True)
             QTimer.singleShot(1000, self._bt_check_adapter)
-        except Exception as e:
-            self._update_status(f"خطأ في تبديل البلوتوث: {e}")
+
+        def _on_error(error_type, error_msg, tb):
+            self._find_button("btn_bt_toggle").setEnabled(True)
+            self._update_status(f"خطأ في تبديل البلوتوث: {error_msg}")
+
+        run_in_background(_do_toggle, on_finished=_on_done, on_error=_on_error, task_name="bt_toggle")
 
     def _bt_discover(self):
-        """Discover Bluetooth devices."""
+        """Discover Bluetooth devices (runs in background thread)."""
         self._update_status("جاري البحث عن أجهزة البلوتوث...")
-        try:
-            devices = self.bluetooth_manager.discover_devices(timeout=8)
+        self._find_button("btn_bt_scan").setEnabled(False)
+
+        def _do_discover():
+            return self.bluetooth_manager.discover_devices(timeout=8)
+
+        def _on_done(devices):
+            self._find_button("btn_bt_scan").setEnabled(True)
             self._populate_bt_table(devices)
             self.lbl_bt_count.setText(f"الأجهزة: {len(devices)}")
             self._update_status(f"تم اكتشاف {len(devices)} جهاز بلوتوث")
-        except Exception as e:
-            self._update_status(f"خطأ في اكتشاف البلوتوث: {e}")
+
+        def _on_error(error_type, error_msg, tb):
+            self._find_button("btn_bt_scan").setEnabled(True)
+            self._update_status(f"خطأ في اكتشاف البلوتوث: {error_msg}")
+
+        run_in_background(_do_discover, on_finished=_on_done, on_error=_on_error, task_name="bt_discover")
 
     def _bt_load_paired(self):
-        """Load paired Bluetooth devices."""
-        try:
-            devices = self.bluetooth_manager.get_paired_devices()
+        """Load paired Bluetooth devices (runs in background thread)."""
+
+        def _do_load():
+            return self.bluetooth_manager.get_paired_devices()
+
+        def _on_done(devices):
             self._populate_bt_table(devices)
             self.lbl_bt_count.setText(f"الأجهزة: {len(devices)}")
-        except Exception as e:
-            app_logger.error(f"Error loading paired devices: {e}")
+
+        def _on_error(error_type, error_msg, tb):
+            app_logger.error(f"Error loading paired devices: {error_msg}")
+
+        run_in_background(_do_load, on_finished=_on_done, on_error=_on_error, task_name="bt_load_paired")
 
     def _populate_bt_table(self, devices):
         """Populate Bluetooth devices table."""
@@ -1036,7 +1145,7 @@ class DeviceManagerWindow(BaseWindow):
             self.bt_table.setItem(row, 6, QTableWidgetItem("✓" if device.is_paired else ""))
 
     def _bt_pair(self):
-        """Pair with selected Bluetooth device."""
+        """Pair with selected Bluetooth device (runs in background thread)."""
         row = self.bt_table.currentRow()
         if row < 0:
             self._show_warning("تنبيه", "يرجى اختيار جهاز أولاً")
@@ -1045,19 +1154,27 @@ class DeviceManagerWindow(BaseWindow):
         address = self.bt_table.item(row, 3).text()
         name = self.bt_table.item(row, 0).text()
         self._update_status(f"جاري الاقتران مع {name}...")
+        self._find_button("btn_bt_pair").setEnabled(False)
 
-        try:
-            success = self.bluetooth_manager.pair_device(address)
+        def _do_pair():
+            return self.bluetooth_manager.pair_device(address)
+
+        def _on_done(success):
+            self._find_button("btn_bt_pair").setEnabled(True)
             if success:
                 self._update_status(f"تم الاقتران مع {name}")
                 self._bt_discover()
             else:
                 self._update_status(f"فشل الاقتران مع {name}")
-        except Exception as e:
-            self._update_status(f"خطأ: {e}")
+
+        def _on_error(error_type, error_msg, tb):
+            self._find_button("btn_bt_pair").setEnabled(True)
+            self._update_status(f"خطأ: {error_msg}")
+
+        run_in_background(_do_pair, on_finished=_on_done, on_error=_on_error, task_name="bt_pair")
 
     def _bt_connect(self):
-        """Connect to selected Bluetooth device."""
+        """Connect to selected Bluetooth device (runs in background thread)."""
         row = self.bt_table.currentRow()
         if row < 0:
             self._show_warning("تنبيه", "يرجى اختيار جهاز أولاً")
@@ -1066,19 +1183,27 @@ class DeviceManagerWindow(BaseWindow):
         address = self.bt_table.item(row, 3).text()
         name = self.bt_table.item(row, 0).text()
         self._update_status(f"جاري الاتصال بـ {name}...")
+        self._find_button("btn_bt_connect").setEnabled(False)
 
-        try:
-            success = self.bluetooth_manager.connect_device(address)
+        def _do_connect():
+            return self.bluetooth_manager.connect_device(address)
+
+        def _on_done(success):
+            self._find_button("btn_bt_connect").setEnabled(True)
             if success:
                 self._update_status(f"تم الاتصال بـ {name}")
                 self._bt_discover()
             else:
                 self._update_status(f"فشل الاتصال بـ {name}")
-        except Exception as e:
-            self._update_status(f"خطأ: {e}")
+
+        def _on_error(error_type, error_msg, tb):
+            self._find_button("btn_bt_connect").setEnabled(True)
+            self._update_status(f"خطأ: {error_msg}")
+
+        run_in_background(_do_connect, on_finished=_on_done, on_error=_on_error, task_name="bt_connect")
 
     def _bt_disconnect(self):
-        """Disconnect from selected Bluetooth device."""
+        """Disconnect from selected Bluetooth device (runs in background thread)."""
         row = self.bt_table.currentRow()
         if row < 0:
             self._show_warning("تنبيه", "يرجى اختيار جهاز أولاً")
@@ -1086,16 +1211,24 @@ class DeviceManagerWindow(BaseWindow):
 
         address = self.bt_table.item(row, 3).text()
         name = self.bt_table.item(row, 0).text()
+        self._find_button("btn_bt_disconnect").setEnabled(False)
 
-        try:
-            success = self.bluetooth_manager.disconnect_device(address)
+        def _do_disconnect():
+            return self.bluetooth_manager.disconnect_device(address)
+
+        def _on_done(success):
+            self._find_button("btn_bt_disconnect").setEnabled(True)
             if success:
                 self._update_status(f"تم قطع الاتصال بـ {name}")
                 self._bt_discover()
             else:
                 self._update_status(f"فشل قطع الاتصال بـ {name}")
-        except Exception as e:
-            self._update_status(f"خطأ: {e}")
+
+        def _on_error(error_type, error_msg, tb):
+            self._find_button("btn_bt_disconnect").setEnabled(True)
+            self._update_status(f"خطأ: {error_msg}")
+
+        run_in_background(_do_disconnect, on_finished=_on_done, on_error=_on_error, task_name="bt_disconnect")
 
     def _on_bt_selection_changed(self, row, col, prev_row, prev_col):
         """Update device info panel on selection change."""
