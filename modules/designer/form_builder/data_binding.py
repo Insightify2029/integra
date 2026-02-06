@@ -154,11 +154,18 @@ class DataBindingManager:
         """
         try:
             from core.database import select_one
+            from psycopg2 import sql
 
-            columns, row = select_one(
-                f"SELECT * FROM {table_name} WHERE id = %s",
-                (record_id,)
+            # Validate table_name against known schemas to prevent injection
+            if table_name not in self._schemas:
+                app_logger.error(f"Unknown table: {table_name}")
+                return {}
+
+            query = sql.SQL("SELECT * FROM {} WHERE id = %s").format(
+                sql.Identifier(table_name)
             )
+
+            columns, row = select_one(query, (record_id,))
 
             if row:
                 return dict(zip(columns, row))
@@ -188,18 +195,38 @@ class DataBindingManager:
         """
         try:
             from core.database import insert_returning_id, update
+            from psycopg2 import sql
+
+            # Validate table_name against known schemas to prevent injection
+            if table_name not in self._schemas:
+                app_logger.error(f"Unknown table: {table_name}")
+                return None
 
             if record_id:
-                # Update
-                set_clause = ", ".join(f"{k} = %s" for k in data.keys())
-                query = f"UPDATE {table_name} SET {set_clause} WHERE id = %s"
+                # Update - use sql.Identifier for table and column names
+                set_clause = sql.SQL(", ").join(
+                    sql.SQL("{} = %s").format(sql.Identifier(k))
+                    for k in data.keys()
+                )
+                query = sql.SQL("UPDATE {} SET {} WHERE id = %s").format(
+                    sql.Identifier(table_name),
+                    set_clause
+                )
                 update(query, (*data.values(), record_id))
                 return record_id
             else:
-                # Insert
-                columns = ", ".join(data.keys())
-                placeholders = ", ".join(["%s"] * len(data))
-                query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders}) RETURNING id"
+                # Insert - use sql.Identifier for table and column names
+                columns = sql.SQL(", ").join(
+                    sql.Identifier(k) for k in data.keys()
+                )
+                placeholders = sql.SQL(", ").join(
+                    sql.Placeholder() for _ in data
+                )
+                query = sql.SQL("INSERT INTO {} ({}) VALUES ({}) RETURNING id").format(
+                    sql.Identifier(table_name),
+                    columns,
+                    placeholders
+                )
                 return insert_returning_id(query, tuple(data.values()))
 
         except Exception as e:

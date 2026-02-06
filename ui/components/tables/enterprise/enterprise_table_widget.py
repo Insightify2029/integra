@@ -109,7 +109,7 @@ class EnterpriseTableWidget(QWidget):
     def set_columns(self, columns: list, keys: list = None):
         """
         Set table columns.
-        
+
         Args:
             columns: Display names
             keys: Data keys (optional)
@@ -117,13 +117,29 @@ class EnterpriseTableWidget(QWidget):
         self._columns = columns
         self._column_keys = keys or columns
         self._table.set_columns(columns, keys)
-        
-        # Update filter panel
+
+        # Replace filter panel in the layout
+        old_panel = self._filter_panel
         self._filter_panel = FilterPanel(columns)
         self._filter_panel.setVisible(self._show_filter_panel)
         self._filter_panel.setFixedWidth(350)
         self._filter_panel.filter_changed.connect(self._on_column_filter)
         self._filter_panel.filters_cleared.connect(self._on_filters_cleared)
+
+        # Replace old panel in the content layout
+        content_layout = self._table.parentWidget().layout() if self._table.parentWidget() else None
+        if content_layout is None:
+            # Find the content layout (second item in main layout)
+            main_layout = self.layout()
+            if main_layout and main_layout.count() > 1:
+                content_item = main_layout.itemAt(1)
+                if content_item and content_item.layout():
+                    content_layout = content_item.layout()
+
+        if content_layout:
+            content_layout.replaceWidget(old_panel, self._filter_panel)
+
+        old_panel.deleteLater()
     
     def set_data(self, data: list):
         """Set table data."""

@@ -365,8 +365,12 @@ class BIViewsManager:
     def get_view_row_count(self, view_name: str) -> int:
         """Get the row count of a view."""
         try:
-            sql = f"SELECT COUNT(*) FROM bi_views.{view_name}"
-            columns, rows = select_all(sql)
+            from psycopg2 import sql as psql
+            safe_sql = psql.SQL("SELECT COUNT(*) FROM {}.{}").format(
+                psql.Identifier("bi_views"),
+                psql.Identifier(view_name)
+            )
+            columns, rows = select_all(safe_sql)
             return rows[0][0] if rows else 0
         except Exception:
             return 0
@@ -420,8 +424,12 @@ class BIViewsManager:
     def drop_view(self, view_name: str) -> bool:
         """Drop a specific view."""
         try:
-            sql = f"DROP VIEW IF EXISTS bi_views.{view_name} CASCADE"
-            execute_query(sql)
+            from psycopg2 import sql as psql
+            safe_sql = psql.SQL("DROP VIEW IF EXISTS {}.{} CASCADE").format(
+                psql.Identifier("bi_views"),
+                psql.Identifier(view_name)
+            )
+            execute_query(safe_sql)
             app_logger.info(f"Dropped BI view: {view_name}")
             return True
         except Exception as e:
@@ -449,8 +457,12 @@ class BIViewsManager:
             Tuple of (column_names, rows)
         """
         try:
-            sql = f"SELECT * FROM bi_views.{view_name} LIMIT %s"
-            return select_all(sql, (limit,))
+            from psycopg2 import sql as psql
+            safe_sql = psql.SQL("SELECT * FROM {}.{} LIMIT %s").format(
+                psql.Identifier("bi_views"),
+                psql.Identifier(view_name)
+            )
+            return select_all(safe_sql, (limit,))
         except Exception as e:
             app_logger.error(f"Failed to get data from {view_name}: {e}")
             return ([], [])

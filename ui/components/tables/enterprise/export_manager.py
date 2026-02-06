@@ -497,7 +497,14 @@ class ExportManager(QDialog):
             )
             
             if reply == QMessageBox.Yes:
-                os.startfile(message)
+                import sys
+                import subprocess
+                if sys.platform == 'win32':
+                    os.startfile(message)
+                elif sys.platform == 'darwin':
+                    subprocess.Popen(['open', message])
+                else:
+                    subprocess.Popen(['xdg-open', message])
             
             self.accept()
         else:
