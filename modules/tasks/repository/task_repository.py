@@ -259,6 +259,48 @@ class TaskRepository:
         """جلب المهام المتكررة"""
         return self.get_all(is_recurring=True)
 
+    def get_by_source_email(self, email_id: str) -> List[Task]:
+        """جلب المهام المرتبطة بإيميل معين"""
+        try:
+            columns, rows = select_all(
+                "SELECT * FROM task_overview WHERE source_email_id = %s",
+                (email_id,)
+            )
+            if not rows:
+                return []
+            return [Task.from_row(row, columns) for row in rows]
+        except Exception as e:
+            app_logger.error(f"Failed to get tasks by email {email_id}: {e}")
+            return []
+
+    def get_by_due_date(self, target_date) -> List[Task]:
+        """جلب المهام المستحقة في تاريخ معين"""
+        try:
+            columns, rows = select_all(
+                "SELECT * FROM task_overview WHERE due_date::date = %s",
+                (target_date,)
+            )
+            if not rows:
+                return []
+            return [Task.from_row(row, columns) for row in rows]
+        except Exception as e:
+            app_logger.error(f"Failed to get tasks by due date {target_date}: {e}")
+            return []
+
+    def get_by_due_date_range(self, start_date, end_date) -> List[Task]:
+        """جلب المهام المستحقة في فترة زمنية"""
+        try:
+            columns, rows = select_all(
+                "SELECT * FROM task_overview WHERE due_date::date BETWEEN %s AND %s",
+                (start_date, end_date)
+            )
+            if not rows:
+                return []
+            return [Task.from_row(row, columns) for row in rows]
+        except Exception as e:
+            app_logger.error(f"Failed to get tasks by date range: {e}")
+            return []
+
     def search(self, query: str, limit: int = 50) -> List[Task]:
         """البحث في المهام"""
         return self.get_all(search=query, limit=limit)
@@ -801,6 +843,21 @@ def get_tasks_due_today() -> List[Task]:
 def get_overdue_tasks() -> List[Task]:
     """جلب المهام المتأخرة"""
     return get_task_repository().get_overdue()
+
+
+def get_tasks_by_source_email(email_id: str) -> List[Task]:
+    """جلب المهام المرتبطة بإيميل"""
+    return get_task_repository().get_by_source_email(email_id)
+
+
+def get_tasks_by_due_date(target_date) -> List[Task]:
+    """جلب المهام المستحقة في تاريخ معين"""
+    return get_task_repository().get_by_due_date(target_date)
+
+
+def get_tasks_by_due_date_range(start_date, end_date) -> List[Task]:
+    """جلب المهام المستحقة في فترة زمنية"""
+    return get_task_repository().get_by_due_date_range(start_date, end_date)
 
 
 def get_task_statistics() -> TaskStatistics:

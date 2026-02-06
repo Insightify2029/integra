@@ -86,18 +86,19 @@ class ExportWorker(QThread):
         total = len(self._data)
         for row_idx, row_data in enumerate(self._data, 2):
             if isinstance(row_data, dict):
-                values = list(row_data.values())
+                values = [row_data.get(col, "") for col in self._columns]
             else:
                 values = list(row_data)
-            
+
             for col_idx, value in enumerate(values, 1):
                 cell = ws.cell(row=row_idx, column=col_idx, value=value)
                 cell.alignment = cell_alignment
                 cell.border = thin_border
-            
+
             # Progress
-            progress = int((row_idx / total) * 100)
-            self.progress.emit(progress)
+            if total > 0:
+                progress = int((row_idx / total) * 100)
+                self.progress.emit(progress)
         
         # Auto-fit columns
         for col in ws.columns:
@@ -107,7 +108,7 @@ class ExportWorker(QThread):
                 try:
                     if len(str(cell.value)) > max_length:
                         max_length = len(str(cell.value))
-                except:
+                except Exception:
                     pass
             adjusted_width = (max_length + 2) * 1.2
             ws.column_dimensions[column].width = adjusted_width
@@ -128,15 +129,16 @@ class ExportWorker(QThread):
             total = len(self._data)
             for idx, row_data in enumerate(self._data):
                 if isinstance(row_data, dict):
-                    values = list(row_data.values())
+                    values = [row_data.get(col, "") for col in self._columns]
                 else:
                     values = list(row_data)
-                
+
                 writer.writerow(values)
-                
+
                 # Progress
-                progress = int(((idx + 1) / total) * 100)
-                self.progress.emit(progress)
+                if total > 0:
+                    progress = int(((idx + 1) / total) * 100)
+                    self.progress.emit(progress)
     
     def _export_pdf(self):
         """Export to PDF."""
@@ -169,15 +171,16 @@ class ExportWorker(QThread):
         total = len(self._data)
         for idx, row_data in enumerate(self._data):
             if isinstance(row_data, dict):
-                values = [str(v) if v else "" for v in row_data.values()]
+                values = [str(row_data.get(col, "")) if row_data.get(col) else "" for col in self._columns]
             else:
                 values = [str(v) if v else "" for v in row_data]
-            
+
             table_data.append(values)
-            
+
             # Progress
-            progress = int(((idx + 1) / total) * 100)
-            self.progress.emit(progress)
+            if total > 0:
+                progress = int(((idx + 1) / total) * 100)
+                self.progress.emit(progress)
         
         # Create table
         table = Table(table_data, repeatRows=1)

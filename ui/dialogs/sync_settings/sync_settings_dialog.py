@@ -19,11 +19,33 @@ from PyQt5.QtWidgets import (
     QTextEdit, QGroupBox, QListWidget, QListWidgetItem,
     QMessageBox
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QFont
 
 from core.themes import get_current_theme
 from core.sync import get_sync_manager, load_sync_config
+
+
+class RestoreWorker(QThread):
+    """Worker thread for database restore to avoid UI freeze."""
+
+    progress = pyqtSignal(int, str)
+    finished = pyqtSignal(bool, str)
+
+    def __init__(self, sync_manager, backup_info, parent=None):
+        super().__init__(parent)
+        self._sync = sync_manager
+        self._backup_info = backup_info
+
+    def run(self):
+        try:
+            def on_progress(percent, message):
+                self.progress.emit(percent, message)
+
+            success, msg = self._sync.restore_backup(self._backup_info, on_progress)
+            self.finished.emit(success, msg or "")
+        except Exception as e:
+            self.finished.emit(False, str(e))
 
 
 class SyncSettingsDialog(QDialog):
@@ -444,21 +466,25 @@ class SyncSettingsDialog(QDialog):
         if reply != QMessageBox.Yes:
             return
 
-        # تنفيذ الاستعادة
+        # تنفيذ الاستعادة في خيط منفصل لتجنب تجميد الواجهة
         self._log_area.clear()
         self._log_area.append(f"📥 جاري استعادة نسخة {backup_info.formatted_time}...")
         self._set_buttons_enabled(False)
 
-        def on_progress(percent, message):
-            self._status_label.setText(f"{message} ({percent}%)")
+        self._restore_worker = RestoreWorker(self._sync, backup_info, self)
+        self._restore_worker.progress.connect(
+            lambda percent, message: self._status_label.setText(f"{message} ({percent}%)")
+        )
+        self._restore_worker.finished.connect(self._on_restore_finished)
+        self._restore_worker.start()
 
-        success, _ = self._sync.restore_backup(backup_info, on_progress)
-
+    def _on_restore_finished(self, success, message):
+        """معالجة نتيجة الاستعادة."""
         if success:
             self._log_area.append("✅ تمت الاستعادة بنجاح!")
             self._status_label.setText("✅ تمت الاستعادة")
         else:
-            self._log_area.append("❌ فشلت الاستعادة")
+            self._log_area.append(f"❌ فشلت الاستعادة: {message}")
             self._status_label.setText("❌ فشلت الاستعادة")
 
         self._set_buttons_enabled(True)
