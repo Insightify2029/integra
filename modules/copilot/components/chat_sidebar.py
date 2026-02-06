@@ -50,6 +50,9 @@ class CopilotWorker(QThread):
     finished = pyqtSignal(str)
     error = pyqtSignal(str)
 
+    # Timeout for AI requests (seconds)
+    REQUEST_TIMEOUT = 60
+
     def __init__(self, message: str, context: str = "", parent=None):
         super().__init__(parent)
         self.message = message
@@ -58,6 +61,8 @@ class CopilotWorker(QThread):
 
     def run(self):
         """Process the message with AI."""
+        import time
+
         try:
             from core.ai import get_ai_service, is_ollama_available
 
@@ -70,11 +75,15 @@ class CopilotWorker(QThread):
             # Build prompt with context
             full_prompt = self._build_prompt()
 
-            # Get streaming response
+            # Get streaming response with timeout
             full_response = []
+            start_time = time.monotonic()
             for chunk in service.chat_stream(full_prompt):
                 if self._stopped:
                     break
+                if time.monotonic() - start_time > self.REQUEST_TIMEOUT:
+                    self.error.emit("انتهت مهلة الطلب")
+                    return
                 full_response.append(chunk)
                 self.chunk_received.emit(chunk)
 

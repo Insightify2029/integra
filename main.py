@@ -7,16 +7,32 @@ Version: 2.1.0
 
 import sys
 import os
+import atexit
 
 # التأكد إن مجلد logs موجود (مهم قبل أي حاجة)
 _logs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
 os.makedirs(_logs_dir, exist_ok=True)
 
 # إخفاء الكونسول: لو مفيش stderr (pythonw) نوجهه لملف
+# الملفات تُغلق عند إغلاق التطبيق عبر atexit
+_opened_streams = []
 if sys.stderr is None:
     sys.stderr = open(os.path.join(_logs_dir, "stderr.log"), "w", encoding="utf-8")
+    _opened_streams.append(sys.stderr)
 if sys.stdout is None:
     sys.stdout = open(os.path.join(_logs_dir, "stdout.log"), "w", encoding="utf-8")
+    _opened_streams.append(sys.stdout)
+
+
+def _close_streams():
+    for stream in _opened_streams:
+        try:
+            stream.close()
+        except Exception:
+            pass
+
+
+atexit.register(_close_streams)
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QFont

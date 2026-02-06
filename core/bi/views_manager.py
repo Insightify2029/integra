@@ -500,11 +500,14 @@ class BIViewsManager:
 # =============================================================================
 
 _views_manager_instance: Optional[BIViewsManager] = None
+_views_manager_lock = __import__('threading').Lock()
 
 
 def get_bi_views_manager() -> BIViewsManager:
-    """Get the singleton BIViewsManager instance."""
+    """Get the singleton BIViewsManager instance (thread-safe)."""
     global _views_manager_instance
     if _views_manager_instance is None:
-        _views_manager_instance = BIViewsManager()
+        with _views_manager_lock:
+            if _views_manager_instance is None:
+                _views_manager_instance = BIViewsManager()
     return _views_manager_instance

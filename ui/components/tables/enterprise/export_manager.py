@@ -24,12 +24,13 @@ class ExportWorker(QThread):
     progress = pyqtSignal(int)
     finished = pyqtSignal(bool, str)
     
-    def __init__(self, data, columns, filepath, export_format):
+    def __init__(self, data, columns, filepath, export_format, include_headers=True):
         super().__init__()
         self._data = data
         self._columns = columns
         self._filepath = filepath
         self._format = export_format
+        self._include_headers = include_headers
     
     def run(self):
         """Run export in background."""
@@ -75,16 +76,19 @@ class ExportWorker(QThread):
         )
         
         # Write headers
-        for col, header in enumerate(self._columns, 1):
-            cell = ws.cell(row=1, column=col, value=header)
-            cell.fill = header_fill
-            cell.font = header_font
-            cell.alignment = header_alignment
-            cell.border = thin_border
-        
+        data_start_row = 1
+        if self._include_headers:
+            for col, header in enumerate(self._columns, 1):
+                cell = ws.cell(row=1, column=col, value=header)
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = header_alignment
+                cell.border = thin_border
+            data_start_row = 2
+
         # Write data
         total = len(self._data)
-        for row_idx, row_data in enumerate(self._data, 2):
+        for row_idx, row_data in enumerate(self._data, data_start_row):
             if isinstance(row_data, dict):
                 values = [row_data.get(col, "") for col in self._columns]
             else:
@@ -108,7 +112,7 @@ class ExportWorker(QThread):
                 try:
                     if len(str(cell.value)) > max_length:
                         max_length = len(str(cell.value))
-                except Exception:
+                except (TypeError, AttributeError):
                     pass
             adjusted_width = (max_length + 2) * 1.2
             ws.column_dimensions[column].width = adjusted_width
@@ -123,7 +127,8 @@ class ExportWorker(QThread):
             writer = csv.writer(f)
             
             # Write header
-            writer.writerow(self._columns)
+            if self._include_headers:
+                writer.writerow(self._columns)
             
             # Write data
             total = len(self._data)
@@ -166,7 +171,7 @@ class ExportWorker(QThread):
         elements = []
         
         # Prepare data
-        table_data = [self._columns]
+        table_data = [self._columns] if self._include_headers else []
         
         total = len(self._data)
         for idx, row_data in enumerate(self._data):
@@ -471,7 +476,8 @@ class ExportManager(QDialog):
         self._export_btn.setEnabled(False)
         
         # Start worker
-        self._worker = ExportWorker(self._data, self._columns, filepath, export_format)
+        include_headers = self._include_headers.isChecked()
+        self._worker = ExportWorker(self._data, self._columns, filepath, export_format, include_headers)
         self._worker.progress.connect(self._on_progress)
         self._worker.finished.connect(self._on_finished)
         self._worker.start()

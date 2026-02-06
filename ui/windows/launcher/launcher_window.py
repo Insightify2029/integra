@@ -15,7 +15,7 @@ from .launcher_header import create_launcher_header
 from .launcher_cards_area import LauncherCardsArea
 from .launcher_statusbar import LauncherStatusBar
 
-from core.database.connection import connect
+from core.database.connection import connect, disconnect
 from core.themes import get_stylesheet
 
 
@@ -156,5 +156,11 @@ class LauncherWindow(BaseWindow):
                 window.close()
                 window.deleteLater()
         self._open_windows.clear()
+
+        # إغلاق اتصال قاعدة البيانات
+        try:
+            disconnect()
+        except Exception:
+            pass
 
         event.accept()

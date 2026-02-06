@@ -282,11 +282,14 @@ class ExportScheduler:
 # =============================================================================
 
 _scheduler_instance: Optional[ExportScheduler] = None
+_scheduler_factory_lock = threading.Lock()
 
 
 def get_export_scheduler() -> ExportScheduler:
-    """Get the singleton ExportScheduler instance."""
+    """Get the singleton ExportScheduler instance (thread-safe)."""
     global _scheduler_instance
     if _scheduler_instance is None:
-        _scheduler_instance = ExportScheduler()
+        with _scheduler_factory_lock:
+            if _scheduler_instance is None:
+                _scheduler_instance = ExportScheduler()
     return _scheduler_instance

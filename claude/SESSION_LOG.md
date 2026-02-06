@@ -16,6 +16,63 @@
 
 ---
 
+## الجلسة: 6 فبراير 2026 - الجلسة 8 من خطة الإصلاح (منخفضة + تحسينات نهائية)
+
+### ملخص الجلسة:
+
+**تم إصلاح 17 مشكلة (16 منخفضة + 1 متوسطة) - اكتمال خطة الإصلاح بالكامل:**
+
+| # | المشكلة | الإصلاح |
+|---|---------|---------|
+| LOW-01 | humanize.activate() عند الاستيراد | تأجيل إلى lazy initialization عبر `_ensure_arabic()` |
+| LOW-02 | معامل `time` يخفي الوحدة | إعادة تسمية إلى `dt` |
+| LOW-03 | القالب المشترك بمرجع مباشر | `copy.deepcopy()` في `get_form_template()` |
+| LOW-04 | استيراد دائري محتمل | تم التحقق - محلول مسبقاً |
+| LOW-06 | ملفات لا تُغلق في main.py | `atexit.register(_close_streams)` |
+| LOW-07 | خط Segoe UI على Windows فقط | استبدال بـ Cairo |
+| LOW-08 | `setCursor(0)` | `setCursor(Qt.ArrowCursor)` |
+| LOW-09 | processEvents re-entrancy | guard flag `_processing_events` |
+| LOW-10 | `_include_headers` لا تُفحص | تمرير الخاصية إلى ExportWorker |
+| LOW-11 | bare except | `except (TypeError, AttributeError)` |
+| LOW-12 | DB لا يُغلق عند الإغلاق | `disconnect()` في closeEvent |
+| LOW-13 | Debounce بدون إلغاء | QTimer واحد مع `start()` |
+| LOW-14 | لا يوجد timeout لـ AI | 60 ثانية عبر `time.monotonic()` |
+| LOW-15 | Singletons غير آمنة | double-checked locking في 7 ملفات |
+| LOW-17 | Singleton مزدوج | توحيد عبر `AIService.__new__()` |
+| LOW-18 | تدوير مفاتيح بدون re-encrypt | `re_encrypt_values` parameter |
+| MED-18 | AI/Email بدون دعم سمة | دعم Dark/Light في 5 مكونات |
+
+### الملفات المعدّلة:
+| الملف | نوع التعديل |
+|-------|-------------|
+| `core/utils/formatters.py` | lazy humanize activation + rename `time` param |
+| `core/ai/agents/form_agent.py` | deepcopy + thread-safe singleton |
+| `main.py` | atexit for stream cleanup |
+| `ui/components/labels/labels.py` | Cairo font instead of Segoe UI |
+| `ui/components/buttons/buttons.py` | Qt.ArrowCursor import + usage |
+| `ui/components/progress/progress_dialog.py` | processEvents guard |
+| `ui/components/tables/enterprise/export_manager.py` | include_headers + bare except fix |
+| `ui/windows/launcher/launcher_window.py` | DB disconnect on close |
+| `modules/tasks/screens/task_list/task_list_screen.py` | Persistent QTimer debounce |
+| `modules/copilot/components/chat_sidebar.py` | AI request timeout |
+| `core/bi/template_manager.py` | Thread-safe singleton |
+| `core/bi/views_manager.py` | Thread-safe singleton |
+| `core/bi/data_exporter.py` | Thread-safe singleton |
+| `core/bi/export_scheduler.py` | Thread-safe singleton |
+| `core/file_watcher/watcher.py` | Thread-safe singleton |
+| `core/security/encryption.py` | Thread-safe singleton + re-encrypt on key rotation |
+| `core/ai/ai_service.py` | Consolidated dual singleton |
+| `ui/components/ai/chat_panel.py` | Theme-aware styles |
+| `ui/components/ai/ai_toolbar.py` | Theme-aware styles |
+| `ui/components/email/email_panel.py` | Theme-aware styles |
+| `ui/components/email/email_viewer.py` | Theme-aware styles |
+| `ui/components/email/email_list.py` | Theme-aware styles |
+
+### حالة خطة الإصلاح:
+**جميع الجلسات الـ 8 مكتملة - 69 إصلاح فريد تم تنفيذها بالكامل**
+
+---
+
 ## الجلسة: 6 فبراير 2026 - الجلسة 7 من خطة الإصلاح (متوسطة متبقية)
 
 ### ملخص الجلسة:

@@ -16,6 +16,7 @@ from PyQt5.QtGui import QFont
 
 from core.email import Email, EmailImportance
 from core.logging import app_logger
+from core.themes import get_current_theme
 
 
 class EmailViewerWidget(QWidget):
@@ -39,6 +40,7 @@ class EmailViewerWidget(QWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self._email: Optional[Email] = None
+        self._is_dark = get_current_theme() == 'dark'
         self._setup_ui()
 
     def _setup_ui(self):
@@ -50,9 +52,10 @@ class EmailViewerWidget(QWidget):
         # Empty state
         self.empty_widget = QWidget()
         empty_layout = QVBoxLayout(self.empty_widget)
+        empty_color = "#64748b" if self._is_dark else "#999"
         empty_label = QLabel("📧\n\nاختر رسالة لعرضها")
         empty_label.setAlignment(Qt.AlignCenter)
-        empty_label.setStyleSheet("color: #999; font-size: 16px;")
+        empty_label.setStyleSheet(f"color: {empty_color}; font-size: 16px;")
         empty_layout.addStretch()
         empty_layout.addWidget(empty_label)
         empty_layout.addStretch()
@@ -87,7 +90,8 @@ class EmailViewerWidget(QWidget):
         # Body scroll area
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setStyleSheet("QScrollArea { border: none; background: white; }")
+        scroll_bg = "#0f172a" if self._is_dark else "white"
+        scroll.setStyleSheet(f"QScrollArea {{ border: none; background: {scroll_bg}; }}")
 
         body_widget = QWidget()
         body_layout = QVBoxLayout(body_widget)
@@ -115,11 +119,13 @@ class EmailViewerWidget(QWidget):
     def _create_header(self) -> QWidget:
         """Create email header."""
         header = QFrame()
-        header.setStyleSheet("""
-            QFrame {
-                background-color: white;
-                border-bottom: 1px solid #e8e8e8;
-            }
+        hdr_bg = "#1e293b" if self._is_dark else "white"
+        hdr_border = "#334155" if self._is_dark else "#e8e8e8"
+        header.setStyleSheet(f"""
+            QFrame {{
+                background-color: {hdr_bg};
+                border-bottom: 1px solid {hdr_border};
+            }}
         """)
 
         layout = QVBoxLayout(header)
@@ -132,9 +138,10 @@ class EmailViewerWidget(QWidget):
         self.importance_label = QLabel()
         self.importance_label.setStyleSheet("font-size: 16px;")
 
+        subj_color = "#f1f5f9" if self._is_dark else "#333"
         self.subject_label = QLabel()
         self.subject_label.setWordWrap(True)
-        self.subject_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #333;")
+        self.subject_label.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {subj_color};")
 
         subject_row.addWidget(self.importance_label)
         subject_row.addWidget(self.subject_label, 1)
@@ -144,11 +151,12 @@ class EmailViewerWidget(QWidget):
         sender_row.setSpacing(8)
 
         # Avatar placeholder
+        av_bg = "#334155" if self._is_dark else "#e8e8e8"
         avatar = QLabel("👤")
         avatar.setFixedSize(40, 40)
         avatar.setAlignment(Qt.AlignCenter)
-        avatar.setStyleSheet("""
-            background-color: #e8e8e8;
+        avatar.setStyleSheet(f"""
+            background-color: {av_bg};
             border-radius: 20px;
             font-size: 20px;
         """)
@@ -157,26 +165,30 @@ class EmailViewerWidget(QWidget):
         sender_info = QVBoxLayout()
         sender_info.setSpacing(2)
 
+        sn_color = "#f1f5f9" if self._is_dark else "#333"
+        se_color = "#94a3b8" if self._is_dark else "#666"
         self.sender_name_label = QLabel()
-        self.sender_name_label.setStyleSheet("font-weight: bold; font-size: 13px; color: #333;")
+        self.sender_name_label.setStyleSheet(f"font-weight: bold; font-size: 13px; color: {sn_color};")
 
         self.sender_email_label = QLabel()
-        self.sender_email_label.setStyleSheet("font-size: 11px; color: #666;")
+        self.sender_email_label.setStyleSheet(f"font-size: 11px; color: {se_color};")
 
         sender_info.addWidget(self.sender_name_label)
         sender_info.addWidget(self.sender_email_label)
 
         # Date
+        date_color = "#64748b" if self._is_dark else "#888"
         self.date_label = QLabel()
-        self.date_label.setStyleSheet("font-size: 11px; color: #888;")
+        self.date_label.setStyleSheet(f"font-size: 11px; color: {date_color};")
 
         sender_row.addWidget(avatar)
         sender_row.addLayout(sender_info, 1)
         sender_row.addWidget(self.date_label)
 
         # Recipients row
+        rec_color = "#94a3b8" if self._is_dark else "#666"
         self.recipients_label = QLabel()
-        self.recipients_label.setStyleSheet("font-size: 11px; color: #666;")
+        self.recipients_label.setStyleSheet(f"font-size: 11px; color: {rec_color};")
         self.recipients_label.setWordWrap(True)
 
         layout.addLayout(subject_row)
@@ -188,24 +200,30 @@ class EmailViewerWidget(QWidget):
     def _create_toolbar(self) -> QWidget:
         """Create action toolbar."""
         toolbar = QFrame()
-        toolbar.setStyleSheet("background-color: #f8f8f8; border-bottom: 1px solid #e8e8e8;")
+        tb_bg = "#0f172a" if self._is_dark else "#f8f8f8"
+        tb_border = "#334155" if self._is_dark else "#e8e8e8"
+        toolbar.setStyleSheet(f"background-color: {tb_bg}; border-bottom: 1px solid {tb_border};")
 
         layout = QHBoxLayout(toolbar)
         layout.setContentsMargins(12, 6, 12, 6)
         layout.setSpacing(8)
 
         # Action buttons
-        btn_style = """
-            QPushButton {
+        btn_border = "#475569" if self._is_dark else "#ddd"
+        btn_color = "#f1f5f9" if self._is_dark else "#333"
+        btn_hover = "#334155" if self._is_dark else "#e8e8e8"
+        btn_style = f"""
+            QPushButton {{
                 background: transparent;
-                border: 1px solid #ddd;
+                border: 1px solid {btn_border};
                 border-radius: 4px;
                 padding: 6px 12px;
                 font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #e8e8e8;
-            }
+                color: {btn_color};
+            }}
+            QPushButton:hover {{
+                background-color: {btn_hover};
+            }}
         """
 
         reply_btn = QPushButton("↩️ رد")
@@ -221,19 +239,23 @@ class EmailViewerWidget(QWidget):
         forward_btn.clicked.connect(lambda: self.forward_clicked.emit(self._email) if self._email else None)
 
         # AI button
+        ai_bg = "#1e3a5f" if self._is_dark else "#e8f4ff"
+        ai_border = "#3b82f6" if self._is_dark else "#0078d4"
+        ai_color = "#93c5fd" if self._is_dark else "#0078d4"
+        ai_hover = "#1e4070" if self._is_dark else "#d0e8ff"
         ai_btn = QPushButton("🤖 تحليل AI")
-        ai_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #e8f4ff;
-                border: 1px solid #0078d4;
+        ai_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {ai_bg};
+                border: 1px solid {ai_border};
                 border-radius: 4px;
                 padding: 6px 12px;
                 font-size: 12px;
-                color: #0078d4;
-            }
-            QPushButton:hover {
-                background-color: #d0e8ff;
-            }
+                color: {ai_color};
+            }}
+            QPushButton:hover {{
+                background-color: {ai_hover};
+            }}
         """)
         ai_btn.clicked.connect(lambda: self.ai_analyze_clicked.emit(self._email) if self._email else None)
 
@@ -256,11 +278,13 @@ class EmailViewerWidget(QWidget):
     def _create_ai_panel(self) -> QWidget:
         """Create AI analysis panel."""
         panel = QFrame()
-        panel.setStyleSheet("""
-            QFrame {
-                background-color: #f0f7ff;
-                border-bottom: 1px solid #c5d5ff;
-            }
+        ai_panel_bg = "#0f2744" if self._is_dark else "#f0f7ff"
+        ai_panel_border = "#1e3a5f" if self._is_dark else "#c5d5ff"
+        panel.setStyleSheet(f"""
+            QFrame {{
+                background-color: {ai_panel_bg};
+                border-bottom: 1px solid {ai_panel_border};
+            }}
         """)
 
         layout = QVBoxLayout(panel)
@@ -269,12 +293,14 @@ class EmailViewerWidget(QWidget):
 
         # Header
         header_row = QHBoxLayout()
+        ai_hdr_color = "#93c5fd" if self._is_dark else "#0052a3"
         header_label = QLabel("🤖 تحليل الذكاء الاصطناعي")
-        header_label.setStyleSheet("font-weight: bold; color: #0052a3; font-size: 12px;")
+        header_label.setStyleSheet(f"font-weight: bold; color: {ai_hdr_color}; font-size: 12px;")
 
+        close_color = "#94a3b8" if self._is_dark else "#666"
         close_btn = QPushButton("✕")
         close_btn.setFixedSize(20, 20)
-        close_btn.setStyleSheet("border: none; color: #666;")
+        close_btn.setStyleSheet(f"border: none; color: {close_color};")
         close_btn.clicked.connect(lambda: self.ai_panel.hide())
 
         header_row.addWidget(header_label)
@@ -282,18 +308,20 @@ class EmailViewerWidget(QWidget):
         header_row.addWidget(close_btn)
 
         # Summary
+        ai_text = "#f1f5f9" if self._is_dark else "#333"
+        ai_meta_color = "#94a3b8" if self._is_dark else "#666"
         self.ai_summary_label = QLabel()
         self.ai_summary_label.setWordWrap(True)
-        self.ai_summary_label.setStyleSheet("font-size: 12px; color: #333;")
+        self.ai_summary_label.setStyleSheet(f"font-size: 12px; color: {ai_text};")
 
         # Category & Priority
         self.ai_meta_label = QLabel()
-        self.ai_meta_label.setStyleSheet("font-size: 11px; color: #666;")
+        self.ai_meta_label.setStyleSheet(f"font-size: 11px; color: {ai_meta_color};")
 
         # Tasks
         self.ai_tasks_label = QLabel()
         self.ai_tasks_label.setWordWrap(True)
-        self.ai_tasks_label.setStyleSheet("font-size: 11px; color: #333;")
+        self.ai_tasks_label.setStyleSheet(f"font-size: 11px; color: {ai_text};")
 
         layout.addLayout(header_row)
         layout.addWidget(self.ai_summary_label)
@@ -305,19 +333,22 @@ class EmailViewerWidget(QWidget):
     def _create_attachments_panel(self) -> QWidget:
         """Create attachments panel."""
         panel = QFrame()
-        panel.setStyleSheet("""
-            QFrame {
-                background-color: #f8f8f8;
-                border-top: 1px solid #e8e8e8;
-            }
+        att_bg = "#1e293b" if self._is_dark else "#f8f8f8"
+        att_border = "#334155" if self._is_dark else "#e8e8e8"
+        panel.setStyleSheet(f"""
+            QFrame {{
+                background-color: {att_bg};
+                border-top: 1px solid {att_border};
+            }}
         """)
 
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(16, 12, 16, 12)
         layout.setSpacing(8)
 
+        att_hdr_color = "#f1f5f9" if self._is_dark else "#333"
         header_label = QLabel("📎 المرفقات")
-        header_label.setStyleSheet("font-weight: bold; font-size: 12px; color: #333;")
+        header_label.setStyleSheet(f"font-weight: bold; font-size: 12px; color: {att_hdr_color};")
 
         self.attachments_layout = QHBoxLayout()
         self.attachments_layout.setSpacing(8)

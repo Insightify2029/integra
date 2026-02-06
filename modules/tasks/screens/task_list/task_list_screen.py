@@ -48,6 +48,11 @@ class TaskListScreen(QWidget):
         super().__init__(parent)
         self.tasks: List[Task] = []
         self.current_filters = {}
+        # Debounce timer for search (reusable, prevents timer leak)
+        self._search_timer = QTimer(self)
+        self._search_timer.setSingleShot(True)
+        self._search_timer.setInterval(300)
+        self._search_timer.timeout.connect(self.load_tasks)
         self._setup_ui()
         self._connect_signals()
         QTimer.singleShot(100, self.load_tasks)
@@ -368,8 +373,8 @@ class TaskListScreen(QWidget):
     def _on_search_changed(self, text: str):
         """عند تغيير البحث"""
         self.current_filters["search"] = text
-        # Debounce search
-        QTimer.singleShot(300, self.load_tasks)
+        # Debounce search - restart timer (cancels previous pending call)
+        self._search_timer.start()
 
     def _on_view_changed(self, view: str):
         """عند تغيير العرض"""
