@@ -521,8 +521,12 @@ class LearningAgent(BaseAgent if ORCHESTRATION_AVAILABLE else object):
         """
         insights = []
 
-        # رؤية: معدلات القبول
-        suggestion_types = set(f.suggestion_type for f in self._feedback_history)
+        with self._lock:
+            # رؤية: معدلات القبول
+            suggestion_types = set(f.suggestion_type for f in self._feedback_history)
+            # snapshot patterns for iteration
+            patterns_snapshot = dict(self._patterns)
+
         for stype in suggestion_types:
             rate = self.get_acceptance_rate(stype)
             if rate < 0.3:
@@ -537,7 +541,7 @@ class LearningAgent(BaseAgent if ORCHESTRATION_AVAILABLE else object):
                 ))
 
         # رؤية: الأنماط المكررة
-        for pattern_type, pattern in self._patterns.items():
+        for pattern_type, pattern in patterns_snapshot.items():
             if pattern.frequency > 10:
                 insights.append(LearningInsight(
                     insight_type="frequent_pattern",

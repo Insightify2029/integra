@@ -16,6 +16,41 @@
 
 ---
 
+## الجلسة: 6 فبراير 2026 - الجلسة 4 من خطة الإصلاح (Threading + تسرب ذاكرة)
+
+### ملخص الجلسة:
+
+**تم إصلاح 8 مشاكل (5 عالية + 3 متوسطة) - سباقات خيوط وتسريبات ذاكرة:**
+
+| # | المشكلة | الإصلاح |
+|---|---------|---------|
+| HIGH-05 | `_action_history` بدون قفل | إضافة `with self._lock:` في `_add_to_history()`, `get_action_history()`, `get_action()` |
+| HIGH-06 | ConversationContext غير آمنة | إضافة `threading.Lock` كـ field مع حماية `add_message()`, `get_context()`, `clear()` |
+| HIGH-07 | `_running` flag بدون قفل | إضافة `threading.Lock()` مع حماية كل عمليات القراءة/الكتابة لـ `_running` |
+| HIGH-12 | تسرب ذاكرة النوافذ المفتوحة | تنظيف النوافذ المغلقة في `_open_module()` + `deleteLater()` و `clear()` في `closeEvent()` |
+| HIGH-13 | حذف widget لا ينظف البيانات | إضافة signal `delete_requested` + ربطه بـ `remove_widget()` بدل `deleteLater()` المباشر |
+| MED-06 | عداد التنبيهات غير آمن | إضافة `threading.Lock()` مع حماية العداد والقاموس |
+| MED-07 | `get_insights()` بدون قفل | أخذ snapshot من البيانات داخل `self._lock` قبل المعالجة |
+| MED-22 | ExportWorker بدون إدارة دورة حياة | منع تصدير مزدوج + إضافة `closeEvent()` لتنظيف Worker |
+
+### الملفات المعدّلة:
+| الملف | نوع التعديل |
+|-------|-------------|
+| `core/ai/agents/action_agent.py` | إضافة قفل لـ `_action_history` في 3 دوال |
+| `core/ai/ai_service.py` | إضافة `threading.Lock` لـ `ConversationContext` |
+| `core/bi/export_scheduler.py` | إضافة `threading.Lock()` لحماية `_running` في 6 مواقع |
+| `ui/windows/launcher/launcher_window.py` | تنظيف النوافذ المغلقة + `deleteLater()` + `clear()` |
+| `modules/designer/form_builder/form_canvas.py` | signal `delete_requested` + ربطه بـ `remove_widget()` |
+| `core/ai/agents/alert_agent.py` | إضافة `threading.Lock()` لحماية `_alert_counter` و `_alerts` |
+| `core/ai/agents/learning_agent.py` | حماية `get_insights()` بـ lock + snapshot |
+| `ui/dialogs/bi_settings/bi_settings_dialog.py` | منع تصدير مزدوج + `closeEvent()` |
+
+### الحالة بعد الجلسة:
+- الجلسات 1-4 مكتملة (28 إصلاح من 69)
+- الجلسة التالية: الجلسة 5 (أمان + واجهة - 8 مشاكل)
+
+---
+
 ## الجلسة: 6 فبراير 2026 - الجلسة 3 من خطة الإصلاح (وظائف معطلة)
 
 ### ملخص الجلسة:

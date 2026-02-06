@@ -535,6 +535,12 @@ class BISettingsDialog(QDialog):
 
     def _export_now(self, format_type: str):
         """Start export operation."""
+        # Prevent starting a new export while one is running
+        if self._worker is not None and self._worker.isRunning():
+            self.status_label.setText("⏳ عملية تصدير قيد التنفيذ بالفعل...")
+            self.status_label.setStyleSheet("color: #f59e0b;")
+            return
+
         self.progress_bar.setVisible(True)
         self.progress_bar.setValue(0)
 
@@ -584,6 +590,12 @@ class BISettingsDialog(QDialog):
 
     def _create_views(self):
         """Create all BI Views."""
+        # Prevent starting while another operation is running
+        if self._worker is not None and self._worker.isRunning():
+            self.status_label.setText("⏳ عملية قيد التنفيذ بالفعل...")
+            self.status_label.setStyleSheet("color: #f59e0b;")
+            return
+
         self.progress_bar.setVisible(True)
         self.progress_bar.setValue(0)
 
@@ -665,6 +677,14 @@ class BISettingsDialog(QDialog):
 
         except Exception as e:
             QMessageBox.warning(self, "خطأ", str(e))
+
+    def closeEvent(self, event):
+        """Clean up worker threads on dialog close."""
+        if self._worker is not None and self._worker.isRunning():
+            self._worker.quit()
+            self._worker.wait(3000)
+        self._worker = None
+        super().closeEvent(event)
 
     def _open_templates_folder(self):
         """Open templates folder in file explorer."""

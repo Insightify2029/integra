@@ -8,6 +8,7 @@ Provides easy-to-use functions for chat, analysis, and summarization.
 from typing import Optional, List, Dict, Any, Generator, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
+import copy
 import threading
 
 from .ollama_client import get_ollama_client, OllamaClient
@@ -29,24 +30,28 @@ class ChatMessage:
 
 @dataclass
 class ConversationContext:
-    """Manages conversation history."""
+    """Manages conversation history (thread-safe)."""
     messages: List[ChatMessage] = field(default_factory=list)
     max_messages: int = 20
+    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     def add_message(self, role: str, content: str) -> None:
         """Add a message to context."""
-        self.messages.append(ChatMessage(role=role, content=content))
-        # Keep only last N messages
-        if len(self.messages) > self.max_messages:
-            self.messages = self.messages[-self.max_messages:]
+        with self._lock:
+            self.messages.append(ChatMessage(role=role, content=content))
+            # Keep only last N messages
+            if len(self.messages) > self.max_messages:
+                self.messages = self.messages[-self.max_messages:]
 
     def get_context(self) -> List[Dict[str, str]]:
         """Get messages for API."""
-        return [m.to_dict() for m in self.messages]
+        with self._lock:
+            return [m.to_dict() for m in self.messages]
 
     def clear(self) -> None:
         """Clear conversation history."""
-        self.messages.clear()
+        with self._lock:
+            self.messages.clear()
 
 
 class AIService:

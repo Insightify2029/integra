@@ -91,6 +91,13 @@ class LauncherWindow(BaseWindow):
                     window.setStyleSheet(get_stylesheet())
 
     def _open_module(self, module_id):
+        # Clean up closed windows to prevent memory leaks
+        closed = [k for k, w in self._open_windows.items() if w is None or not w.isVisible()]
+        for k in closed:
+            w = self._open_windows.pop(k, None)
+            if w is not None:
+                w.deleteLater()
+
         if module_id in self._open_windows:
             window = self._open_windows[module_id]
             if window and window.isVisible():
@@ -143,9 +150,11 @@ class LauncherWindow(BaseWindow):
 
     def closeEvent(self, event):
         """إغلاق البرنامج."""
-        # إغلاق النوافذ المفتوحة
+        # إغلاق النوافذ المفتوحة وتنظيف المراجع
         for window in self._open_windows.values():
             if window:
                 window.close()
+                window.deleteLater()
+        self._open_windows.clear()
 
         event.accept()

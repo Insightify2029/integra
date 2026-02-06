@@ -160,6 +160,7 @@ class DesignWidgetItem(QFrame):
     selected = pyqtSignal(object)  # FormWidget
     moved = pyqtSignal(object, int, int)  # FormWidget, new_x, new_y
     resized = pyqtSignal(object, int, int)  # FormWidget, new_width, new_height
+    delete_requested = pyqtSignal(str)  # widget_id
 
     def __init__(self, widget: FormWidget, parent=None):
         super().__init__(parent)
@@ -423,7 +424,7 @@ class DesignWidgetItem(QFrame):
         menu = QMenu(self)
 
         delete_action = QAction("حذف", self)
-        delete_action.triggered.connect(lambda: self.deleteLater())
+        delete_action.triggered.connect(lambda: self.delete_requested.emit(self.widget.id))
         menu.addAction(delete_action)
 
         menu.addSeparator()
@@ -629,6 +630,7 @@ class FormCanvas(QScrollArea):
         item.selected.connect(self._on_widget_selected)
         item.moved.connect(self._on_widget_moved)
         item.resized.connect(self._on_widget_resized)
+        item.delete_requested.connect(self.remove_widget)
         item.show()
 
         # Store references
@@ -740,6 +742,7 @@ class FormCanvas(QScrollArea):
             item.selected.connect(self._on_widget_selected)
             item.moved.connect(self._on_widget_moved)
             item.resized.connect(self._on_widget_resized)
+            item.delete_requested.connect(self.remove_widget)
             item.show()
 
             self._widget_items[widget.id] = item
