@@ -16,6 +16,43 @@
 
 ---
 
+## الجلسة: 6 فبراير 2026 - الجلسة 7 من خطة الإصلاح (متوسطة متبقية)
+
+### ملخص الجلسة:
+
+**تم إصلاح 8 مشاكل متوسطة - تصميم + أداء + أمان:**
+
+| # | المشكلة | الإصلاح |
+|---|---------|---------|
+| MED-03 | Icons class يُستبدل بمثيل | فصل المثيل (`icons` بحرف صغير) عن الكلاس `Icons` |
+| MED-05 | مراقب الملفات ليس Singleton | استخدام `get_file_watcher()` بدل `FileWatcher()` جديد |
+| MED-10 | قسمة على صفر في التصدير | إضافة `if total > 0` قبل حساب النسبة في 3 دوال تصدير |
+| MED-11 | ترتيب القاموس لا يتطابق | استخدام `row_data.get(col)` بترتيب `self._columns` |
+| MED-13 | تجميد الواجهة عند الاستعادة | إنشاء `RestoreWorker(QThread)` للتنفيذ في خيط منفصل |
+| MED-21 | تحميل كل المهام للفلترة | إضافة 3 دوال SQL في المستودع + تحديث التكاملات |
+| MED-27 | `fetchone()[0]` بدون None | فحص `result is not None` قبل الوصول للفهرس |
+| MED-28 | لا توجد حدود معاملات في BI | لف `create_all_views()` في transaction واحد |
+
+### الملفات المعدّلة:
+| الملف | نوع التعديل |
+|-------|-------------|
+| `core/utils/icons.py` | فصل المثيل عن الكلاس (icons بحرف صغير) |
+| `core/utils/__init__.py` | تصدير `icons` بالإضافة للكلاس `Icons` |
+| `core/file_watcher/watcher.py` | استخدام Singleton في `watch_folder()` |
+| `ui/components/tables/enterprise/export_manager.py` | إصلاح division by zero + ترتيب القاموس + bare except |
+| `ui/dialogs/sync_settings/sync_settings_dialog.py` | إضافة `RestoreWorker` QThread |
+| `modules/tasks/repository/task_repository.py` | إضافة 3 دوال: `get_by_source_email`, `get_by_due_date`, `get_by_due_date_range` |
+| `modules/tasks/integration/email_integration.py` | استخدام SQL بدل تحميل الكل |
+| `modules/tasks/integration/calendar_sync.py` | استخدام SQL للتاريخ + `get_overdue_tasks()` |
+| `core/database/queries/insert_query.py` | فحص None قبل `fetchone()[0]` |
+| `core/bi/views_manager.py` | لف `create_all_views()` في transaction واحد |
+
+### الحالة بعد الجلسة:
+- الجلسات 1-7 مكتملة (52 إصلاح من 69)
+- الجلسة التالية: الجلسة 8 (منخفضة + تحسينات نهائية - 17 مشكلة)
+
+---
+
 ## الجلسة: 6 فبراير 2026 - الجلسة 6 من خطة الإصلاح (منطق + أداء + تقويم)
 
 ### ملخص الجلسة:

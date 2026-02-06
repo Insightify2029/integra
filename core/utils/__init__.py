@@ -6,6 +6,7 @@ Utility functions and helpers.
 
 from .icons import (
     Icons,
+    icons,
     get_icon,
     icon
 )
@@ -43,6 +44,7 @@ from .qr_generator import (
 __all__ = [
     # Icons
     'Icons',
+    'icons',
     'get_icon',
     'icon',
     # Number formatters

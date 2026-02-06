@@ -326,26 +326,53 @@ class BIViewsManager:
 
     def create_all_views(self) -> Tuple[int, int]:
         """
-        Create all BI Views.
+        Create all BI Views in a single transaction.
+
+        If any view creation fails, all changes are rolled back.
 
         Returns:
             Tuple of (success_count, failure_count)
         """
-        # First create schema
-        if not self.create_schema():
+        from core.database.connection import get_connection, return_connection
+
+        conn = None
+        cursor = None
+        try:
+            conn = get_connection()
+            if conn is None:
+                app_logger.error("Failed to get DB connection for BI views creation")
+                return (0, len(SQL_VIEWS))
+
+            cursor = conn.cursor()
+
+            # Create schema
+            cursor.execute(SQL_CREATE_SCHEMA)
+
+            # Create all views in a single transaction
+            success = 0
+            for view_name, sql in SQL_VIEWS.items():
+                try:
+                    cursor.execute(sql)
+                    success += 1
+                except Exception as e:
+                    app_logger.error(f"Failed to create view {view_name}: {e}")
+                    conn.rollback()
+                    return (0, len(SQL_VIEWS))
+
+            conn.commit()
+            app_logger.info(f"BI Views created: {success} success, 0 failed")
+            return (success, 0)
+
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            app_logger.error(f"Failed to create BI views: {e}")
             return (0, len(SQL_VIEWS))
-
-        success = 0
-        failed = 0
-
-        for view_name in SQL_VIEWS:
-            if self.create_view(view_name):
-                success += 1
-            else:
-                failed += 1
-
-        app_logger.info(f"BI Views created: {success} success, {failed} failed")
-        return (success, failed)
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                return_connection(conn)
 
     def check_view_exists(self, view_name: str) -> bool:
         """Check if a view exists in the database."""

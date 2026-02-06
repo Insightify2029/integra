@@ -167,12 +167,9 @@ class EmailTaskIntegration:
             قائمة المهام
         """
         try:
-            from ..repository import get_all_tasks
+            from ..repository import get_tasks_by_source_email
 
-            # This would need a specific query in repository
-            # For now, filter in memory
-            all_tasks = get_all_tasks(limit=500)
-            return [t for t in all_tasks if t.source_email_id == email_id]
+            return get_tasks_by_source_email(email_id)
 
         except Exception as e:
             app_logger.error(f"Failed to get tasks by email: {e}")

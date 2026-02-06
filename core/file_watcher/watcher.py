@@ -472,7 +472,7 @@ def watch_folder(
             extensions=[".xlsx", ".csv"]
         )
     """
-    watcher = FileWatcher()
+    watcher = get_file_watcher()
 
     if on_file_created:
         watcher.signals.file_created.connect(on_file_created)

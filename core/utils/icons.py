@@ -230,6 +230,6 @@ def get_icons() -> Icons:
     return _icons_instance
 
 
-# For convenience, create a module-level Icons instance
-# Usage: from core.utils.icons import Icons; button.setIcon(Icons.SAVE)
-Icons = get_icons()
+# Module-level convenience instance (separate from the Icons class)
+# Usage: from core.utils.icons import icons; button.setIcon(icons.SAVE)
+icons = get_icons()

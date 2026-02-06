@@ -13,7 +13,7 @@ from typing import Optional, List, Dict, Any
 from dataclasses import dataclass
 
 from ..models import Task, TaskStatus, TaskPriority
-from ..repository import get_all_tasks, get_task_by_id
+from ..repository import get_all_tasks, get_task_by_id, get_overdue_tasks, get_tasks_by_due_date, get_tasks_by_due_date_range
 
 from core.logging import app_logger
 
@@ -143,15 +143,8 @@ class TaskCalendarSync:
             قائمة الأحداث
         """
         try:
-            # Get all tasks with due dates
-            tasks = get_all_tasks(limit=500)
-
-            events = []
-            for task in tasks:
-                if task.due_date and task.due_date.date() == target_date:
-                    events.append(self.task_to_event(task))
-
-            return events
+            tasks = get_tasks_by_due_date(target_date)
+            return [self.task_to_event(task) for task in tasks]
 
         except Exception as e:
             app_logger.error(f"Failed to get events for date: {e}")
@@ -173,16 +166,8 @@ class TaskCalendarSync:
             قائمة الأحداث
         """
         try:
-            tasks = get_all_tasks(limit=500)
-
-            events = []
-            for task in tasks:
-                if task.due_date:
-                    task_date = task.due_date.date()
-                    if start_date <= task_date <= end_date:
-                        events.append(self.task_to_event(task))
-
-            return events
+            tasks = get_tasks_by_due_date_range(start_date, end_date)
+            return [self.task_to_event(task) for task in tasks]
 
         except Exception as e:
             app_logger.error(f"Failed to get events for range: {e}")
@@ -227,14 +212,8 @@ class TaskCalendarSync:
     def get_overdue_events(self) -> List[CalendarEvent]:
         """جلب الأحداث المتأخرة"""
         try:
-            tasks = get_all_tasks(limit=500)
-
-            events = []
-            for task in tasks:
-                if task.is_overdue:
-                    events.append(self.task_to_event(task))
-
-            return events
+            tasks = get_overdue_tasks()
+            return [self.task_to_event(task) for task in tasks]
 
         except Exception as e:
             app_logger.error(f"Failed to get overdue events: {e}")

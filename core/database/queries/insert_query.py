@@ -62,7 +62,11 @@ def insert_returning_id(query, params=None):
         cursor = conn.cursor()
         cursor.execute(query, params)
 
-        new_id = cursor.fetchone()[0]
+        result = cursor.fetchone()
+        if result is None:
+            app_logger.error("INSERT RETURNING returned no rows")
+            return None
+        new_id = result[0]
         conn.commit()
 
         return new_id
