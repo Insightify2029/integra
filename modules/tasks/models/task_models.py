@@ -7,7 +7,7 @@ INTEGRA - Task Models
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from enum import Enum
 from typing import Optional, List, Dict, Any
 import json
@@ -516,7 +516,7 @@ class Task:
 
         if due == today:
             return "اليوم"
-        elif due == today.replace(day=today.day + 1) if today.day < 28 else today:
+        elif due == today + timedelta(days=1):
             return "غداً"
         elif self.is_overdue:
             days = (today - due).days

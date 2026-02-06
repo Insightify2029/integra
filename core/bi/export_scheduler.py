@@ -14,7 +14,7 @@ Version: 1.0.0
 Date: February 2026
 """
 
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from typing import Optional, Callable, List
 from dataclasses import dataclass
 from enum import Enum
@@ -167,7 +167,7 @@ class ExportScheduler:
         if self._config.frequency == ExportFrequency.HOURLY:
             # Next hour
             next_run = now.replace(minute=0, second=0, microsecond=0)
-            next_run = next_run.replace(hour=next_run.hour + 1)
+            next_run = next_run + timedelta(hours=1)
             return (next_run - now).total_seconds()
 
         elif self._config.frequency == ExportFrequency.DAILY:

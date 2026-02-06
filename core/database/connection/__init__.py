@@ -4,7 +4,7 @@ Database Connection Module
 Handles database connectivity with connection pool support.
 """
 
-from .connector import connect, get_connection
+from .connector import connect, get_connection, return_connection
 from .disconnector import disconnect
 from .connection_checker import is_connected, get_connection_status
 from .connection_config import get_connection_string, get_connection_params
@@ -19,6 +19,7 @@ __all__ = [
     # Connection management
     'connect',
     'get_connection',
+    'return_connection',
     'disconnect',
     'is_connected',
     'get_connection_status',

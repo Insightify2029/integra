@@ -6,7 +6,7 @@ INTEGRA - Calendar Header Widgets
 التاريخ: 4 فبراير 2026
 """
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Optional
 from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QLabel,
@@ -142,13 +142,15 @@ class CalendarHeader(QFrame):
             self.date_label.setText(f"{month_name} {year}")
         elif self.view_type == CalendarView.WEEK:
             # حساب نطاق الأسبوع
-            week_start = self.current_date
-            week_end = self.current_date
-            # تعديل لبداية الأسبوع
             days_since_sunday = (self.current_date.weekday() + 1) % 7
-            week_start = self.current_date.replace(day=self.current_date.day - days_since_sunday)
-            week_end = week_start.replace(day=week_start.day + 6)
-            self.date_label.setText(f"{week_start.day} - {week_end.day} {month_name} {year}")
+            week_start = self.current_date - timedelta(days=days_since_sunday)
+            week_end = week_start + timedelta(days=6)
+            start_month = MONTH_NAMES_AR[week_start.month - 1]
+            end_month = MONTH_NAMES_AR[week_end.month - 1]
+            if week_start.month == week_end.month:
+                self.date_label.setText(f"{week_start.day} - {week_end.day} {start_month} {week_start.year}")
+            else:
+                self.date_label.setText(f"{week_start.day} {start_month} - {week_end.day} {end_month} {week_end.year}")
         elif self.view_type == CalendarView.DAY:
             day_name = DAY_NAMES_AR[(self.current_date.weekday() + 1) % 7]
             self.date_label.setText(f"{day_name}، {self.current_date.day} {month_name} {year}")
@@ -173,9 +175,9 @@ class CalendarHeader(QFrame):
             else:
                 self.current_date = self.current_date.replace(month=self.current_date.month - 1)
         elif self.view_type == CalendarView.WEEK:
-            self.current_date = self.current_date.replace(day=self.current_date.day - 7)
+            self.current_date = self.current_date - timedelta(days=7)
         elif self.view_type == CalendarView.DAY:
-            self.current_date = self.current_date.replace(day=self.current_date.day - 1)
+            self.current_date = self.current_date - timedelta(days=1)
 
         self._update_display()
         self.date_changed.emit(self.current_date.year, self.current_date.month)
@@ -188,9 +190,9 @@ class CalendarHeader(QFrame):
             else:
                 self.current_date = self.current_date.replace(month=self.current_date.month + 1)
         elif self.view_type == CalendarView.WEEK:
-            self.current_date = self.current_date.replace(day=self.current_date.day + 7)
+            self.current_date = self.current_date + timedelta(days=7)
         elif self.view_type == CalendarView.DAY:
-            self.current_date = self.current_date.replace(day=self.current_date.day + 1)
+            self.current_date = self.current_date + timedelta(days=1)
 
         self._update_display()
         self.date_changed.emit(self.current_date.year, self.current_date.month)

@@ -89,6 +89,23 @@ def get_connection():
     return _connection
 
 
+def return_connection(conn):
+    """
+    Return a connection after use.
+
+    For pooled connections: closes the proxy (returns to pool).
+    For the single fallback connection: does nothing (kept alive for reuse).
+    """
+    if conn is None:
+        return
+    # Only close if it's NOT the shared single connection
+    if conn is not _connection:
+        try:
+            conn.close()  # Returns to pool, not actually closed
+        except Exception:
+            pass
+
+
 def get_raw_connection():
     """
     Get the raw single connection object (for internal use).
@@ -101,6 +118,7 @@ def get_raw_connection():
 __all__ = [
     'connect',
     'get_connection',
+    'return_connection',
     'get_raw_connection',
     'get_pooled_connection',
     'get_pool_status',

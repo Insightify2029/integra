@@ -4,7 +4,7 @@ DELETE Query Handler
 Handles DELETE queries.
 """
 
-from core.database.connection import get_connection
+from core.database.connection import get_connection, return_connection
 from core.logging import app_logger
 
 
@@ -38,6 +38,7 @@ def delete(query, params=None):
     finally:
         if cursor:
             cursor.close()
+        return_connection(conn)
 
 
 def delete_returning_count(query, params=None):
@@ -73,3 +74,4 @@ def delete_returning_count(query, params=None):
     finally:
         if cursor:
             cursor.close()
+        return_connection(conn)

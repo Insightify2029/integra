@@ -16,6 +16,43 @@
 
 ---
 
+## الجلسة: 6 فبراير 2026 - الجلسة 1 من خطة الإصلاح (انهيارات التطبيق)
+
+### ملخص الجلسة:
+
+**تم إصلاح 6 أخطاء حرجة تسبب انهيار التطبيق:**
+
+| # | المشكلة | الإصلاح |
+|---|---------|---------|
+| CRIT-01 | تسرب اتصالات قاعدة البيانات | إنشاء `return_connection()` في `connector.py` + إضافتها في `finally` blocks لـ 5 ملفات استعلام |
+| CRIT-03 | انهيار المجدول عند 23:00 | استبدال `hour + 1` بـ `timedelta(hours=1)` |
+| CRIT-04 | انهيار EventBus عند أحداث متزامنة | إضافة `__lt__` لكلاس `Event` |
+| CRIT-08 | انهيار `due_date_formatted` آخر الشهر | استبدال `replace(day=day+1)` بـ `timedelta(days=1)` |
+| CRIT-09 | انهيار التنقل في التقويم | استبدال `replace(day=...)` بـ `timedelta` + إصلاح عرض الأسبوع عبر حدود الشهر |
+| CRIT-10 | `QPixmap.scaled()` float بدل int | تحويل لـ `int()` + إنشاء `QPoint` يدوياً |
+
+### الملفات المعدّلة:
+| الملف | نوع التعديل |
+|-------|-------------|
+| `core/database/connection/connector.py` | إضافة دالة `return_connection()` |
+| `core/database/connection/__init__.py` | تصدير `return_connection` |
+| `core/database/queries/select_query.py` | إضافة `return_connection(conn)` في finally |
+| `core/database/queries/insert_query.py` | إضافة `return_connection(conn)` في finally |
+| `core/database/queries/update_query.py` | إضافة `return_connection(conn)` في finally |
+| `core/database/queries/delete_query.py` | إضافة `return_connection(conn)` في finally |
+| `core/database/queries/scalar_query.py` | إضافة `return_connection(conn)` في finally |
+| `core/bi/export_scheduler.py` | إصلاح حساب الساعة التالية |
+| `core/ai/orchestration/event_bus.py` | إضافة `__lt__` لكلاس Event |
+| `modules/tasks/models/task_models.py` | إصلاح خاصية "غداً" |
+| `modules/calendar/widgets/calendar_header.py` | إصلاح تنقل الأسبوع واليوم |
+| `modules/tasks/screens/task_board/kanban_board.py` | إصلاح أنواع بيانات السحب |
+
+### الحالة بعد الجلسة:
+- الجلسة 1 (انهيارات التطبيق): ✅ مكتمل
+- الجلسات 2-8: 🔴 لم تبدأ
+
+---
+
 ## الجلسة: 6 فبراير 2026 - مراجعة شاملة للكود + إنشاء خطة إصلاح
 
 ### ملخص الجلسة:
