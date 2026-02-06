@@ -360,8 +360,10 @@ class BluetoothManager:
 
     def _get_adapter_status_windows(self) -> BluetoothAdapterStatus:
         try:
-            cmd = 'powershell -Command "Get-PnpDevice -Class Bluetooth -Status OK | Select-Object -First 1 | ConvertTo-Json"'
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                ['powershell', '-Command', 'Get-PnpDevice -Class Bluetooth -Status OK | Select-Object -First 1 | ConvertTo-Json'],
+                capture_output=True, text=True, timeout=10
+            )
             if result.returncode == 0 and result.stdout.strip():
                 return BluetoothAdapterStatus.ON
             return BluetoothAdapterStatus.OFF
@@ -370,16 +372,20 @@ class BluetoothManager:
 
     def _enable_adapter_windows(self) -> bool:
         try:
-            cmd = 'powershell -Command "Get-PnpDevice -Class Bluetooth | Enable-PnpDevice -Confirm:$false"'
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                ['powershell', '-Command', 'Get-PnpDevice -Class Bluetooth | Enable-PnpDevice -Confirm:$false'],
+                capture_output=True, text=True, timeout=10
+            )
             return result.returncode == 0
         except Exception:
             return False
 
     def _disable_adapter_windows(self) -> bool:
         try:
-            cmd = 'powershell -Command "Get-PnpDevice -Class Bluetooth -Status OK | Disable-PnpDevice -Confirm:$false"'
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                ['powershell', '-Command', 'Get-PnpDevice -Class Bluetooth -Status OK | Disable-PnpDevice -Confirm:$false'],
+                capture_output=True, text=True, timeout=10
+            )
             return result.returncode == 0
         except Exception:
             return False
@@ -387,20 +393,15 @@ class BluetoothManager:
     def _discover_windows(self, timeout: int) -> List[BluetoothDevice]:
         devices = []
         try:
-            cmd = f'''powershell -Command "
-                $devices = @()
-                $paired = Get-PnpDevice -Class Bluetooth | Where-Object {{ $_.FriendlyName -ne 'Bluetooth Device (RFCOMM Protocol TDI)' -and $_.FriendlyName -notlike '*Radio*' }}
-                foreach ($d in $paired) {{
-                    $devices += @{{
-                        Name = $d.FriendlyName
-                        InstanceId = $d.InstanceId
-                        Status = $d.Status
-                        Class = $d.Class
-                    }}
-                }}
-                $devices | ConvertTo-Json
-            "'''
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout + 5)
+            ps_script = (
+                "$devices = @(); "
+                "$paired = Get-PnpDevice -Class Bluetooth | Where-Object { $_.FriendlyName -ne 'Bluetooth Device (RFCOMM Protocol TDI)' -and $_.FriendlyName -notlike '*Radio*' }; "
+                "foreach ($d in $paired) { "
+                "  $devices += @{ Name = $d.FriendlyName; InstanceId = $d.InstanceId; Status = $d.Status; Class = $d.Class } "
+                "}; "
+                "$devices | ConvertTo-Json"
+            )
+            result = subprocess.run(['powershell', '-Command', ps_script], capture_output=True, text=True, timeout=timeout + 5)
             if result.returncode == 0 and result.stdout.strip():
                 data = json.loads(result.stdout)
                 if isinstance(data, dict):
@@ -451,24 +452,24 @@ class BluetoothManager:
 
     def _unpair_windows(self, address: str) -> bool:
         try:
-            cmd = f'powershell -Command "Get-PnpDevice | Where-Object {{ $_.InstanceId -like \'*{address}*\' }} | Remove-PnpDevice -Confirm:$false"'
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+            ps_script = f"Get-PnpDevice | Where-Object {{ $_.InstanceId -like '*{address}*' }} | Remove-PnpDevice -Confirm:$false"
+            result = subprocess.run(['powershell', '-Command', ps_script], capture_output=True, text=True, timeout=10)
             return result.returncode == 0
         except Exception:
             return False
 
     def _connect_windows(self, address: str) -> bool:
         try:
-            cmd = f'powershell -Command "Get-PnpDevice | Where-Object {{ $_.InstanceId -like \'*{address}*\' }} | Enable-PnpDevice -Confirm:$false"'
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+            ps_script = f"Get-PnpDevice | Where-Object {{ $_.InstanceId -like '*{address}*' }} | Enable-PnpDevice -Confirm:$false"
+            result = subprocess.run(['powershell', '-Command', ps_script], capture_output=True, text=True, timeout=10)
             return result.returncode == 0
         except Exception:
             return False
 
     def _disconnect_windows(self, address: str) -> bool:
         try:
-            cmd = f'powershell -Command "Get-PnpDevice | Where-Object {{ $_.InstanceId -like \'*{address}*\' }} | Disable-PnpDevice -Confirm:$false"'
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+            ps_script = f"Get-PnpDevice | Where-Object {{ $_.InstanceId -like '*{address}*' }} | Disable-PnpDevice -Confirm:$false"
+            result = subprocess.run(['powershell', '-Command', ps_script], capture_output=True, text=True, timeout=10)
             return result.returncode == 0
         except Exception:
             return False

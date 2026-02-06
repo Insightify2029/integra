@@ -16,6 +16,54 @@
 
 ---
 
+## الجلسة: 6 فبراير 2026 - إصلاح أخطاء تقرير مراجعة الكود (17 خطأ) ✅
+
+### ملخص الجلسة:
+
+**تم إصلاح 17 خطأ من أصل 19 في تقرير INTEGRA_ERROR_REPORT.md:**
+- تم استبعاد BUG-001 (كلمة المرور) و BUG-005 (التوافق مع Linux) بطلب المستخدم
+
+| الخطأ | الوصف | الملفات المعدّلة |
+|-------|-------|-----------------|
+| **BUG-002** | SQL Injection في get_count() | `scalar_query.py` |
+| **BUG-003** | NameError في conn.rollback() | `insert_query.py`, `update_query.py`, `delete_query.py` |
+| **BUG-004** | فحص None بعد get_connection() | جميع ملفات queries (5 ملفات) |
+| **BUG-006** | SQL Injection في audit_manager | `audit_manager.py` |
+| **BUG-007** | SQL Injection في Health Check | `INTEGRA_HEALTH_CHECK.py` |
+| **BUG-008** | توحيد نوع إرجاع connect() | `connector.py` |
+| **BUG-009** | تنظيف PGPASSWORD من البيئة | `backup_manager.py` |
+| **BUG-010** | استبدال os.system() بـ subprocess.run() | `create_shortcut.py` |
+| **BUG-011** | إزالة shell=True | `scanner_discovery.py`, `scan_engine.py`, `bluetooth_manager.py` |
+| **BUG-012** | Thread safety للـ _connection | `connector.py`, `connection_checker.py`, `disconnector.py` |
+| **BUG-013** | تحذير عند فشل get_connection() | `connector.py` |
+| **BUG-014** | استبدال print() بـ app_logger | جميع ملفات queries (5 ملفات) |
+| **BUG-015** | إضافة file lock في auto-save | `auto_save.py` |
+| **BUG-016** | إزالة f-strings غير الضرورية | `audit_manager.py` |
+| **BUG-017** | تصدير disconnect() | `connector.py` (تمت إضافة get_raw_connection) |
+| **BUG-018** | إغلاق cursor في مسار الخطأ | جميع ملفات queries (5 ملفات) - عبر try/finally |
+| **BUG-019** | إضافة SQLAlchemy للمتطلبات | `requirements.txt` |
+
+### الملفات المعدّلة (17 ملف):
+- `core/database/queries/insert_query.py`
+- `core/database/queries/update_query.py`
+- `core/database/queries/delete_query.py`
+- `core/database/queries/select_query.py`
+- `core/database/queries/scalar_query.py`
+- `core/database/connection/connector.py`
+- `core/database/connection/connection_checker.py`
+- `core/database/connection/disconnector.py`
+- `core/database/audit/audit_manager.py`
+- `core/backup/backup_manager.py`
+- `core/recovery/auto_save.py`
+- `core/device_manager/scanner/scanner_discovery.py`
+- `core/device_manager/scanner/scan_engine.py`
+- `core/device_manager/bluetooth/bluetooth_manager.py`
+- `INTEGRA_HEALTH_CHECK.py`
+- `create_shortcut.py`
+- `requirements.txt`
+
+---
+
 ## الجلسة: 6 فبراير 2026 - المحور R: تكامل تطبيقات سطح المكتب (Desktop Apps Integration) ✅
 
 ### ملخص الجلسة:

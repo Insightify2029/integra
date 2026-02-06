@@ -18,9 +18,10 @@ def is_connected():
 
     # Fallback: check single connection
     try:
-        from .connector import _connection
-        if _connection and not _connection.closed:
-            cursor = _connection.cursor()
+        from .connector import get_raw_connection
+        _conn = get_raw_connection()
+        if _conn and not _conn.closed:
+            cursor = _conn.cursor()
             cursor.execute("SELECT 1")
             cursor.close()
             return True

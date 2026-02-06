@@ -293,7 +293,7 @@ class ScannerDiscovery:
         """Fallback WIA discovery via PowerShell."""
         scanners = []
         try:
-            cmd = '''powershell -Command "
+            ps_script = """
                 $dm = New-Object -ComObject WIA.DeviceManager
                 $result = @()
                 foreach ($di in $dm.DeviceInfos) {
@@ -306,8 +306,8 @@ class ScannerDiscovery:
                     }
                 }
                 $result | ConvertTo-Json
-            "'''
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=15)
+            """
+            result = subprocess.run(['powershell', '-Command', ps_script], capture_output=True, text=True, timeout=15)
             if result.returncode == 0 and result.stdout.strip():
                 import json
                 data = json.loads(result.stdout)

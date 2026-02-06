@@ -16,3 +16,6 @@ openpyxl>=3.1.0
 
 # PDF Export (optional)
 reportlab>=4.0.0
+
+# Database Pool
+SQLAlchemy>=2.0.0

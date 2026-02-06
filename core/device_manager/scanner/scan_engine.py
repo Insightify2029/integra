@@ -361,28 +361,23 @@ class ScanEngine:
             on_progress(20, "استخدام PowerShell للمسح...")
 
         temp_bmp = tempfile.mktemp(suffix='.bmp')
-        cmd = f'''powershell -Command "
-            $dm = New-Object -ComObject WIA.DeviceManager
-            $dev = $null
-            foreach ($di in $dm.DeviceInfos) {{
-                if ($di.Type -eq 1) {{
-                    $dev = $di.Connect()
-                    break
-                }}
-            }}
-            if ($dev) {{
-                $item = $dev.Items(1)
-                $item.Properties('Horizontal Resolution').Value = {settings.resolution_dpi}
-                $item.Properties('Vertical Resolution').Value = {settings.resolution_dpi}
-                $img = $item.Transfer('{{B96B3CAE-0728-11D3-9D7B-0000F81EF32E}}')
-                $img.SaveFile('{temp_bmp}')
-                Write-Output 'SUCCESS'
-            }} else {{
-                Write-Output 'NO_SCANNER'
-            }}
-        "'''
+        ps_script = (
+            "$dm = New-Object -ComObject WIA.DeviceManager; "
+            "$dev = $null; "
+            "foreach ($di in $dm.DeviceInfos) { "
+            "  if ($di.Type -eq 1) { $dev = $di.Connect(); break } "
+            "}; "
+            "if ($dev) { "
+            "  $item = $dev.Items(1); "
+            f"  $item.Properties('Horizontal Resolution').Value = {settings.resolution_dpi}; "
+            f"  $item.Properties('Vertical Resolution').Value = {settings.resolution_dpi}; "
+            "  $img = $item.Transfer('{B96B3CAE-0728-11D3-9D7B-0000F81EF32E}'); "
+            f"  $img.SaveFile('{temp_bmp}'); "
+            "  Write-Output 'SUCCESS' "
+            "} else { Write-Output 'NO_SCANNER' }"
+        )
 
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=60)
+        result = subprocess.run(['powershell', '-Command', ps_script], capture_output=True, text=True, timeout=60)
 
         if 'SUCCESS' in result.stdout:
             if on_progress:

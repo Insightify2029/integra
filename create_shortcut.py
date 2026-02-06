@@ -11,7 +11,8 @@ try:
     from PIL import Image, ImageDraw, ImageFont
 except ImportError:
     print("Installing Pillow...")
-    os.system(f"{sys.executable} -m pip install Pillow")
+    import subprocess
+    subprocess.run([sys.executable, "-m", "pip", "install", "Pillow"])
     from PIL import Image, ImageDraw, ImageFont
 
 
