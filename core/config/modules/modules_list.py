@@ -18,6 +18,7 @@ from . import module_copilot
 from . import module_time_intelligence
 from . import module_file_manager
 from . import module_device_manager
+from . import module_desktop_apps
 
 
 def get_all_modules():
@@ -134,6 +135,14 @@ def get_all_modules():
             'icon': module_device_manager.MODULE_ICON,
             'color': module_device_manager.MODULE_COLOR,
             'enabled': module_device_manager.MODULE_ENABLED
+        },
+        {
+            'id': module_desktop_apps.MODULE_ID,
+            'name_ar': module_desktop_apps.MODULE_NAME_AR,
+            'name_en': module_desktop_apps.MODULE_NAME_EN,
+            'icon': module_desktop_apps.MODULE_ICON,
+            'color': module_desktop_apps.MODULE_COLOR,
+            'enabled': module_desktop_apps.MODULE_ENABLED
         }
     ]
 

@@ -16,6 +16,122 @@
 
 ---
 
+## الجلسة: 6 فبراير 2026 - المحور R: تكامل تطبيقات سطح المكتب (Desktop Apps Integration) ✅
+
+### ملخص الجلسة:
+
+**تم إكمال المحور R بالكامل - Desktop Apps Integration:**
+
+| المهمة | الوصف | الحالة |
+|--------|-------|--------|
+| **R1** | WhatsApp Desktop Integration (Web URL + Business API, قوالب, إرسال جماعي) | ✅ مكتمل |
+| **R2** | Telegram Bot Integration (Bot API, تنبيهات, أوامر, Inline Keyboards) | ✅ مكتمل |
+| **R3** | Microsoft Teams Integration (Webhooks, Adaptive Cards, بطاقات مسبقة) | ✅ مكتمل |
+| **R4** | Desktop Automation (Win32/Linux, إدارة نوافذ, Workflow Engine) | ✅ مكتمل |
+
+### الملفات الجديدة:
+
+```
+core/desktop_apps/
+├── __init__.py                          # تصدير كل المكونات
+├── whatsapp/
+│   ├── __init__.py
+│   └── whatsapp_manager.py             # R1: WhatsApp (Web + Business API)
+├── telegram/
+│   ├── __init__.py
+│   └── telegram_bot.py                 # R2: Telegram Bot (API + Commands)
+├── teams/
+│   ├── __init__.py
+│   └── teams_connector.py             # R3: Teams (Webhooks + Adaptive Cards)
+└── automation/
+    ├── __init__.py
+    └── desktop_automation.py           # R4: Desktop Automation (Win32/Linux)
+
+modules/desktop_apps/
+├── __init__.py
+├── window/
+│   ├── __init__.py
+│   └── desktop_apps_window.py         # النافذة الرئيسية (4 Tabs)
+└── screens/
+    └── __init__.py
+
+core/config/modules/
+└── module_desktop_apps.py             # تسجيل الموديول
+```
+
+### الميزات الرئيسية:
+
+**واتساب (WhatsApp):**
+- إرسال رسائل نصية عبر WhatsApp Web URL scheme
+- دعم WhatsApp Business API (إعدادات اختيارية)
+- قوالب رسائل جاهزة: إشعار راتب، موافقة/رفض إجازة، مهمة جديدة، تقرير جاهز
+- إدارة جهات الاتصال مع التحقق من الأرقام
+- قائمة إرسال مع إعادة المحاولة التلقائية
+- إرسال جماعي لمجموعة أرقام
+
+**تليجرام (Telegram):**
+- إعداد البوت عبر Bot Token من @BotFather
+- أوامر مدمجة: /salary, /leave, /tasks, /approve, /reject, /report
+- تنبيهات بمستويات أولوية (low/normal/high/urgent/critical)
+- أزرار تفاعلية (Inline Keyboard) لطلبات الموافقة
+- إرسال ملفات وصور مع captions
+- بث رسائل لكل المحادثات
+- توجيه التنبيهات حسب الأولوية لمجموعات مختلفة
+
+**مايكروسوفت تيمز (Teams):**
+- Incoming Webhooks لإرسال الإشعارات للقنوات
+- Adaptive Cards لعرض محتوى غني
+- AdaptiveCardBuilder لبناء بطاقات مخصصة
+- بطاقات مسبقة البناء: تنبيه، طلب موافقة، تقرير، حالة نظام، مهمة
+- توجيه القنوات حسب النوع (alerts/reports/approvals/general)
+- بث رسائل لكل القنوات النشطة
+
+**أتمتة سطح المكتب (Automation):**
+- إدارة النوافذ: بحث، تركيز، تصغير، تكبير، إغلاق
+- دعم Windows (Win32 API - pywin32) و Linux (wmctrl/xdotool)
+- تشغيل التطبيقات وفحص حالتها
+- عمليات الحافظة عبر PyQt5 QClipboard
+- التقاط لقطات الشاشة عبر PyQt5 QScreen
+- محرك سيناريوهات الأتمتة (Workflow Engine) لتنفيذ متسلسل
+- تسجيل مسارات التطبيقات المفضلة
+
+### كيفية الاستخدام:
+
+```python
+# WhatsApp - إرسال سريع
+from core.desktop_apps import WhatsAppManager
+wa = WhatsAppManager()
+wa.quick_send("+966512345678", "مرحباً من INTEGRA")
+wa.send_salary_notification("+966512345678", "أحمد", "يناير", "5000")
+
+# Telegram - إرسال تنبيه
+from core.desktop_apps import TelegramBotManager
+tg = TelegramBotManager()
+tg.set_token("YOUR_BOT_TOKEN")
+tg.send_alert("تنبيه: تم تحديث النظام", AlertPriority.HIGH)
+
+# Teams - إرسال بطاقة
+from core.desktop_apps import TeamsConnector
+teams = TeamsConnector()
+teams.send_alert("تحديث النظام", "تم تحديث INTEGRA بنجاح", "info")
+
+# Automation - إدارة النوافذ
+from core.desktop_apps import DesktopAutomation
+auto = DesktopAutomation()
+windows = auto.find_windows("Excel")
+auto.focus_window("Excel")
+auto.take_screenshot()
+```
+
+### الملفات المعدلة:
+
+- `core/config/modules/modules_list.py` - إضافة module_desktop_apps
+- `ui/windows/launcher/launcher_window.py` - إضافة فتح موديول desktop_apps
+- `claude/INTEGRA_INFRASTRUCTURE_PLAN.md` - تحديث حالة المحور R إلى ✅
+- `claude/SESSION_LOG.md` - توثيق الجلسة
+
+---
+
 ## الجلسة: 6 فبراير 2026 - المحور Q: إدارة الأجهزة والطابعات (Device Manager) ✅
 
 ### ملخص الجلسة:
