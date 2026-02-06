@@ -16,6 +16,41 @@
 
 ---
 
+## الجلسة: 6 فبراير 2026 - الجلسة 2 من خطة الإصلاح (أمان + Import + واجهة)
+
+### ملخص الجلسة:
+
+**تم إصلاح 7 مشاكل (3 حرجة + 2 عالية + 2 حرجة واجهة):**
+
+| # | المشكلة | الإصلاح |
+|---|---------|---------|
+| CRIT-11 | حقن SQL في مصمم النماذج | استخدام `psycopg2.sql.Identifier()` في `load_data()` و `save_data()` + التحقق من table_name |
+| HIGH-01 | حقن SQL في BI Exporter | استخدام `psql.SQL` + `psql.Identifier` بدل f-strings في `export_to_csv()` و `export_to_excel()` |
+| HIGH-02 | حقن SQL في BI Views Manager | نفس المنهج في `get_view_row_count()`, `drop_view()`, `get_view_data()` |
+| CRIT-02 | `execute_query` ImportError | إنشاء `execute_query()` في `core/database/queries/execute_query.py` وتسجيلها |
+| CRIT-05 | `os.startfile()` Windows فقط | كشف المنصة عبر `sys.platform` واستخدام `subprocess.Popen` للأنظمة الأخرى |
+| CRIT-06 | FilterPanel لا تُضاف للواجهة | استبدال FilterPanel القديمة بالجديدة عبر `replaceWidget()` + `deleteLater()` |
+| CRIT-07 | `QThread.terminate()` خطير | استبدال `terminate()` بـ `requestInterruption()` + `quit()` + `wait(3000)` |
+
+### الملفات المعدّلة/المُنشأة:
+| الملف | نوع التعديل |
+|-------|-------------|
+| `modules/designer/form_builder/data_binding.py` | إصلاح حقن SQL في load_data و save_data |
+| `core/bi/data_exporter.py` | إصلاح حقن SQL في export_to_csv و export_to_excel |
+| `core/bi/views_manager.py` | إصلاح حقن SQL في 3 دوال |
+| `core/database/queries/execute_query.py` | **ملف جديد** - دالة execute_query للعمليات DDL |
+| `core/database/queries/__init__.py` | تسجيل execute_query |
+| `core/database/__init__.py` | تصدير execute_query |
+| `ui/components/tables/enterprise/export_manager.py` | إصلاح os.startfile() للعمل عبر الأنظمة |
+| `ui/components/tables/enterprise/enterprise_table_widget.py` | إصلاح استبدال FilterPanel في الـ layout |
+| `ui/components/email/email_panel.py` | استبدال terminate() بإيقاف آمن |
+
+### الحالة بعد الجلسة:
+- الجلسات 1-2 مكتملة (13 إصلاح من 69)
+- الجلسة التالية: الجلسة 3 (وظائف معطلة - 7 مشاكل)
+
+---
+
 ## الجلسة: 6 فبراير 2026 - الجلسة 1 من خطة الإصلاح (انهيارات التطبيق)
 
 ### ملخص الجلسة:

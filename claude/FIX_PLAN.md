@@ -55,23 +55,26 @@
 ## الجلسة 2: الأخطاء الحرجة - أمان + Import + واجهة
 **المدة المتوقعة:** جلسة واحدة
 **الهدف:** سد ثغرات SQL Injection + إصلاح ImportError + إصلاح واجهة معطلة
+**الحالة:** ✅ مكتمل (2026-02-06)
 
 | # | المشكلة | الخطورة | الملفات | الحالة |
 |---|---------|---------|---------|--------|
-| CRIT-11 | حقن SQL في مصمم النماذج | حرج | `modules/designer/form_builder/data_binding.py` | 🔴 |
-| HIGH-01 | حقن SQL في BI Exporter | عالي | `core/bi/data_exporter.py` | 🔴 |
-| HIGH-02 | حقن SQL في BI Views Manager | عالي | `core/bi/views_manager.py` | 🔴 |
-| CRIT-02 | `execute_query` ImportError | حرج | `core/bi/views_manager.py` | 🔴 |
-| CRIT-05 | `os.startfile()` Linux/macOS | حرج | `ui/components/tables/enterprise/export_manager.py` | 🔴 |
-| CRIT-06 | FilterPanel لا تُضاف للواجهة | حرج | `ui/components/tables/enterprise/enterprise_table_widget.py` | 🔴 |
-| CRIT-07 | `QThread.terminate()` خطير | حرج | `ui/components/email/email_panel.py` | 🔴 |
+| CRIT-11 | حقن SQL في مصمم النماذج | حرج | `modules/designer/form_builder/data_binding.py` | ✅ |
+| HIGH-01 | حقن SQL في BI Exporter | عالي | `core/bi/data_exporter.py` | ✅ |
+| HIGH-02 | حقن SQL في BI Views Manager | عالي | `core/bi/views_manager.py` | ✅ |
+| CRIT-02 | `execute_query` ImportError | حرج | `core/bi/views_manager.py` | ✅ |
+| CRIT-05 | `os.startfile()` Linux/macOS | حرج | `ui/components/tables/enterprise/export_manager.py` | ✅ |
+| CRIT-06 | FilterPanel لا تُضاف للواجهة | حرج | `ui/components/tables/enterprise/enterprise_table_widget.py` | ✅ |
+| CRIT-07 | `QThread.terminate()` خطير | حرج | `ui/components/email/email_panel.py` | ✅ |
 
-**الإصلاحات:**
-- CRIT-11, HIGH-01, HIGH-02: استخدام `psycopg2.sql.Identifier()` و `sql.SQL()`
-- CRIT-02: حذف `execute_query` من الاستيراد أو إنشاء الدالة
-- CRIT-05: استخدام `subprocess.Popen` / `webbrowser.open` حسب النظام
-- CRIT-06: إضافة `FilterPanel` للـ layout بعد إنشائها
-- CRIT-07: استبدال `terminate()` بـ `requestInterruption()` + `quit()` + `wait()`
+**الإصلاحات المنفذة:**
+- CRIT-11: استخدام `psycopg2.sql.Identifier()` و `sql.SQL()` في `load_data()` و `save_data()` + التحقق من `table_name` ضد `_schemas`
+- HIGH-01: استخدام `psql.SQL("SELECT * FROM {}.{}").format(psql.Identifier("bi_views"), psql.Identifier(view_name))` في `export_to_csv()` و `export_to_excel()`
+- HIGH-02: نفس المنهج لـ `get_view_row_count()`, `drop_view()`, `get_view_data()` باستخدام `psycopg2.sql.Identifier`
+- CRIT-02: إنشاء دالة `execute_query()` جديدة في `core/database/queries/execute_query.py` وتسجيلها في `__init__.py`
+- CRIT-05: استخدام `sys.platform` للتمييز: `os.startfile` (Windows) / `subprocess.Popen(['open', ...])` (macOS) / `subprocess.Popen(['xdg-open', ...])` (Linux)
+- CRIT-06: استبدال FilterPanel القديمة بالجديدة في الـ layout عبر `replaceWidget()` + `deleteLater()` للقديمة
+- CRIT-07: استبدال `terminate()` بـ `requestInterruption()` + `quit()` + `wait(3000)` في كلا العاملين
 
 ---
 
@@ -239,7 +242,7 @@
 | الجلسة | الوصف | عدد المشاكل | الحالة |
 |--------|-------|-------------|--------|
 | 1 | انهيارات التطبيق | 6 | ✅ |
-| 2 | أمان + Import + واجهة | 7 | 🔴 |
+| 2 | أمان + Import + واجهة | 7 | ✅ |
 | 3 | وظائف معطلة | 7 | 🔴 |
 | 4 | Threading + تسرب ذاكرة | 8 | 🔴 |
 | 5 | أمان + واجهة | 8 | 🔴 |

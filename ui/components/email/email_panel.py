@@ -456,9 +456,11 @@ class EmailPanel(QWidget):
 
         self.status_label.setText("⏳ جاري تحميل الرسائل...")
 
-        # Stop any existing worker
+        # Stop any existing worker gracefully
         if self._load_worker and self._load_worker.isRunning():
-            self._load_worker.terminate()
+            self._load_worker.requestInterruption()
+            self._load_worker.quit()
+            self._load_worker.wait(3000)
 
         self._load_worker = EmailLoadWorker(self._current_folder, limit)
         self._load_worker.finished.connect(self._on_emails_loaded)
@@ -503,7 +505,9 @@ class EmailPanel(QWidget):
         self.status_label.setText("🤖 جاري التحليل...")
 
         if self._ai_worker and self._ai_worker.isRunning():
-            self._ai_worker.terminate()
+            self._ai_worker.requestInterruption()
+            self._ai_worker.quit()
+            self._ai_worker.wait(3000)
 
         self._ai_worker = AIAnalyzeWorker(email)
         self._ai_worker.finished.connect(self._on_ai_finished)

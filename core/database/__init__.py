@@ -22,7 +22,8 @@ from .queries import (
     delete,
     delete_returning_count,
     get_scalar,
-    get_count
+    get_count,
+    execute_query
 )
 
 __all__ = [
@@ -42,5 +43,6 @@ __all__ = [
     'delete',
     'delete_returning_count',
     'get_scalar',
-    'get_count'
+    'get_count',
+    'execute_query'
 ]

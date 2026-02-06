@@ -90,9 +90,13 @@ class BIDataExporter:
         file_path = output_path or str(self._export_path / filename)
 
         try:
-            # Fetch data from view
-            sql = f"SELECT * FROM bi_views.{view_name}"
-            columns, rows = select_all(sql)
+            # Fetch data from view using safe identifier quoting
+            from psycopg2 import sql as psql
+            safe_sql = psql.SQL("SELECT * FROM {}.{}").format(
+                psql.Identifier("bi_views"),
+                psql.Identifier(view_name)
+            )
+            columns, rows = select_all(safe_sql)
 
             if not columns:
                 return ExportResult(
@@ -214,8 +218,12 @@ class BIDataExporter:
             # Export each view to a sheet
             for view_name in views:
                 try:
-                    sql = f"SELECT * FROM bi_views.{view_name}"
-                    columns, rows = select_all(sql)
+                    from psycopg2 import sql as psql
+                    safe_sql = psql.SQL("SELECT * FROM {}.{}").format(
+                        psql.Identifier("bi_views"),
+                        psql.Identifier(view_name)
+                    )
+                    columns, rows = select_all(safe_sql)
 
                     if not columns:
                         continue

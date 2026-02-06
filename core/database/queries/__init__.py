@@ -9,6 +9,7 @@ from .insert_query import insert, insert_returning_id
 from .update_query import update, update_returning_count
 from .delete_query import delete, delete_returning_count
 from .scalar_query import get_scalar, get_count
+from .execute_query import execute_query
 
 __all__ = [
     'select_all',
@@ -20,5 +21,6 @@ __all__ = [
     'delete',
     'delete_returning_count',
     'get_scalar',
-    'get_count'
+    'get_count',
+    'execute_query'
 ]
