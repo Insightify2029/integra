@@ -4,10 +4,19 @@ Scalar Query Handler
 Handles queries that return a single value.
 """
 
+import re
+
 from psycopg2 import sql as psycopg2_sql
 
 from core.database.connection import get_connection, return_connection
 from core.logging import app_logger
+
+
+# Pattern to detect potentially dangerous SQL in where clauses
+_UNSAFE_WHERE_PATTERN = re.compile(
+    r"(;|--|\b(DROP|ALTER|DELETE|INSERT|UPDATE|EXEC|EXECUTE|UNION)\b)",
+    re.IGNORECASE
+)
 
 
 def get_scalar(query, params=None):
@@ -60,6 +69,10 @@ def get_count(table_name, where_clause=None, params=None):
             psycopg2_sql.Identifier(table_name)
         )
         if where_clause:
+            # Validate where_clause against dangerous SQL patterns
+            if _UNSAFE_WHERE_PATTERN.search(where_clause):
+                app_logger.error(f"COUNT rejected: unsafe where_clause detected")
+                return 0
             query = query + psycopg2_sql.SQL(" WHERE ") + psycopg2_sql.SQL(where_clause)
 
         return get_scalar(query, params) or 0

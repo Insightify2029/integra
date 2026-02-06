@@ -16,6 +16,40 @@
 
 ---
 
+## الجلسة: 6 فبراير 2026 - الجلسة 5 من خطة الإصلاح (أمان + واجهة)
+
+### ملخص الجلسة:
+
+**تم إصلاح 8 مشاكل متوسطة - ثغرات أمنية + مشاكل واجهة:**
+
+| # | المشكلة | الإصلاح |
+|---|---------|---------|
+| MED-24 | DB_PASSWORD في `__all__` | حذف `DB_PASSWORD` من `__all__` لمنع تصديرها |
+| MED-25 | مفتاح التشفير في ملف نصي | ترحيل المفتاح من ملف إلى keyring عند التوفر + تحذير logging |
+| MED-26 | مقارنة كلمات مرور بـ `==` | استخدام `hmac.compare_digest()` لمنع timing attacks |
+| MED-04 | `where_clause` SQL خام | إضافة regex validation لرفض أنماط SQL خطيرة |
+| MED-12 | حقن HTML في البريد | إضافة `html.escape()` للنص العادي قبل عرضه كـ HTML |
+| MED-08 | ألوان الجدول للظلام فقط | جعل `EnterpriseTableDelegate` يقرأ السمة الحالية |
+| MED-09 | `accent_color` يُتجاهل | استخدام `accent_color` في f-string CSS لحدود hover |
+| MED-17 | CSS يتراكم عند فشل التحقق | إعادة تعيين CSS نظيف قبل التحقق + stylesheet خطأ كامل |
+
+### الملفات المعدّلة:
+| الملف | نوع التعديل |
+|-------|-------------|
+| `core/config/__init__.py` | حذف `DB_PASSWORD` من `__all__` |
+| `core/security/encryption.py` | إضافة `hmac`, `logging` + ترحيل مفتاح لـ keyring + `hmac.compare_digest()` |
+| `core/database/queries/scalar_query.py` | إضافة regex validation لـ `where_clause` |
+| `ui/components/email/email_viewer.py` | إضافة `html.escape()` للنص العادي |
+| `ui/components/tables/enterprise/enterprise_table.py` | ألوان delegate حسب السمة |
+| `ui/components/cards/module_card/card_style.py` | استخدام `accent_color` في CSS |
+| `modules/tasks/widgets/task_form.py` | إعادة تعيين CSS قبل validation |
+
+### الحالة بعد الجلسة:
+- الجلسات 1-5 مكتملة (36 إصلاح من 69)
+- الجلسة التالية: الجلسة 6 (منطق + أداء + تقويم - 8 مشاكل)
+
+---
+
 ## الجلسة: 6 فبراير 2026 - الجلسة 4 من خطة الإصلاح (Threading + تسرب ذاكرة)
 
 ### ملخص الجلسة:
