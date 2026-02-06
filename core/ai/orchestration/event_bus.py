@@ -117,6 +117,12 @@ class Event:
     result: Optional[Any] = None
     error: Optional[str] = None
 
+    def __lt__(self, other: "Event") -> bool:
+        """Compare events for PriorityQueue ordering."""
+        if not isinstance(other, Event):
+            return NotImplemented
+        return self.timestamp < other.timestamp
+
     def to_dict(self) -> Dict[str, Any]:
         """تحويل لـ dictionary"""
         return {

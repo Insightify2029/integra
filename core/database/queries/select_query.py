@@ -4,7 +4,7 @@ SELECT Query Handler
 Handles SELECT queries.
 """
 
-from core.database.connection import get_connection
+from core.database.connection import get_connection, return_connection
 from core.logging import app_logger
 
 
@@ -39,6 +39,7 @@ def select_all(query, params=None):
     finally:
         if cursor:
             cursor.close()
+        return_connection(conn)
 
 
 def select_one(query, params=None):
@@ -71,3 +72,4 @@ def select_one(query, params=None):
     finally:
         if cursor:
             cursor.close()
+        return_connection(conn)

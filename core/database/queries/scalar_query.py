@@ -6,7 +6,7 @@ Handles queries that return a single value.
 
 from psycopg2 import sql as psycopg2_sql
 
-from core.database.connection import get_connection
+from core.database.connection import get_connection, return_connection
 from core.logging import app_logger
 
 
@@ -40,6 +40,7 @@ def get_scalar(query, params=None):
     finally:
         if cursor:
             cursor.close()
+        return_connection(conn)
 
 
 def get_count(table_name, where_clause=None, params=None):

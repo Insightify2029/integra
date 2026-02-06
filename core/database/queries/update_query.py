@@ -4,7 +4,7 @@ UPDATE Query Handler
 Handles UPDATE queries.
 """
 
-from core.database.connection import get_connection
+from core.database.connection import get_connection, return_connection
 from core.logging import app_logger
 
 
@@ -38,6 +38,7 @@ def update(query, params=None):
     finally:
         if cursor:
             cursor.close()
+        return_connection(conn)
 
 
 def update_returning_count(query, params=None):
@@ -73,3 +74,4 @@ def update_returning_count(query, params=None):
     finally:
         if cursor:
             cursor.close()
+        return_connection(conn)

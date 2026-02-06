@@ -143,13 +143,14 @@ class DraggableTaskCard(QFrame):
         # Create drag pixmap
         pixmap = self.grab()
         pixmap = pixmap.scaled(
-            pixmap.width() * 0.8,
-            pixmap.height() * 0.8,
+            int(pixmap.width() * 0.8),
+            int(pixmap.height() * 0.8),
             Qt.KeepAspectRatio,
             Qt.SmoothTransformation
         )
         drag.setPixmap(pixmap)
-        drag.setHotSpot(event.pos() * 0.8)
+        from PyQt5.QtCore import QPoint
+        drag.setHotSpot(QPoint(int(event.pos().x() * 0.8), int(event.pos().y() * 0.8)))
 
         # Execute drag
         drag.exec_(Qt.MoveAction)

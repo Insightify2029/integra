@@ -4,7 +4,7 @@ INSERT Query Handler
 Handles INSERT queries.
 """
 
-from core.database.connection import get_connection
+from core.database.connection import get_connection, return_connection
 from core.logging import app_logger
 
 
@@ -38,6 +38,7 @@ def insert(query, params=None):
     finally:
         if cursor:
             cursor.close()
+        return_connection(conn)
 
 
 def insert_returning_id(query, params=None):
@@ -73,3 +74,4 @@ def insert_returning_id(query, params=None):
     finally:
         if cursor:
             cursor.close()
+        return_connection(conn)
