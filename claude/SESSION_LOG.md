@@ -16,6 +16,38 @@
 
 ---
 
+## الجلسة: 6 فبراير 2026 - الجلسة 3 من خطة الإصلاح (وظائف معطلة)
+
+### ملخص الجلسة:
+
+**تم إصلاح 7 مشاكل عالية الخطورة (وظائف لا تعمل أصلاً):**
+
+| # | المشكلة | الإصلاح |
+|---|---------|---------|
+| HIGH-08 | زر "حفظ" لا يحفظ الإعدادات | ربط بدالة `_save_settings()` تحفظ في `.env` + تحميل القيم الحالية من config |
+| HIGH-09 | "اختبار الاتصال" لا يختبر المدخلات | استخدام `psycopg2.connect()` مباشرةً مع قيم النموذج + timeout 5 ثوانٍ |
+| HIGH-10 | فلاتر "اليوم" و"المتأخرة" لا تعمل | استخدام `get_tasks_due_today()` و `get_overdue_tasks()` بدل `pass` |
+| HIGH-11 | `get_by_employee()` تستثني IN_PROGRESS | فلترة COMPLETED/CANCELLED بدل تقييد PENDING فقط |
+| HIGH-14 | PDFAIStudio غير مستوردة في _pdf_merge | إضافة `from core.file_manager.pdf import PDFAIStudio` كاستيراد محلي |
+| HIGH-03 | ActionType ValueError غير محمي | لف بـ `try/except ValueError` مع رسالة خطأ |
+| HIGH-04 | Singleton يتجاهل host | مقارنة host الجديد وإعادة التهيئة عند التغيير |
+
+### الملفات المعدّلة:
+| الملف | نوع التعديل |
+|-------|-------------|
+| `ui/dialogs/settings/settings_dialog.py` | إضافة `_save_settings()` + إصلاح `_test_connection()` + تحميل القيم الحالية |
+| `modules/tasks/screens/task_list/task_list_screen.py` | تنفيذ فلاتر "اليوم" و"المتأخرة" عبر استعلامات مخصصة |
+| `modules/tasks/repository/task_repository.py` | إصلاح `get_by_employee()` لإظهار PENDING + IN_PROGRESS |
+| `modules/file_manager/window/file_manager_window.py` | إضافة استيراد محلي لـ PDFAIStudio في `_pdf_merge()` |
+| `core/ai/agents/action_agent.py` | حماية `ActionType()` من ValueError |
+| `core/ai/ollama_client.py` | إصلاح Singleton لمقارنة host + إعادة التهيئة عند التغيير |
+
+### الحالة بعد الجلسة:
+- الجلسات 1-3 مكتملة (20 إصلاح من 69)
+- الجلسة التالية: الجلسة 4 (Threading + تسرب ذاكرة - 8 مشاكل)
+
+---
+
 ## الجلسة: 6 فبراير 2026 - الجلسة 2 من خطة الإصلاح (أمان + Import + واجهة)
 
 ### ملخص الجلسة:

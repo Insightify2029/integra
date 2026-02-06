@@ -79,10 +79,17 @@ class OllamaClient:
         Args:
             host: Ollama server URL. Default: http://localhost:11434
         """
+        new_host = host or self.DEFAULT_HOST
         if self._initialized:
+            # Reinitialize if host changed
+            if new_host != self._host:
+                app_logger.info(f"OllamaClient host changed: {self._host} -> {new_host}")
+                self._host = new_host
+                self._available = None
+                self._initialize_client()
             return
 
-        self._host = host or self.DEFAULT_HOST
+        self._host = new_host
         self._client: Optional['Client'] = None
         self._available: Optional[bool] = None
         self._models: List[OllamaModel] = []
@@ -353,6 +360,8 @@ def get_ollama_client(host: Optional[str] = None) -> OllamaClient:
     """Get the singleton Ollama client instance."""
     global _client
     if _client is None:
+        _client = OllamaClient(host)
+    elif host and host != _client._host:
         _client = OllamaClient(host)
     return _client
 

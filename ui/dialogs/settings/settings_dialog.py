@@ -12,6 +12,7 @@ from PyQt5.QtCore import Qt
 
 from core.themes import get_stylesheet
 from core.database.connection import is_connected
+from core.config import DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
 
 
 class SettingsDialog(QDialog):
@@ -35,11 +36,11 @@ class SettingsDialog(QDialog):
         db_group = QGroupBox("🗄️ قاعدة البيانات")
         db_layout = QFormLayout(db_group)
         
-        self.host_input = QLineEdit("localhost")
-        self.port_input = QLineEdit("5432")
-        self.name_input = QLineEdit("integra")
-        self.user_input = QLineEdit("postgres")
-        self.pass_input = QLineEdit()
+        self.host_input = QLineEdit(DB_HOST)
+        self.port_input = QLineEdit(str(DB_PORT))
+        self.name_input = QLineEdit(DB_NAME)
+        self.user_input = QLineEdit(DB_USER)
+        self.pass_input = QLineEdit(DB_PASSWORD)
         self.pass_input.setEchoMode(QLineEdit.Password)
         
         db_layout.addRow("السيرفر:", self.host_input)
@@ -67,7 +68,7 @@ class SettingsDialog(QDialog):
         btn_layout = QHBoxLayout()
         
         save_btn = QPushButton("💾 حفظ")
-        save_btn.clicked.connect(self.accept)
+        save_btn.clicked.connect(self._save_settings)
         
         cancel_btn = QPushButton("إلغاء")
         cancel_btn.clicked.connect(self.reject)
@@ -78,12 +79,65 @@ class SettingsDialog(QDialog):
         layout.addLayout(btn_layout)
     
     def _test_connection(self):
-        """Test database connection."""
-        if is_connected():
+        """Test database connection using current form inputs."""
+        import psycopg2
+
+        params = {
+            "host": self.host_input.text().strip(),
+            "port": self.port_input.text().strip(),
+            "database": self.name_input.text().strip(),
+            "user": self.user_input.text().strip(),
+            "password": self.pass_input.text(),
+        }
+
+        try:
+            conn = psycopg2.connect(**params, connect_timeout=5)
+            conn.close()
             QMessageBox.information(self, "نجاح", "✅ الاتصال ناجح!")
-        else:
-            QMessageBox.warning(self, "خطأ", "❌ فشل الاتصال!")
+        except Exception as e:
+            QMessageBox.warning(self, "خطأ", f"❌ فشل الاتصال!\n{e}")
         self._update_status()
+
+    def _save_settings(self):
+        """Save database settings to .env file."""
+        import os
+        from pathlib import Path
+
+        env_path = Path(__file__).resolve().parents[3] / ".env"
+
+        settings = {
+            "DB_HOST": self.host_input.text().strip(),
+            "DB_PORT": self.port_input.text().strip(),
+            "DB_NAME": self.name_input.text().strip(),
+            "DB_USER": self.user_input.text().strip(),
+            "DB_PASSWORD": self.pass_input.text(),
+        }
+
+        try:
+            # Read existing .env lines (preserve non-DB settings)
+            existing_lines = []
+            if env_path.exists():
+                with open(env_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        key = line.split("=", 1)[0].strip() if "=" in line else ""
+                        if key not in settings:
+                            existing_lines.append(line)
+
+            # Write updated .env
+            with open(env_path, "w", encoding="utf-8") as f:
+                for line in existing_lines:
+                    f.write(line)
+                for key, value in settings.items():
+                    f.write(f"{key}={value}\n")
+
+            QMessageBox.information(
+                self, "تم الحفظ",
+                "✅ تم حفظ الإعدادات.\nيُرجى إعادة تشغيل التطبيق لتطبيق التغييرات."
+            )
+            self.accept()
+
+        except Exception as e:
+            QMessageBox.warning(self, "خطأ", f"❌ فشل حفظ الإعدادات!\n{e}")
     
     def _update_status(self):
         """Update connection status label."""

@@ -23,6 +23,7 @@ from ...widgets import (
 )
 from ...repository import (
     get_all_tasks, get_task_by_id, get_task_statistics,
+    get_tasks_due_today, get_overdue_tasks,
     create_task, update_task, delete_task, change_task_status
 )
 
@@ -257,23 +258,30 @@ class TaskListScreen(QWidget):
             # Get filters
             filters = self.current_filters.copy()
 
-            # Convert filter values to proper types
-            status = None
-            if filters.get("status"):
-                status = TaskStatus(filters["status"])
+            # Handle quick filters (today/overdue) via dedicated queries
+            quick = filters.pop("_quick", None)
+            if quick == "today":
+                self.tasks = get_tasks_due_today()
+            elif quick == "overdue":
+                self.tasks = get_overdue_tasks()
+            else:
+                # Convert filter values to proper types
+                status = None
+                if filters.get("status"):
+                    status = TaskStatus(filters["status"])
 
-            priority = None
-            if filters.get("priority"):
-                priority = TaskPriority(filters["priority"])
+                priority = None
+                if filters.get("priority"):
+                    priority = TaskPriority(filters["priority"])
 
-            # Fetch tasks
-            self.tasks = get_all_tasks(
-                status=status,
-                priority=priority,
-                category=filters.get("category"),
-                search=filters.get("search"),
-                limit=200
-            )
+                # Fetch tasks
+                self.tasks = get_all_tasks(
+                    status=status,
+                    priority=priority,
+                    category=filters.get("category"),
+                    search=filters.get("search"),
+                    limit=200
+                )
 
             self._render_tasks()
             self._update_statistics()
@@ -372,11 +380,9 @@ class TaskListScreen(QWidget):
         self.current_filters = {}  # Reset filters
 
         if filter_type == "today":
-            # Filter tasks due today - will be handled by view
-            pass
+            self.current_filters["_quick"] = "today"
         elif filter_type == "overdue":
-            # Filter overdue tasks
-            pass
+            self.current_filters["_quick"] = "overdue"
         elif filter_type == "urgent":
             self.current_filters["priority"] = "urgent"
         elif filter_type == "in_progress":

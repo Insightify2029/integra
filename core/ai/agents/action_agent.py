@@ -306,7 +306,12 @@ class ActionAgent(BaseAgent if ORCHESTRATION_AVAILABLE else object):
 
         if task_type_lower == "execute_action":
             action_type_str = data.get("action_type", "")
-            action_type = ActionType(action_type_str) if action_type_str else None
+            action_type = None
+            if action_type_str:
+                try:
+                    action_type = ActionType(action_type_str)
+                except ValueError:
+                    return {"success": False, "error": f"Unknown action type: {action_type_str}"}
             params = data.get("params", {})
 
             if action_type:
