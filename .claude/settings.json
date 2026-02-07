@@ -1,0 +1,74 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit:*.py|Write:*.py",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -m py_compile \"$TOOL_INPUT_path\" 2>&1 || echo 'COMPILATION ERROR: Fix syntax before continuing'",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Edit:*.py|Write:*.py",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "grep -n 'f\"SELECT\\|f\"INSERT\\|f\"UPDATE\\|f\"DELETE\\|f\"DROP\\|f\"CREATE\\|.terminate()\\|replace(day=\\|replace(hour=\\|except.*:.*pass$' \"$TOOL_INPUT_path\" 2>/dev/null && echo '⚠️ CRITICAL PATTERN DETECTED - Review required!' || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "agent",
+            "agent": "integra-auditor",
+            "prompt": "Review all .py files modified in the current git working tree (git diff --name-only && git diff --name-only --staged). If no files modified, skip review. Focus only on CRITICAL and HIGH severity issues. Be concise.",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash:*rm *|Bash:*DROP *|Bash:*DELETE FROM*|Bash:*TRUNCATE*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '🛑 DESTRUCTIVE OPERATION DETECTED - Requires explicit user confirmation' && exit 1",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash(python:*)",
+      "Bash(pip:*)",
+      "Bash(git:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(mypy:*)",
+      "Bash(pylint:*)",
+      "Bash(pytest:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)"
+    ]
+  }
+}
