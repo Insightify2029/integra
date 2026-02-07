@@ -87,18 +87,26 @@ with self._lock:
 ```
 
 ### 4. Singleton Pattern
-ALL singletons MUST use double-checked locking:
+ALL singletons MUST be thread-safe. Use lock-protected factory function:
 ```python
+# ❌ WRONG - not thread-safe
+_instance = None
+def get_instance():
+    global _instance
+    if _instance is None:
+        _instance = MyClass()  # Two threads can create two instances
+    return _instance
+
+# ✅ CORRECT - thread-safe with lock
 _lock = threading.Lock()
 _instance = None
 
-@classmethod
-def get_instance(cls):
-    if cls._instance is None:
-        with cls._lock:
-            if cls._instance is None:
-                cls._instance = cls()
-    return cls._instance
+def get_instance():
+    global _instance
+    with _lock:
+        if _instance is None:
+            _instance = MyClass()
+    return _instance
 ```
 
 ### 5. QThread Safety
@@ -114,19 +122,57 @@ thread.wait(3000)
 ```
 
 ### 6. PyQt Widget Lifecycle
-- ALWAYS call deleteLater() AND remove from parent collections
-- ALWAYS clear old layout before rebuilding
-- ALWAYS clean up closed windows from cache dicts
-- NEVER let processEvents() cause re-entrance (use guard flag)
+ALWAYS manage widget memory properly to prevent leaks and crashes:
+```python
+# ❌ WRONG - widget deleted but still in parent's list
+widget.deleteLater()
+
+# ✅ CORRECT - remove from collection THEN delete
+self._widgets.remove(widget)
+widget.deleteLater()
+
+# ❌ WRONG - old layout children still exist
+self._rebuild_layout()
+
+# ✅ CORRECT - clear old layout before rebuilding
+while layout.count():
+    child = layout.takeAt(0)
+    if child.widget():
+        child.widget().deleteLater()
+self._rebuild_layout()
+
+# ❌ WRONG - closed windows stay in cache forever (memory leak)
+self._open_windows[module_id] = window
+
+# ✅ CORRECT - clean up closed windows
+for key, win in list(self._open_windows.items()):
+    if not win.isVisible():
+        win.deleteLater()
+        del self._open_windows[key]
+
+# ❌ WRONG - processEvents() can trigger re-entrance
+QApplication.processEvents()
+
+# ✅ CORRECT - guard against re-entrance
+if not self._processing_events:
+    self._processing_events = True
+    QApplication.processEvents()
+    self._processing_events = False
+```
 
 ### 7. Type Safety with Qt
-ALWAYS convert to int() before passing to Qt methods expecting integers:
+ALWAYS convert to int() before passing to ANY Qt method expecting integers.
+This applies to: `scaled()`, `resize()`, `setFixedSize()`, `setGeometry()`, `QPoint()`, `QSize()`, `move()`:
 ```python
-# ❌ WRONG
+# ❌ WRONG - float passed to Qt
 pixmap.scaled(width * 0.8, height * 0.8)
+widget.move(x / 2, y / 2)
+QPoint(center_x * 0.5, center_y * 0.5)
 
-# ✅ CORRECT
+# ✅ CORRECT - always int()
 pixmap.scaled(int(width * 0.8), int(height * 0.8))
+widget.move(int(x / 2), int(y / 2))
+QPoint(int(center_x * 0.5), int(center_y * 0.5))
 ```
 
 ### 8. Database Connections
@@ -154,7 +200,23 @@ finally:
 
 ### 11. Theme Support
 ALL UI components MUST respect dark/light theme. Never hardcode colors.
-Read current theme and use appropriate palette colors.
+Use Qt palette or theme-aware values:
+```python
+# ❌ WRONG - hardcoded color, unreadable in light mode
+widget.setStyleSheet("background: #334155; color: #e2e8f0;")
+
+# ✅ CORRECT - read from current theme/palette
+from core.themes import get_current_theme
+theme = get_current_theme()
+bg = theme.get("background", self.palette().color(QPalette.Window).name())
+fg = theme.get("foreground", self.palette().color(QPalette.WindowText).name())
+widget.setStyleSheet(f"background: {bg}; color: {fg};")
+
+# ✅ ALSO CORRECT - use QPalette directly
+bg = self.palette().color(QPalette.Window).name()
+text = self.palette().color(QPalette.WindowText).name()
+hover = self.palette().color(QPalette.Highlight).name()
+```
 
 ### 12. Cross-Platform
 - NEVER use os.startfile() directly - use platform detection
