@@ -1,0 +1,27 @@
+[MAIN]
+load-plugins=pylint.extensions.broad_try_clause
+
+[MESSAGES CONTROL]
+# Enable checks that catch INTEGRA's historical bugs
+enable=
+    W0702,  # bare-except (Pattern 7)
+    W0718,  # broad-exception-caught
+    W0611,  # unused-import (Pattern 8)
+    W0612,  # unused-variable
+    E0602,  # undefined-variable (Pattern 8: missing imports)
+    W0621,  # redefined-outer-name (LOW-02: shadows built-in)
+    W0622,  # redefined-builtin
+    E1101,  # no-member
+    W0201,  # attribute-defined-outside-init
+    R1732,  # consider-using-with (resource management)
+    W1514,  # unspecified-encoding
+
+[FORMAT]
+max-line-length=120
+
+[DESIGN]
+max-args=8
+max-locals=20
+
+[SIMILARITIES]
+min-similarity-lines=6
