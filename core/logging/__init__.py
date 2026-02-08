@@ -12,6 +12,11 @@ INTEGRA - حزمة التسجيل
 
 from core.logging.app_logger import AppLogger, app_logger
 from core.logging.audit_logger import AuditLogger, audit_logger
+from core.logging.rich_console import (
+    console, print_table, print_panel, rich_progress,
+    print_success, print_error, print_warning, print_info,
+    print_startup_banner, print_stats_table, print_exception,
+)
 
 
 def setup_logging(log_dir: str = None, debug_mode: bool = False,
@@ -32,4 +37,8 @@ __all__ = [
     "AppLogger", "AuditLogger",
     "app_logger", "audit_logger",
     "setup_logging", "shutdown_logging",
+    # Rich console
+    "console", "print_table", "print_panel", "rich_progress",
+    "print_success", "print_error", "print_warning", "print_info",
+    "print_startup_banner", "print_stats_table", "print_exception",
 ]
