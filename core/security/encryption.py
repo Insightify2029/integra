@@ -32,10 +32,11 @@ import base64
 import json
 import hmac
 import hashlib
-import logging
 from pathlib import Path
 from typing import Optional, Union, Dict, Any
 from datetime import datetime
+
+from core.logging import app_logger
 
 try:
     from cryptography.fernet import Fernet, InvalidToken
@@ -106,7 +107,8 @@ def _store_key_in_keyring(key: bytes) -> bool:
     try:
         keyring.set_password(APP_NAME, KEY_NAME, key.decode())
         return True
-    except Exception:
+    except Exception as e:
+        app_logger.warning(f"Failed to store key in keyring: {e}")
         return False
 
 
@@ -117,21 +119,21 @@ def _get_key_from_keyring() -> Optional[bytes]:
     try:
         key = keyring.get_password(APP_NAME, KEY_NAME)
         return key.encode() if key else None
-    except Exception:
+    except Exception as e:
+        app_logger.warning(f"Failed to retrieve key from keyring: {e}")
         return None
 
 
 def _store_key_in_file(key: bytes):
     """تخزين المفتاح في ملف (أقل أماناً)"""
-    logger = logging.getLogger(__name__)
-    logger.warning("Storing encryption key in file (keyring unavailable). "
-                   "Consider installing keyring for better security.")
+    app_logger.warning("Storing encryption key in file (keyring unavailable). "
+                       "Consider installing keyring for better security.")
     KEY_FILE.write_bytes(key)
     # تعيين صلاحيات محدودة (owner only)
     try:
         os.chmod(KEY_FILE, 0o600)
-    except Exception:
-        logger.warning("Could not set restricted permissions on key file")
+    except OSError as e:
+        app_logger.warning(f"Could not set restricted permissions on key file: {e}")
 
 
 def _get_key_from_file() -> Optional[bytes]:
@@ -190,8 +192,8 @@ class Encryptor:
             if self._key and _store_key_in_keyring(self._key):
                 try:
                     KEY_FILE.unlink()
-                except Exception:
-                    pass
+                except OSError as e:
+                    app_logger.warning(f"Could not remove old key file: {e}")
 
         # إنشاء مفتاح جديد
         if not self._key:
@@ -290,8 +292,8 @@ class Encryptor:
             if field in result and result[field]:
                 try:
                     result[field] = self.decrypt(result[field])
-                except (ValueError, Exception):
-                    pass  # الحقل غير مشفر أو تالف
+                except (ValueError, Exception) as e:
+                    app_logger.debug(f"Could not decrypt field '{field}': {e}")
 
         return result
 
@@ -319,7 +321,8 @@ class Encryptor:
                 f.write(encrypted)
 
             return True
-        except Exception:
+        except (OSError, TypeError) as e:
+            app_logger.error(f"File encryption failed: {e}")
             return False
 
     def decrypt_file(self, input_path: str, output_path: str) -> bool:
@@ -346,7 +349,8 @@ class Encryptor:
                 f.write(decrypted)
 
             return True
-        except Exception:
+        except (OSError, InvalidToken) as e:
+            app_logger.error(f"File decryption failed: {e}")
             return False
 
     def hash_password(self, password: str) -> str:
@@ -405,7 +409,8 @@ class Encryptor:
                 try:
                     decrypted = old_fernet.decrypt(val.encode('utf-8')).decode('utf-8')
                     decrypted_values.append(decrypted)
-                except Exception:
+                except (ValueError, Exception) as e:
+                    app_logger.warning(f"Could not decrypt value during key rotation: {e}")
                     decrypted_values.append(None)
         else:
             decrypted_values = None

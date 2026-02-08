@@ -294,7 +294,8 @@ def get_all_recovery_files() -> list:
                     "timestamp": data.get("timestamp"),
                     "size": file_path.stat().st_size
                 })
-            except Exception:
+            except (json.JSONDecodeError, OSError, KeyError) as e:
+                app_logger.warning(f"Skipping corrupt recovery file {file_path.name}: {e}")
                 continue
 
     except Exception as e:
@@ -320,7 +321,8 @@ def clear_all_recovery_files() -> int:
             try:
                 file_path.unlink()
                 count += 1
-            except Exception:
+            except OSError as e:
+                app_logger.warning(f"Failed to delete recovery file {file_path.name}: {e}")
                 continue
 
         app_logger.info(f"Cleared {count} recovery files")
