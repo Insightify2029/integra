@@ -85,16 +85,21 @@
   - `core/recovery/auto_save.py`
   - `core/recovery/recovery_manager.py`
 
-### A4. Audit Trail بالـ Database (PostgreSQL Triggers)
+### A4. Audit Trail بالـ Database (PostgreSQL Triggers) ✅ **مكتمل**
+- **الحالة:** ✅ تم التنفيذ (2026-02-08)
 - **المطلوب:**
-  - جدول `audit.logged_actions` لتسجيل كل تغيير
-  - Trigger على الجداول الحساسة (employees, payroll, contracts)
-  - تسجيل: مين غيّر + إيه اللي اتغيّر + القيم القديمة والجديدة + الوقت
-  - شاشة عرض سجل التدقيق في البرنامج
-- **الملفات:**
-  - `core/database/audit/audit_schema.sql`
-  - `core/database/audit/audit_triggers.sql`
-  - `modules/mostahaqat/screens/audit_log/`
+  - جدول `audit.logged_actions` لتسجيل كل تغيير ✅
+  - Trigger على الجداول الحساسة (employees, companies, departments, job_titles, banks, employee_statuses, nationalities) ✅
+  - تسجيل: مين غيّر + إيه اللي اتغيّر + القيم القديمة والجديدة + الوقت ✅
+  - شاشة عرض سجل التدقيق في البرنامج ✅
+- **الملفات المنفذة:**
+  - `core/database/audit/audit_schema.sql` ✅ (DDL لإنشاء الـ schema والجدول والـ indexes)
+  - `core/database/audit/audit_triggers.sql` ✅ (Trigger function + تطبيق على 7 جداول)
+  - `core/database/audit/audit_manager.py` ✅ (إدارة كاملة: setup, enable/disable, query, stats, purge)
+  - `core/database/audit/audit_setup.py` ✅ (تهيئة تلقائية عند بدء التشغيل)
+  - `core/database/audit/__init__.py` ✅ (exports محدّثة)
+  - `modules/mostahaqat/screens/audit_log/audit_log_screen.py` ✅ (شاشة عرض كاملة مع فلاتر وتفاصيل)
+  - `modules/mostahaqat/screens/audit_log/__init__.py` ✅
 
 ### A5. معالجة خلفية آمنة (Background Processing) ✅ **مكتمل**
 - **الحالة:** ✅ تم التنفيذ (2026-02-03)
@@ -108,7 +113,7 @@
   - `core/threading/worker.py` ✅
   - `core/threading/task_manager.py` ✅
 - **ملفات مؤجلة:**
-  - `core/database/connection/pool.py` (سيُنفذ مع A4 Audit)
+  - `core/database/connection/pool.py` ✅ (تم التنفيذ)
 
 ### A6. الجدولة (APScheduler) ✅ **مكتمل**
 - **الحالة:** ✅ تم التنفيذ (2026-02-04)
@@ -1077,7 +1082,7 @@ E2. Auto-Update System
 | D4 | Humanize Formatting | `humanize` | "منذ 5 دقائق" بدل timestamp | ⏳ |
 | D5 | رسوم بيانية | `plotly` / `pyqtgraph` | Dashboard تفاعلي | ⏳ |
 | A3 | Auto-Save | QTimer | حماية البيانات من الضياع | ⏳ |
-| A4 | Audit Trail | PostgreSQL Triggers | تتبع التغييرات | ⏳ |
+| A4 | Audit Trail | PostgreSQL Triggers | تتبع التغييرات | ✅ |
 
 ---
 
