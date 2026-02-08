@@ -19,11 +19,12 @@ from PyQt5.QtWidgets import (
     QTextEdit, QGroupBox, QListWidget, QListWidgetItem,
     QMessageBox
 )
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QSize
 from PyQt5.QtGui import QFont
 
 from core.themes import get_current_theme
 from core.sync import get_sync_manager, load_sync_config
+from core.utils.icons import icon
 
 
 class RestoreWorker(QThread):
@@ -53,7 +54,8 @@ class SyncSettingsDialog(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("⚙️ إعدادات المزامنة")
+        self.setWindowTitle("إعدادات المزامنة")
+        self.setWindowIcon(icon('fa5s.sync', color='info'))
         self.setMinimumSize(600, 650)
 
         self._sync = get_sync_manager()
@@ -70,7 +72,7 @@ class SyncSettingsDialog(QDialog):
         layout.setSpacing(15)
 
         # === العنوان ===
-        title = QLabel("⚙️ إعدادات المزامنة")
+        title = QLabel("إعدادات المزامنة")
         title.setFont(QFont("Cairo", 18, QFont.Bold))
         title.setAlignment(Qt.AlignCenter)
         title.setObjectName("dialogTitle")
@@ -79,7 +81,7 @@ class SyncSettingsDialog(QDialog):
         # ══════════════════════════════════════════
         # 📊 قاعدة البيانات
         # ══════════════════════════════════════════
-        db_group = QGroupBox("📊 قاعدة البيانات")
+        db_group = QGroupBox("  قاعدة البيانات")
         db_group.setFont(QFont("Cairo", 12, QFont.Bold))
         db_group.setObjectName("optionsGroup")
         db_layout = QVBoxLayout(db_group)
@@ -88,14 +90,14 @@ class SyncSettingsDialog(QDialog):
 
         # مزامنة عند الفتح
         self._chk_startup = QCheckBox(
-            "🔄 مزامنة عند فتح البرنامج"
+            "مزامنة عند فتح البرنامج"
         )
         self._chk_startup.setFont(QFont("Cairo", 11))
         db_layout.addWidget(self._chk_startup)
 
         # مزامنة دورية
         auto_row = QHBoxLayout()
-        self._chk_auto = QCheckBox("⏰ مزامنة دورية كل:")
+        self._chk_auto = QCheckBox("مزامنة دورية كل:")
         self._chk_auto.setFont(QFont("Cairo", 11))
         auto_row.addWidget(self._chk_auto)
 
@@ -112,7 +114,9 @@ class SyncSettingsDialog(QDialog):
         db_layout.addLayout(auto_row)
 
         # زرار مزامنة الآن
-        self._db_sync_btn = QPushButton("🔄 مزامنة الآن")
+        self._db_sync_btn = QPushButton("مزامنة الآن")
+        self._db_sync_btn.setIcon(icon('fa5s.sync-alt', color='#ffffff'))
+        self._db_sync_btn.setIconSize(QSize(16, 16))
         self._db_sync_btn.setFont(QFont("Cairo", 12, QFont.Bold))
         self._db_sync_btn.setMinimumHeight(40)
         self._db_sync_btn.setCursor(Qt.PointingHandCursor)
@@ -125,7 +129,7 @@ class SyncSettingsDialog(QDialog):
         # ══════════════════════════════════════════
         # 📂 النسخ الاحتياطية
         # ══════════════════════════════════════════
-        backup_group = QGroupBox("📂 النسخ الاحتياطية")
+        backup_group = QGroupBox("  النسخ الاحتياطية")
         backup_group.setFont(QFont("Cairo", 12, QFont.Bold))
         backup_group.setObjectName("optionsGroup")
         backup_layout = QVBoxLayout(backup_group)
@@ -139,7 +143,9 @@ class SyncSettingsDialog(QDialog):
         backup_layout.addWidget(self._backup_info_label)
 
         # زرار استعادة نسخة سابقة
-        self._restore_btn = QPushButton("📥 استعادة نسخة سابقة...")
+        self._restore_btn = QPushButton("استعادة نسخة سابقة...")
+        self._restore_btn.setIcon(icon('fa5s.download', color='#ffffff'))
+        self._restore_btn.setIconSize(QSize(16, 16))
         self._restore_btn.setFont(QFont("Cairo", 11, QFont.Bold))
         self._restore_btn.setMinimumHeight(38)
         self._restore_btn.setCursor(Qt.PointingHandCursor)
@@ -152,7 +158,7 @@ class SyncSettingsDialog(QDialog):
         # ══════════════════════════════════════════
         # 💻 تحديثات التطوير (Git)
         # ══════════════════════════════════════════
-        git_group = QGroupBox("💻 تحديثات التطوير (Git)")
+        git_group = QGroupBox("  تحديثات التطوير (Git)")
         git_group.setFont(QFont("Cairo", 12, QFont.Bold))
         git_group.setObjectName("optionsGroup")
         git_layout = QHBoxLayout(git_group)
@@ -160,7 +166,9 @@ class SyncSettingsDialog(QDialog):
         git_layout.setContentsMargins(20, 20, 20, 20)
 
         # جلب التحديثات
-        self._git_pull_btn = QPushButton("⬇️ جلب التحديثات")
+        self._git_pull_btn = QPushButton("جلب التحديثات")
+        self._git_pull_btn.setIcon(icon('fa5s.cloud-download-alt', color='#ffffff'))
+        self._git_pull_btn.setIconSize(QSize(16, 16))
         self._git_pull_btn.setFont(QFont("Cairo", 12, QFont.Bold))
         self._git_pull_btn.setMinimumHeight(45)
         self._git_pull_btn.setCursor(Qt.PointingHandCursor)
@@ -169,7 +177,9 @@ class SyncSettingsDialog(QDialog):
         git_layout.addWidget(self._git_pull_btn)
 
         # رفع التحديثات
-        self._git_push_btn = QPushButton("⬆️ رفع التحديثات")
+        self._git_push_btn = QPushButton("رفع التحديثات")
+        self._git_push_btn.setIcon(icon('fa5s.cloud-upload-alt', color='#ffffff'))
+        self._git_push_btn.setIconSize(QSize(16, 16))
         self._git_push_btn.setFont(QFont("Cairo", 12, QFont.Bold))
         self._git_push_btn.setMinimumHeight(45)
         self._git_push_btn.setCursor(Qt.PointingHandCursor)
@@ -187,7 +197,7 @@ class SyncSettingsDialog(QDialog):
         layout.addWidget(self._status_label)
 
         # سجل العمليات
-        log_label = QLabel("📋 سجل العمليات:")
+        log_label = QLabel("سجل العمليات:")
         log_label.setFont(QFont("Cairo", 11))
         log_label.setObjectName("logLabel")
         layout.addWidget(log_label)
@@ -214,7 +224,9 @@ class SyncSettingsDialog(QDialog):
         cancel_btn.clicked.connect(self.reject)
         btn_layout.addWidget(cancel_btn)
 
-        save_btn = QPushButton("💾 حفظ الإعدادات")
+        save_btn = QPushButton("حفظ الإعدادات")
+        save_btn.setIcon(icon('fa5s.save', color='#ffffff'))
+        save_btn.setIconSize(QSize(16, 16))
         save_btn.setFont(QFont("Cairo", 12, QFont.Bold))
         save_btn.setMinimumHeight(40)
         save_btn.setMinimumWidth(160)

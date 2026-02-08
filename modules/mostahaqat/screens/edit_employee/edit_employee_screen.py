@@ -8,13 +8,14 @@ Edit Employee Screen
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QFrame, QGridLayout, QScrollArea,
-    QLineEdit, QComboBox, QDateEdit, QMessageBox
+    QLineEdit, QComboBox, QDateEdit
 )
 from PyQt5.QtCore import Qt, pyqtSignal, QDate
 from PyQt5.QtGui import QFont
 
 from core.themes import get_current_theme
 from core.database.queries import select_all, update
+from ui.components.notifications import toast_success, toast_error, toast_warning
 
 
 class EditEmployeeScreen(QWidget):
@@ -293,12 +294,12 @@ class EditEmployeeScreen(QWidget):
         name_en = self._inputs['name_en'].text().strip()
         
         if not name_ar and not name_en:
-            QMessageBox.warning(self, "\u062a\u0646\u0628\u064a\u0647", "\u064a\u062c\u0628 \u0625\u062f\u062e\u0627\u0644 \u0627\u0633\u0645 \u0627\u0644\u0645\u0648\u0638\u0641!")
+            toast_warning(self, "تنبيه", "يجب إدخال اسم الموظف!")
             return
-        
+
         employee_id = self._employee.get('id')
         if not employee_id:
-            QMessageBox.critical(self, "\u062e\u0637\u0623", "\u0644\u0645 \u064a\u062a\u0645 \u062a\u062d\u062f\u064a\u062f \u0627\u0644\u0645\u0648\u0638\u0641!")
+            toast_error(self, "خطأ", "لم يتم تحديد الموظف!")
             return
         
         nationality_id = self._inputs['nationality_id'].currentData()
@@ -339,7 +340,7 @@ class EditEmployeeScreen(QWidget):
         success = update(query, params)
         
         if success:
-            QMessageBox.information(self, "\u062a\u0645 \u2705", "\u062a\u0645 \u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644\u0627\u062a \u0628\u0646\u062c\u0627\u062d!")
+            toast_success(self, "تم", "تم حفظ التعديلات بنجاح!")
             updated_data = dict(self._employee)
             updated_data['name_ar'] = name_ar
             updated_data['name_en'] = name_en
@@ -354,7 +355,7 @@ class EditEmployeeScreen(QWidget):
             updated_data['status'] = self._inputs['status_id'].currentText()
             self.saved.emit(updated_data)
         else:
-            QMessageBox.critical(self, "\u062e\u0637\u0623 \u274c", "\u0641\u0634\u0644 \u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644\u0627\u062a!")
+            toast_error(self, "خطأ", "فشل حفظ التعديلات!")
     
     def _on_cancel(self):
         self.cancelled.emit()

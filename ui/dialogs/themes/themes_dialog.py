@@ -1,20 +1,22 @@
 """
 Themes Dialog
 =============
-Theme selection dialog.
+Theme selection dialog with QtAwesome icons and Fluent widgets.
 """
 
 from PyQt5.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QPushButton, 
+    QDialog, QVBoxLayout, QHBoxLayout,
     QLabel, QRadioButton, QButtonGroup
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QFont
 
 from core.themes import (
     get_stylesheet, get_current_theme, set_current_theme,
     get_available_themes, get_theme_display_name
 )
+from core.utils.icons import icon
+from ui.components.fluent import FluentPrimaryButton, FluentButton
 
 
 class ThemesDialog(QDialog):
@@ -22,7 +24,8 @@ class ThemesDialog(QDialog):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("🎨 اختيار الثيم")
+        self.setWindowTitle("اختيار الثيم")
+        self.setWindowIcon(icon('fa5s.palette', color='info'))
         self.setMinimumSize(400, 300)
         self.setStyleSheet(get_stylesheet())
         
@@ -61,16 +64,22 @@ class ThemesDialog(QDialog):
         
         # Buttons
         btn_layout = QHBoxLayout()
-        
-        apply_btn = QPushButton("✅ تطبيق")
+
+        apply_btn = FluentPrimaryButton()
+        apply_btn.setText("تطبيق")
+        apply_btn.setIcon(icon('fa5s.check', color='#ffffff'))
+        apply_btn.setIconSize(QSize(16, 16))
         apply_btn.clicked.connect(self._apply_theme)
-        
-        cancel_btn = QPushButton("إلغاء")
+
+        cancel_btn = FluentButton()
+        cancel_btn.setText("إلغاء")
+        cancel_btn.setIcon(icon('fa5s.times', color='danger'))
+        cancel_btn.setIconSize(QSize(16, 16))
         cancel_btn.clicked.connect(self.reject)
-        
+
         btn_layout.addWidget(apply_btn)
         btn_layout.addWidget(cancel_btn)
-        
+
         layout.addLayout(btn_layout)
     
     def _on_theme_selected(self, theme):
