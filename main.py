@@ -2,19 +2,24 @@
 INTEGRA - Integrated Management System
 =======================================
 Entry Point
-Version: 2.1.0
+Version: 3.2.0
+
+Optimized startup:
+1. Show splash screen instantly
+2. Initialize core systems with progress
+3. Connect database
+4. Show main window
 """
 
 import sys
 import os
 import atexit
 
-# التأكد إن مجلد logs موجود (مهم قبل أي حاجة)
+# Ensure logs directory exists (before anything else)
 _logs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
 os.makedirs(_logs_dir, exist_ok=True)
 
-# إخفاء الكونسول: لو مفيش stderr (pythonw) نوجهه لملف
-# الملفات تُغلق عند إغلاق التطبيق عبر atexit
+# Redirect streams for pythonw (headless) mode
 _opened_streams = []
 if sys.stderr is None:
     sys.stderr = open(os.path.join(_logs_dir, "stderr.log"), "w", encoding="utf-8")
@@ -36,40 +41,63 @@ atexit.register(_close_streams)
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QFont
-from core.logging import setup_logging
-
-setup_logging(debug_mode=True)
 
 
 def main():
-    """Application entry point."""
+    """Application entry point with optimized startup."""
     app = QApplication(sys.argv)
 
-    # تركيب معالج الأخطاء (لازم يكون بعد QApplication)
-    from core.error_handling import install_exception_handler
-    install_exception_handler()
-
-    # تهيئة مدير المهام الخلفية
-    from core.threading import get_task_manager, shutdown_task_manager
-    get_task_manager()  # تهيئة مبكرة
-
-    # التنظيف عند الإغلاق
-    app.aboutToQuit.connect(lambda: shutdown_task_manager(wait=True, timeout_ms=5000))
-
-    # Set application info
-    app.setApplicationName("INTEGRA")
-    app.setApplicationVersion("2.1.0")
-    app.setOrganizationName("INTEGRA")
-
-    # Set default font
+    # Set default font immediately (fast)
     font = QFont("Cairo", 11)
     app.setFont(font)
 
-    # Import and show launcher
-    from ui.windows.launcher import LauncherWindow
+    # Set application info
+    app.setApplicationName("INTEGRA")
+    app.setApplicationVersion("3.2.0")
+    app.setOrganizationName("INTEGRA")
 
+    # ── Step 1: Show splash screen INSTANTLY ──
+    from ui.windows.splash import IntegraSplashScreen
+    splash = IntegraSplashScreen()
+    splash.show()
+    splash.set_progress(5, "جاري تهيئة النظام")
+
+    # ── Step 2: Initialize logging ──
+    from core.logging import setup_logging
+    setup_logging(debug_mode=True)
+    splash.set_progress(20, "تم تحميل نظام السجلات")
+
+    # ── Step 3: Install exception handler ──
+    from core.error_handling import install_exception_handler
+    install_exception_handler()
+    splash.set_progress(35, "تم تهيئة معالج الأخطاء")
+
+    # ── Step 4: Initialize task manager ──
+    from core.threading import get_task_manager, shutdown_task_manager
+    get_task_manager()
+    app.aboutToQuit.connect(lambda: shutdown_task_manager(wait=True, timeout_ms=5000))
+    splash.set_progress(50, "تم تهيئة مدير المهام")
+
+    # ── Step 5: Connect to database ──
+    splash.set_progress(60, "جاري الاتصال بقاعدة البيانات")
+    from core.database.connection import connect
+    try:
+        connect()
+        splash.set_progress(80, "تم الاتصال بقاعدة البيانات")
+    except Exception:
+        splash.set_progress(80, "تعذر الاتصال - سيتم المحاولة لاحقاً")
+
+    # ── Step 6: Load main window ──
+    splash.set_progress(90, "جاري تحميل الواجهة الرئيسية")
+
+    from ui.windows.launcher import LauncherWindow
     window = LauncherWindow()
+
+    splash.set_progress(100, "اكتمل التحميل")
+
+    # ── Step 7: Show window, close splash ──
     window.show()
+    splash.finish()
 
     sys.exit(app.exec_())
 
