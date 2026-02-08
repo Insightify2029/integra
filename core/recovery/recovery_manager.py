@@ -30,7 +30,8 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional, Callable
 from pathlib import Path
 
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal, Qt
+from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QListWidget, QListWidgetItem,
@@ -85,10 +86,11 @@ class RecoveryManager(QObject):
                             app_logger.info(
                                 f"Cleaned old recovery file: {file_path.name}"
                             )
-                except Exception:
+                except (json.JSONDecodeError, OSError, ValueError) as e:
+                    app_logger.warning(f"Skipping corrupt recovery file {file_path.name}: {e}")
                     continue
 
-        except Exception as e:
+        except OSError as e:
             app_logger.error(f"Recovery cleanup failed: {e}")
 
     def has_recoverable_data(self) -> bool:
@@ -246,7 +248,7 @@ class RecoveryDialog(QDialog):
             "تم العثور على بيانات غير محفوظة من جلسة سابقة.\n"
             "اختر البيانات التي تريد استرجاعها:"
         )
-        header.setStyleSheet("font-size: 14px; margin-bottom: 10px;")
+        header.setStyleSheet("font-size: 14px; margin-bottom: 10px; padding: 5px;")
         layout.addWidget(header)
 
         # List of recoverable items
@@ -263,7 +265,7 @@ class RecoveryDialog(QDialog):
                 display_text += f"  ({timestamp})"
 
             list_item = QListWidgetItem(display_text)
-            list_item.setData(256, item)  # Store full item data
+            list_item.setData(Qt.UserRole, item)  # Store full item data
             self.list_widget.addItem(list_item)
 
             # Select by default
@@ -285,8 +287,10 @@ class RecoveryDialog(QDialog):
         button_layout.addStretch()
 
         recover_btn = QPushButton("استرجاع المحدد")
+        highlight = self.palette().color(QPalette.Highlight).name()
+        highlight_text = self.palette().color(QPalette.HighlightedText).name()
         recover_btn.setStyleSheet(
-            "background-color: #2563eb; color: white; font-weight: bold;"
+            f"background-color: {highlight}; color: {highlight_text}; font-weight: bold;"
         )
         recover_btn.clicked.connect(self._recover)
         button_layout.addWidget(recover_btn)
@@ -314,7 +318,7 @@ class RecoveryDialog(QDialog):
         for i in range(self.list_widget.count()):
             item = self.list_widget.item(i)
             if item.isSelected():
-                self.selected_items.append(item.data(256))
+                self.selected_items.append(item.data(Qt.UserRole))
 
         self.accept()
 

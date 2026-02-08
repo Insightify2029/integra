@@ -36,6 +36,7 @@ from .rbac import (
     Role,
     # Manager
     AccessControlManager,
+    get_access_control_manager,
     # Functions
     login_user,
     logout_user,
@@ -74,12 +75,24 @@ from .encryption import (
     decrypt_db_password,
 )
 
+from .auth_manager import (
+    AuthManager,
+    get_auth_manager,
+    is_argon2_available,
+)
+
+from .credential_store import (
+    CredentialStore,
+    get_credential_store,
+)
+
 __all__ = [
     # RBAC - Enums
     'Permission',
     'Role',
     # RBAC - Manager
     'AccessControlManager',
+    'get_access_control_manager',
     # RBAC - Functions
     'login_user',
     'logout_user',
@@ -113,4 +126,11 @@ __all__ = [
     'mask_iban',
     'encrypt_db_password',
     'decrypt_db_password',
+    # Authentication
+    'AuthManager',
+    'get_auth_manager',
+    'is_argon2_available',
+    # Credential Store
+    'CredentialStore',
+    'get_credential_store',
 ]

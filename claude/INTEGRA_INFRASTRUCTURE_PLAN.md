@@ -75,15 +75,20 @@
 - **الملفات المنفذة:**
   - `core/error_handling/exception_hook.py` ✅
 
-### A3. الحفظ التلقائي (Auto-Save + Recovery)
+### A3. الحفظ التلقائي (Auto-Save + Recovery) ✅ **مكتمل**
+- **الحالة:** ✅ تم التنفيذ (2026-02-08)
 - **المطلوب:**
-  - QTimer كل 60 ثانية لحفظ البيانات غير المحفوظة
-  - ملفات recovery في مجلد مخصص
-  - فحص عند بدء التشغيل لاسترجاع البيانات
-  - إشعار المستخدم بوجود بيانات قابلة للاسترجاع
-- **الملفات:**
-  - `core/recovery/auto_save.py`
-  - `core/recovery/recovery_manager.py`
+  - QTimer كل 60 ثانية لحفظ البيانات غير المحفوظة ✅
+  - ملفات recovery في مجلد مخصص ✅
+  - فحص عند بدء التشغيل لاسترجاع البيانات ✅
+  - إشعار المستخدم بوجود بيانات قابلة للاسترجاع (RecoveryDialog) ✅
+  - إصلاح: ألوان theme-aware بدل hardcoded ✅
+  - إصلاح: bare excepts → specific exceptions + logging ✅
+  - إصلاح: Qt.UserRole بدل magic number 256 ✅
+- **الملفات المنفذة:**
+  - `core/recovery/auto_save.py` ✅
+  - `core/recovery/recovery_manager.py` ✅
+  - `core/recovery/__init__.py` ✅
 
 ### A4. Audit Trail بالـ Database (PostgreSQL Triggers) ✅ **مكتمل**
 - **الحالة:** ✅ تم التنفيذ (2026-02-08)
@@ -152,27 +157,43 @@
   - `core/backup/__init__.py` ✅
   - `core/backup/backup_manager.py` ✅
 
-### A9. الأمان (Security)
-- **المكتبات:** `argon2-cffi`, `keyring` (تحتاج تثبيت)
+### A9. الأمان (Security) ✅ **مكتمل**
+- **الحالة:** ✅ تم التنفيذ (2026-02-08)
+- **المكتبات:** `argon2-cffi` ✅, `keyring` ✅, `cryptography` ✅
 - **المطلوب:**
-  - Argon2 password hashing
-  - OS keyring لتخزين بيانات الاتصال
-  - RBAC (Role-Based Access Control)
-  - Account lockout بعد محاولات فاشلة
-- **الملفات:**
-  - `core/security/auth_manager.py`
-  - `core/security/credential_store.py`
-  - `core/security/rbac.py`
+  - Argon2id password hashing (مع PBKDF2 fallback) ✅
+  - OS keyring لتخزين بيانات الاتصال (مع encrypted file fallback) ✅
+  - RBAC (Role-Based Access Control) - 5 أدوار و 24 صلاحية ✅
+  - Account lockout بعد 5 محاولات فاشلة (15 دقيقة) ✅
+  - Session management مع timeout (8 ساعات) ✅
+  - Fernet encryption للبيانات الحساسة ✅
+  - Key rotation support ✅
+  - إصلاح: thread-safe singleton في RBAC ✅
+  - إصلاح: bare excepts → specific exceptions + logging في encryption.py ✅
+  - إصلاح: استخدام app_logger بدل logging.getLogger ✅
+- **الملفات المنفذة:**
+  - `core/security/auth_manager.py` ✅ (Argon2 + lockout + sessions)
+  - `core/security/credential_store.py` ✅ (keyring + encrypted file)
+  - `core/security/encryption.py` ✅ (Fernet + IBAN + file encryption)
+  - `core/security/rbac.py` ✅ (RBAC + decorators)
+  - `core/security/__init__.py` ✅
 
-### A10. التحقق متعدد المستويات (Validation)
+### A10. التحقق متعدد المستويات (Validation) ✅ **مكتمل**
+- **الحالة:** ✅ تم التنفيذ (2026-02-08)
 - **المكتبة:** `pydantic` (مثبتة ✅)
 - **المطلوب:**
-  - Pydantic schemas لكل entity (Employee, Payroll, etc.)
-  - PostgreSQL constraints كخط دفاع أخير
-  - رسائل خطأ واضحة بالعربي
-- **الملفات:**
-  - `core/validation/schemas/employee.py`
-  - `core/validation/schemas/payroll.py`
+  - Pydantic schemas لـ Employee (Create, Update, Response, ListItem) ✅
+  - Pydantic schemas لـ Payroll (Create, Update, Response, Summary) ✅
+  - PostgreSQL constraints كخط دفاع أخير ✅
+  - رسائل خطأ واضحة بالعربي ✅
+  - Custom validators (phone, IBAN, salary, dates) ✅
+  - Auto-calculation (gross, deductions, net salary) ✅
+  - PayrollStatus enum (مسودة/قيد المراجعة/معتمد/مدفوع/ملغي) ✅
+- **الملفات المنفذة:**
+  - `core/validation/schemas/employee.py` ✅
+  - `core/validation/schemas/payroll.py` ✅
+  - `core/validation/schemas/__init__.py` ✅
+  - `core/validation/__init__.py` ✅
 
 ---
 

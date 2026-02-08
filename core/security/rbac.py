@@ -26,6 +26,7 @@ Usage:
     edit_btn.setEnabled(has_permission(user_id, Permission.EMPLOYEE_EDIT))
 """
 
+import threading
 from enum import Enum, auto
 from typing import List, Set, Dict, Optional, Callable
 from functools import wraps
@@ -303,8 +304,19 @@ class AccessControlManager:
         return False
 
 
-# Global instance
-_acm = AccessControlManager()
+# Thread-safe singleton
+_acm: Optional[AccessControlManager] = None
+_acm_lock = threading.Lock()
+
+
+def get_access_control_manager() -> AccessControlManager:
+    """Get the AccessControlManager singleton (thread-safe)."""
+    global _acm
+    if _acm is None:
+        with _acm_lock:
+            if _acm is None:
+                _acm = AccessControlManager()
+    return _acm
 
 
 # Convenience functions
@@ -316,39 +328,40 @@ def login_user(
     **kwargs
 ) -> None:
     """Login user to the system."""
-    _acm.login(user_id, user_name, role, **kwargs)
+    get_access_control_manager().login(user_id, user_name, role, **kwargs)
 
 
 def logout_user() -> None:
     """Logout current user."""
-    _acm.logout()
+    get_access_control_manager().logout()
 
 
 def is_authenticated() -> bool:
     """Check if user is authenticated."""
-    return _acm.is_authenticated
+    return get_access_control_manager().is_authenticated
 
 
 def get_current_user() -> Optional[Dict]:
     """Get current user info."""
-    if not _acm.is_authenticated:
+    acm = get_access_control_manager()
+    if not acm.is_authenticated:
         return None
 
     return {
-        "id": _acm.current_user_id,
-        "name": _acm.current_user_name,
-        "role": _acm.current_role.value if _acm.current_role else None
+        "id": acm.current_user_id,
+        "name": acm.current_user_name,
+        "role": acm.current_role.value if acm.current_role else None
     }
 
 
 def has_permission(permission: Permission) -> bool:
     """Check if current user has permission."""
-    return _acm.has_permission(permission)
+    return get_access_control_manager().has_permission(permission)
 
 
 def has_module_access(module_name: str) -> bool:
     """Check if current user has module access."""
-    return _acm.has_module_access(module_name)
+    return get_access_control_manager().has_module_access(module_name)
 
 
 def require_permission(permission: Permission):
@@ -363,10 +376,11 @@ def require_permission(permission: Permission):
     def decorator(func: Callable):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            if not has_permission(permission):
+            acm = get_access_control_manager()
+            if not acm.has_permission(permission):
                 app_logger.warning(
                     f"Permission denied: {permission.name} "
-                    f"for user {_acm.current_user_id}"
+                    f"for user {acm.current_user_id}"
                 )
                 raise PermissionError(
                     f"ليس لديك صلاحية: {permission.name}"
@@ -381,7 +395,7 @@ def require_any_permission(*permissions: Permission):
     def decorator(func: Callable):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            if not _acm.has_any_permission(list(permissions)):
+            if not get_access_control_manager().has_any_permission(list(permissions)):
                 raise PermissionError("ليس لديك الصلاحيات المطلوبة")
             return func(*args, **kwargs)
         return wrapper

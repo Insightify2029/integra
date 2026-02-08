@@ -7,7 +7,9 @@ Usage:
     from core.validation import (
         EmployeeCreate,
         EmployeeUpdate,
-        validate_employee_create
+        validate_employee_create,
+        PayrollCreate,
+        validate_payroll_create
     )
 
     # Validate new employee
@@ -18,6 +20,9 @@ Usage:
     else:
         # Handle errors
         pass
+
+    # Validate payroll
+    is_valid, payroll, errors = validate_payroll_create(data)
 """
 
 from .schemas.employee import (
@@ -30,6 +35,17 @@ from .schemas.employee import (
     validate_employee_update
 )
 
+from .schemas.payroll import (
+    PayrollStatus,
+    PayrollBase,
+    PayrollCreate,
+    PayrollUpdate,
+    PayrollResponse,
+    PayrollSummary,
+    validate_payroll_create,
+    validate_payroll_update
+)
+
 __all__ = [
     # Employee schemas
     'EmployeeBase',
@@ -37,7 +53,15 @@ __all__ = [
     'EmployeeUpdate',
     'EmployeeResponse',
     'EmployeeListItem',
-    # Validation functions
     'validate_employee_create',
-    'validate_employee_update'
+    'validate_employee_update',
+    # Payroll schemas
+    'PayrollStatus',
+    'PayrollBase',
+    'PayrollCreate',
+    'PayrollUpdate',
+    'PayrollResponse',
+    'PayrollSummary',
+    'validate_payroll_create',
+    'validate_payroll_update',
 ]
