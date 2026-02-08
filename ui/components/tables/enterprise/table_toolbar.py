@@ -8,10 +8,11 @@ from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QPushButton, QLabel,
     QFrame
 )
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal, QSize
 from PyQt5.QtGui import QFont
 
 from core.themes import get_current_theme
+from core.utils.icons import icon
 from .search_box import SearchBox
 
 
@@ -83,30 +84,49 @@ class TableToolbar(QWidget):
         sep2.setFixedWidth(1)
         layout.addWidget(sep2)
         
-        # Action buttons
-        self._filter_btn = self._create_button("🔽 تصفية", self.filter_clicked.emit)
+        # Action buttons with QtAwesome icons
+        self._filter_btn = self._create_button(
+            "تصفية", self.filter_clicked.emit,
+            btn_icon=icon('fa5s.filter', color='info')
+        )
         layout.addWidget(self._filter_btn)
-        
-        self._columns_btn = self._create_button("📊 الأعمدة", self.columns_clicked.emit)
+
+        self._columns_btn = self._create_button(
+            "الأعمدة", self.columns_clicked.emit,
+            btn_icon=icon('fa5s.columns', color='info')
+        )
         layout.addWidget(self._columns_btn)
-        
-        self._export_btn = self._create_button("📤 تصدير", self.export_clicked.emit)
+
+        self._export_btn = self._create_button(
+            "تصدير", self.export_clicked.emit,
+            btn_icon=icon('fa5s.file-export', color='success')
+        )
         layout.addWidget(self._export_btn)
-        
-        self._refresh_btn = self._create_button("🔄 تحديث", self.refresh_clicked.emit)
+
+        self._refresh_btn = self._create_button(
+            "تحديث", self.refresh_clicked.emit,
+            btn_icon=icon('fa5s.sync-alt', color='info')
+        )
         layout.addWidget(self._refresh_btn)
-        
+
         # Add button (optional)
-        self._add_btn = self._create_button("➕ إضافة", self.add_clicked.emit, primary=True)
+        self._add_btn = self._create_button(
+            "إضافة", self.add_clicked.emit, primary=True,
+            btn_icon=icon('fa5s.plus', color='#ffffff')
+        )
         self._add_btn.setVisible(False)
         layout.addWidget(self._add_btn)
     
-    def _create_button(self, text: str, callback, primary: bool = False) -> QPushButton:
-        """Create a toolbar button."""
+    def _create_button(self, text: str, callback, primary: bool = False,
+                       btn_icon=None) -> QPushButton:
+        """Create a toolbar button with optional QtAwesome icon."""
         btn = QPushButton(text)
         btn.setCursor(Qt.PointingHandCursor)
         btn.clicked.connect(callback)
         btn.setProperty("primary", primary)
+        if btn_icon and not btn_icon.isNull():
+            btn.setIcon(btn_icon)
+            btn.setIconSize(QSize(16, 16))
         return btn
     
     def _apply_theme(self):

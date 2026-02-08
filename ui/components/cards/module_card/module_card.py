@@ -1,16 +1,39 @@
 """
 Module Card Widget
 ==================
-Complete module card component.
+Complete module card component with QtAwesome icon support.
 """
 
 from PyQt5.QtWidgets import QFrame, QLabel
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QPixmap
+
+from core.utils.icons import icon as qta_icon, QTAWESOME_AVAILABLE
 
 from .card_layout import create_card_layout
 from .card_shadow import create_card_shadow
 from .card_style import get_card_style
+
+# Mapping: module_id -> QtAwesome icon name
+MODULE_ICON_MAP = {
+    'mostahaqat': 'fa5s.users',
+    'costing': 'fa5s.chart-bar',
+    'logistics': 'fa5s.truck',
+    'custody': 'fa5s.key',
+    'insurance': 'fa5s.shield-alt',
+    'email': 'fa5s.envelope',
+    'designer': 'fa5s.drafting-compass',
+    'calendar': 'fa5s.calendar-alt',
+    'dashboard': 'fa5s.tachometer-alt',
+    'bi': 'fa5s.chart-pie',
+    'copilot': 'fa5s.robot',
+    'time_intelligence': 'fa5s.clock',
+    'file_manager': 'fa5s.folder-open',
+    'device_manager': 'fa5s.print',
+    'desktop_apps': 'fa5s.comments',
+    'tasks': 'fa5s.tasks',
+    'notifications': 'fa5s.bell',
+}
 
 
 class ModuleCard(QFrame):
@@ -95,12 +118,22 @@ class ModuleCard(QFrame):
         title_ar.setWordWrap(True)
         layout.addWidget(title_ar)
         
-        # Add icon - MIDDLE
-        icon = QLabel(self.module_info['icon'])
-        icon.setFont(QFont("Segoe UI Emoji", 48))
-        icon.setAlignment(Qt.AlignCenter)
-        icon.setStyleSheet("background: transparent; border: none;")
-        layout.addWidget(icon)
+        # Add icon - MIDDLE (QtAwesome if available, emoji fallback)
+        icon_label = QLabel()
+        icon_label.setAlignment(Qt.AlignCenter)
+        icon_label.setStyleSheet("background: transparent; border: none;")
+
+        qta_name = MODULE_ICON_MAP.get(self.module_id)
+        if QTAWESOME_AVAILABLE and qta_name:
+            color = self.module_info.get('color', '#2563eb')
+            pixmap = qta_icon(qta_name, color=color).pixmap(56, 56)
+            icon_label.setPixmap(pixmap)
+            icon_label.setFixedSize(64, 64)
+        else:
+            icon_label.setText(self.module_info['icon'])
+            icon_label.setFont(QFont("Segoe UI Emoji", 48))
+
+        layout.addWidget(icon_label)
         
         # Add title (English) - BOTTOM
         title_en = QLabel(self.module_info['name_en'])

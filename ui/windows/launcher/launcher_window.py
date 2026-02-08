@@ -17,6 +17,8 @@ from .launcher_statusbar import LauncherStatusBar
 
 from core.database.connection import connect, disconnect
 from core.themes import get_stylesheet
+from core.utils.icons import icon
+from ui.components.notifications import toast_info
 
 
 class LauncherWindow(BaseWindow):
@@ -145,8 +147,7 @@ class LauncherWindow(BaseWindow):
             window.show()
             self._open_windows[module_id] = window
         else:
-            from ui.dialogs import show_info
-            show_info(self, "قريباً", f"موديول {module_id} قيد التطوير")
+            toast_info(self, "قريباً", f"موديول {module_id} قيد التطوير")
 
     def closeEvent(self, event):
         """إغلاق البرنامج."""

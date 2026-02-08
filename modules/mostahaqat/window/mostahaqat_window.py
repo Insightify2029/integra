@@ -14,7 +14,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 
 from ui.windows.base import BaseWindow
-from ui.dialogs import show_info
+from ui.components.notifications import toast_info
 
 # Import new screens
 from modules.mostahaqat.screens import EmployeesListScreen, EmployeeProfileScreen, EditEmployeeScreen
@@ -347,23 +347,23 @@ class MostahaqatWindow(BaseWindow):
     
     def _edit_employee_data(self, employee: dict):
         """Edit employee data."""
-        show_info(self, "تعديل", f"تعديل بيانات {employee.get('name_ar', '')} - قيد التطوير")
+        toast_info(self, "تعديل", f"تعديل بيانات {employee.get('name_ar', '')} - قيد التطوير")
     
     def _employee_leave_settlement(self, employee: dict):
         """Calculate leave settlement for employee."""
-        show_info(self, "تسوية إجازة", f"تسوية إجازة {employee.get('name_ar', '')} - قيد التطوير")
+        toast_info(self, "تسوية إجازة", f"تسوية إجازة {employee.get('name_ar', '')} - قيد التطوير")
     
     def _employee_overtime(self, employee: dict):
         """Calculate overtime for employee."""
-        show_info(self, "حساب الإضافي", f"حساب الإضافي لـ {employee.get('name_ar', '')} - قيد التطوير")
+        toast_info(self, "حساب الإضافي", f"حساب الإضافي لـ {employee.get('name_ar', '')} - قيد التطوير")
     
     def _employee_eos(self, employee: dict):
         """Calculate end of service for employee."""
-        show_info(self, "نهاية الخدمة", f"حساب نهاية خدمة {employee.get('name_ar', '')} - قيد التطوير")
+        toast_info(self, "نهاية الخدمة", f"حساب نهاية خدمة {employee.get('name_ar', '')} - قيد التطوير")
     
     def _deactivate_employee(self, employee: dict):
         """Deactivate employee."""
-        show_info(self, "إيقاف", f"إيقاف الموظف {employee.get('name_ar', '')} - قيد التطوير")
+        toast_info(self, "إيقاف", f"إيقاف الموظف {employee.get('name_ar', '')} - قيد التطوير")
     
     # ═══════════════════════════════════════════════════════════════
     # Menu Action Handlers
@@ -385,151 +385,151 @@ class MostahaqatWindow(BaseWindow):
         self._show_employees_list()
     
     def _show_active_employees(self):
-        show_info(self, "الموظفين", "عرض الموظفين النشطين - قيد التطوير")
+        toast_info(self, "الموظفين", "عرض الموظفين النشطين - قيد التطوير")
     
     def _show_terminated(self):
-        show_info(self, "الموظفين", "عرض المنتهية عقودهم - قيد التطوير")
+        toast_info(self, "الموظفين", "عرض المنتهية عقودهم - قيد التطوير")
     
     def _show_by_department(self):
-        show_info(self, "الموظفين", "عرض حسب القسم - قيد التطوير")
+        toast_info(self, "الموظفين", "عرض حسب القسم - قيد التطوير")
     
     def _show_by_nationality(self):
-        show_info(self, "الموظفين", "عرض حسب الجنسية - قيد التطوير")
+        toast_info(self, "الموظفين", "عرض حسب الجنسية - قيد التطوير")
     
     def _show_by_job(self):
-        show_info(self, "الموظفين", "عرض حسب الوظيفة - قيد التطوير")
+        toast_info(self, "الموظفين", "عرض حسب الوظيفة - قيد التطوير")
     
     def _add_employee(self):
-        show_info(self, "إضافة", "إضافة موظف جديد - قيد التطوير")
+        toast_info(self, "إضافة", "إضافة موظف جديد - قيد التطوير")
     
     def _edit_employee(self):
-        show_info(self, "تعديل", "تعديل بيانات موظف - قيد التطوير")
+        toast_info(self, "تعديل", "تعديل بيانات موظف - قيد التطوير")
     
     def _search_employee(self):
-        show_info(self, "بحث", "البحث عن موظف - قيد التطوير")
+        toast_info(self, "بحث", "البحث عن موظف - قيد التطوير")
     
     def _import_excel(self):
-        show_info(self, "استيراد", "استيراد من Excel - قيد التطوير")
+        toast_info(self, "استيراد", "استيراد من Excel - قيد التطوير")
     
     def _export_excel(self):
-        show_info(self, "تصدير", "تصدير إلى Excel - قيد التطوير")
+        toast_info(self, "تصدير", "تصدير إلى Excel - قيد التطوير")
     
     def _export_pdf(self):
-        show_info(self, "تصدير", "تصدير إلى PDF - قيد التطوير")
+        toast_info(self, "تصدير", "تصدير إلى PDF - قيد التطوير")
     
     def _show_salaries(self):
-        show_info(self, "الرواتب", "عرض الرواتب - قيد التطوير")
+        toast_info(self, "الرواتب", "عرض الرواتب - قيد التطوير")
     
     def _edit_salary(self):
-        show_info(self, "الرواتب", "تعديل الراتب - قيد التطوير")
+        toast_info(self, "الرواتب", "تعديل الراتب - قيد التطوير")
     
     def _salary_history(self):
-        show_info(self, "الرواتب", "سجل تعديلات الرواتب - قيد التطوير")
+        toast_info(self, "الرواتب", "سجل تعديلات الرواتب - قيد التطوير")
     
     def _housing_allowance(self):
-        show_info(self, "البدلات", "بدل السكن - قيد التطوير")
+        toast_info(self, "البدلات", "بدل السكن - قيد التطوير")
     
     def _transport_allowance(self):
-        show_info(self, "البدلات", "بدل النقل - قيد التطوير")
+        toast_info(self, "البدلات", "بدل النقل - قيد التطوير")
     
     def _other_allowances(self):
-        show_info(self, "البدلات", "بدلات أخرى - قيد التطوير")
+        toast_info(self, "البدلات", "بدلات أخرى - قيد التطوير")
     
     def _absence_deduction(self):
-        show_info(self, "الخصومات", "خصم الغياب - قيد التطوير")
+        toast_info(self, "الخصومات", "خصم الغياب - قيد التطوير")
     
     def _late_deduction(self):
-        show_info(self, "الخصومات", "خصم التأخير - قيد التطوير")
+        toast_info(self, "الخصومات", "خصم التأخير - قيد التطوير")
     
     def _other_deductions(self):
-        show_info(self, "الخصومات", "خصومات أخرى - قيد التطوير")
+        toast_info(self, "الخصومات", "خصومات أخرى - قيد التطوير")
     
     def _leave_balances(self):
-        show_info(self, "الإجازات", "أرصدة الإجازات - قيد التطوير")
+        toast_info(self, "الإجازات", "أرصدة الإجازات - قيد التطوير")
     
     def _add_leave(self):
-        show_info(self, "الإجازات", "تسجيل إجازة - قيد التطوير")
+        toast_info(self, "الإجازات", "تسجيل إجازة - قيد التطوير")
     
     def _leave_history(self):
-        show_info(self, "الإجازات", "سجل الإجازات - قيد التطوير")
+        toast_info(self, "الإجازات", "سجل الإجازات - قيد التطوير")
     
     def _single_settlement(self):
-        show_info(self, "تسوية", "حساب تسوية فردية - قيد التطوير")
+        toast_info(self, "تسوية", "حساب تسوية فردية - قيد التطوير")
     
     def _bulk_settlement(self):
-        show_info(self, "تسوية", "حساب تسوية جماعية - قيد التطوير")
+        toast_info(self, "تسوية", "حساب تسوية جماعية - قيد التطوير")
     
     def _settlement_report(self):
-        show_info(self, "تسوية", "تقرير التسويات - قيد التطوير")
+        toast_info(self, "تسوية", "تقرير التسويات - قيد التطوير")
     
     def _overtime_summary(self):
-        show_info(self, "الإضافي", "ملخص الإضافي الشهري - قيد التطوير")
+        toast_info(self, "الإضافي", "ملخص الإضافي الشهري - قيد التطوير")
     
     def _add_overtime(self):
-        show_info(self, "الإضافي", "تسجيل ساعات إضافية - قيد التطوير")
+        toast_info(self, "الإضافي", "تسجيل ساعات إضافية - قيد التطوير")
     
     def _overtime_history(self):
-        show_info(self, "الإضافي", "سجل الإضافي - قيد التطوير")
+        toast_info(self, "الإضافي", "سجل الإضافي - قيد التطوير")
     
     def _overtime_settings(self):
-        show_info(self, "الإضافي", "إعدادات الإضافي - قيد التطوير")
+        toast_info(self, "الإضافي", "إعدادات الإضافي - قيد التطوير")
     
     def _eos_calculator(self):
-        show_info(self, "نهاية الخدمة", "حاسبة نهاية الخدمة - قيد التطوير")
+        toast_info(self, "نهاية الخدمة", "حاسبة نهاية الخدمة - قيد التطوير")
     
     def _resigned_employees(self):
-        show_info(self, "نهاية الخدمة", "المستقيلين - قيد التطوير")
+        toast_info(self, "نهاية الخدمة", "المستقيلين - قيد التطوير")
     
     def _eos_report(self):
-        show_info(self, "نهاية الخدمة", "تقرير نهاية الخدمة - قيد التطوير")
+        toast_info(self, "نهاية الخدمة", "تقرير نهاية الخدمة - قيد التطوير")
     
     def _eos_settings(self):
-        show_info(self, "نهاية الخدمة", "إعدادات نهاية الخدمة - قيد التطوير")
+        toast_info(self, "نهاية الخدمة", "إعدادات نهاية الخدمة - قيد التطوير")
     
     def _report_employees_list(self):
-        show_info(self, "التقارير", "قائمة الموظفين - قيد التطوير")
+        toast_info(self, "التقارير", "قائمة الموظفين - قيد التطوير")
     
     def _report_nationalities(self):
-        show_info(self, "التقارير", "توزيع الجنسيات - قيد التطوير")
+        toast_info(self, "التقارير", "توزيع الجنسيات - قيد التطوير")
     
     def _report_departments(self):
-        show_info(self, "التقارير", "توزيع الأقسام - قيد التطوير")
+        toast_info(self, "التقارير", "توزيع الأقسام - قيد التطوير")
     
     def _report_jobs(self):
-        show_info(self, "التقارير", "توزيع الوظائف - قيد التطوير")
+        toast_info(self, "التقارير", "توزيع الوظائف - قيد التطوير")
     
     def _report_payroll(self):
-        show_info(self, "التقارير", "كشف الرواتب - قيد التطوير")
+        toast_info(self, "التقارير", "كشف الرواتب - قيد التطوير")
     
     def _report_wps(self):
-        show_info(self, "التقارير", "ملف البنك WPS - قيد التطوير")
+        toast_info(self, "التقارير", "ملف البنك WPS - قيد التطوير")
     
     def _report_allowances(self):
-        show_info(self, "التقارير", "تقرير البدلات - قيد التطوير")
+        toast_info(self, "التقارير", "تقرير البدلات - قيد التطوير")
     
     def _report_deductions(self):
-        show_info(self, "التقارير", "تقرير الخصومات - قيد التطوير")
+        toast_info(self, "التقارير", "تقرير الخصومات - قيد التطوير")
     
     def _custom_report(self):
-        show_info(self, "التقارير", "تقرير مخصص - قيد التطوير")
+        toast_info(self, "التقارير", "تقرير مخصص - قيد التطوير")
     
     def _manage_nationalities(self):
-        show_info(self, "الإعدادات", "إدارة الجنسيات - قيد التطوير")
+        toast_info(self, "الإعدادات", "إدارة الجنسيات - قيد التطوير")
     
     def _manage_departments(self):
-        show_info(self, "الإعدادات", "إدارة الأقسام - قيد التطوير")
+        toast_info(self, "الإعدادات", "إدارة الأقسام - قيد التطوير")
     
     def _manage_jobs(self):
-        show_info(self, "الإعدادات", "إدارة الوظائف - قيد التطوير")
+        toast_info(self, "الإعدادات", "إدارة الوظائف - قيد التطوير")
     
     def _manage_banks(self):
-        show_info(self, "الإعدادات", "إدارة البنوك - قيد التطوير")
+        toast_info(self, "الإعدادات", "إدارة البنوك - قيد التطوير")
     
     def _manage_companies(self):
-        show_info(self, "الإعدادات", "إدارة الشركات - قيد التطوير")
+        toast_info(self, "الإعدادات", "إدارة الشركات - قيد التطوير")
     
     def _module_settings(self):
-        show_info(self, "الإعدادات", "إعدادات الموديول - قيد التطوير")
+        toast_info(self, "الإعدادات", "إعدادات الموديول - قيد التطوير")
     
     def _reports_menu(self):
-        show_info(self, "التقارير", "قائمة التقارير - قيد التطوير")
+        toast_info(self, "التقارير", "قائمة التقارير - قيد التطوير")
