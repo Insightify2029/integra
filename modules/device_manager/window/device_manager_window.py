@@ -25,151 +25,7 @@ from PyQt5.QtCore import Qt, QTimer, pyqtSignal
 from ui.windows.base import BaseWindow
 from core.logging import app_logger
 from core.threading import run_in_background
-
-
-# ═══════════════════════════════════════════════════════
-# Styles
-# ═══════════════════════════════════════════════════════
-
-ACCENT_COLOR = "#e11d48"  # Rose
-
-SECTION_STYLE = f"""
-    QGroupBox {{
-        font-size: 16px;
-        font-weight: bold;
-        color: {ACCENT_COLOR};
-        border: 2px solid {ACCENT_COLOR}40;
-        border-radius: 10px;
-        margin-top: 10px;
-        padding-top: 20px;
-        font-family: 'Cairo', sans-serif;
-    }}
-    QGroupBox::title {{
-        subcontrol-origin: margin;
-        left: 15px;
-        padding: 0 8px;
-    }}
-"""
-
-BTN_STYLE = f"""
-    QPushButton {{
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        padding: 8px 16px;
-        background-color: {ACCENT_COLOR};
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-weight: bold;
-    }}
-    QPushButton:hover {{
-        background-color: #be123c;
-    }}
-    QPushButton:disabled {{
-        background-color: #374151;
-        color: #6b7280;
-    }}
-"""
-
-BTN_SECONDARY_STYLE = """
-    QPushButton {
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        padding: 8px 16px;
-        background-color: #374151;
-        color: #e5e7eb;
-        border: 1px solid #4b5563;
-        border-radius: 6px;
-    }
-    QPushButton:hover {
-        background-color: #4b5563;
-    }
-"""
-
-TABLE_STYLE = f"""
-    QTableWidget {{
-        background-color: #1f2937;
-        color: #e5e7eb;
-        border: 1px solid #374151;
-        border-radius: 6px;
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        gridline-color: #374151;
-    }}
-    QTableWidget::item {{
-        padding: 5px;
-    }}
-    QTableWidget::item:selected {{
-        background-color: {ACCENT_COLOR}40;
-    }}
-    QHeaderView::section {{
-        background-color: #111827;
-        color: #9ca3af;
-        padding: 8px;
-        border: 1px solid #374151;
-        font-weight: bold;
-    }}
-"""
-
-TAB_STYLE = f"""
-    QTabWidget::pane {{
-        border: 1px solid #374151;
-        border-radius: 6px;
-        background-color: #111827;
-    }}
-    QTabBar::tab {{
-        background-color: #1f2937;
-        color: #9ca3af;
-        padding: 10px 20px;
-        margin-right: 2px;
-        border-top-left-radius: 6px;
-        border-top-right-radius: 6px;
-        font-family: 'Cairo', sans-serif;
-        font-size: 14px;
-        font-weight: bold;
-    }}
-    QTabBar::tab:selected {{
-        background-color: {ACCENT_COLOR};
-        color: white;
-    }}
-    QTabBar::tab:hover:!selected {{
-        background-color: #374151;
-        color: #e5e7eb;
-    }}
-"""
-
-INPUT_STYLE = """
-    QComboBox, QSpinBox {
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        padding: 6px 10px;
-        background-color: #1f2937;
-        color: #e5e7eb;
-        border: 1px solid #374151;
-        border-radius: 6px;
-    }
-    QComboBox:focus, QSpinBox:focus {
-        border-color: #e11d48;
-    }
-"""
-
-STATUS_COLORS = {
-    'ready': '#10b981',
-    'جاهزة': '#10b981',
-    'جاهز': '#10b981',
-    'connected': '#10b981',
-    'متصل': '#10b981',
-    'busy': '#f59e0b',
-    'مشغولة': '#f59e0b',
-    'مشغول': '#f59e0b',
-    'paired': '#3b82f6',
-    'مقترن': '#3b82f6',
-    'offline': '#6b7280',
-    'غير متصلة': '#6b7280',
-    'غير متصل': '#6b7280',
-    'error': '#ef4444',
-    'خطأ': '#ef4444',
-}
+from core.themes import get_current_palette
 
 
 class DeviceManagerWindow(BaseWindow):
@@ -255,11 +111,132 @@ class DeviceManagerWindow(BaseWindow):
         return self._pdf_bridge
 
     # ═══════════════════════════════════════════════════════
+    # Styles
+    # ═══════════════════════════════════════════════════════
+
+    def _build_styles(self):
+        """Build palette-based styles."""
+        p = get_current_palette()
+        self._p = p
+
+        self._section_style = f"""
+            QGroupBox {{
+                font-size: 16px;
+                font-weight: bold;
+                color: {p['accent']};
+                border: 2px solid {p['accent']}40;
+                border-radius: 10px;
+                margin-top: 10px;
+                padding-top: 20px;
+            }}
+            QGroupBox::title {{
+                subcontrol-origin: margin;
+                left: 15px;
+                padding: 0 8px;
+            }}
+        """
+
+        self._btn_style = f"""
+            QPushButton {{
+                padding: 8px 16px;
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+            }}
+            QPushButton:hover {{
+                background-color: {p['primary_hover']};
+            }}
+            QPushButton:disabled {{
+                background-color: {p['disabled_bg']};
+                color: {p['disabled_text']};
+            }}
+        """
+
+        self._btn_secondary_style = f"""
+            QPushButton {{
+                padding: 8px 16px;
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+                border: 1px solid {p['border']};
+                border-radius: 6px;
+            }}
+            QPushButton:hover {{
+                background-color: {p['bg_hover']};
+            }}
+        """
+
+        self._table_style = f"""
+            QTableWidget {{
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+                border: 1px solid {p['border']};
+                border-radius: 6px;
+                gridline-color: {p['border']};
+            }}
+            QTableWidget::item {{
+                padding: 5px;
+            }}
+            QTableWidget::item:selected {{
+                background-color: {p['selection_bg']};
+            }}
+            QHeaderView::section {{
+                background-color: {p['bg_header']};
+                color: {p['text_muted']};
+                padding: 8px;
+                border: 1px solid {p['border']};
+                font-weight: bold;
+            }}
+        """
+
+        self._tab_style = f"""
+            QTabWidget::pane {{
+                border: 1px solid {p['border']};
+                border-radius: 6px;
+                background-color: {p['bg_main']};
+            }}
+            QTabBar::tab {{
+                background-color: {p['bg_input']};
+                color: {p['text_muted']};
+                padding: 10px 20px;
+                margin-right: 2px;
+                border-top-left-radius: 6px;
+                border-top-right-radius: 6px;
+                font-weight: bold;
+            }}
+            QTabBar::tab:selected {{
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
+            }}
+            QTabBar::tab:hover:!selected {{
+                background-color: {p['bg_hover']};
+                color: {p['text_primary']};
+            }}
+        """
+
+        self._input_style = f"""
+            QComboBox, QSpinBox {{
+                padding: 6px 10px;
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+                border: 1px solid {p['border']};
+                border-radius: 6px;
+            }}
+            QComboBox:focus, QSpinBox:focus {{
+                border-color: {p['border_focus']};
+            }}
+        """
+
+    # ═══════════════════════════════════════════════════════
     # UI Setup
     # ═══════════════════════════════════════════════════════
 
     def _setup_ui(self):
         """Setup the window UI."""
+        self._build_styles()
+        p = self._p
+
         central = QWidget()
         self.setCentralWidget(central)
 
@@ -273,25 +250,23 @@ class DeviceManagerWindow(BaseWindow):
         title.setStyleSheet(f"""
             font-size: 24px;
             font-weight: bold;
-            color: {ACCENT_COLOR};
+            color: {p['accent']};
             padding: 10px;
-            font-family: 'Cairo', sans-serif;
         """)
         main_layout.addWidget(title)
 
         subtitle = QLabel("الطابعات | الماسحات الضوئية | البلوتوث")
         subtitle.setAlignment(Qt.AlignCenter)
-        subtitle.setStyleSheet("""
+        subtitle.setStyleSheet(f"""
             font-size: 14px;
-            color: #9ca3af;
+            color: {p['text_muted']};
             padding-bottom: 5px;
-            font-family: 'Cairo', sans-serif;
         """)
         main_layout.addWidget(subtitle)
 
         # Tab widget
         self.tabs = QTabWidget()
-        self.tabs.setStyleSheet(TAB_STYLE)
+        self.tabs.setStyleSheet(self._tab_style)
         main_layout.addWidget(self.tabs)
 
         # Create tabs
@@ -301,11 +276,10 @@ class DeviceManagerWindow(BaseWindow):
 
         # Status bar at bottom
         self.status_label = QLabel("جاهز")
-        self.status_label.setStyleSheet("""
+        self.status_label.setStyleSheet(f"""
             font-size: 12px;
-            color: #6b7280;
+            color: {p['text_muted']};
             padding: 5px;
-            font-family: 'Cairo', sans-serif;
         """)
         main_layout.addWidget(self.status_label)
 
@@ -324,31 +298,31 @@ class DeviceManagerWindow(BaseWindow):
         toolbar = QHBoxLayout()
 
         btn_refresh_printers = QPushButton("تحديث الطابعات")
-        btn_refresh_printers.setStyleSheet(BTN_STYLE)
+        btn_refresh_printers.setStyleSheet(self._btn_style)
         btn_refresh_printers.setObjectName("btn_refresh_printers")
         toolbar.addWidget(btn_refresh_printers)
 
         btn_print_test = QPushButton("طباعة صفحة اختبار")
-        btn_print_test.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_print_test.setStyleSheet(self._btn_secondary_style)
         btn_print_test.setObjectName("btn_print_test")
         toolbar.addWidget(btn_print_test)
 
         btn_print_file = QPushButton("طباعة ملف")
-        btn_print_file.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_print_file.setStyleSheet(self._btn_secondary_style)
         btn_print_file.setObjectName("btn_print_file")
         toolbar.addWidget(btn_print_file)
 
         toolbar.addStretch()
 
         self.lbl_printer_count = QLabel("الطابعات: 0")
-        self.lbl_printer_count.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo';")
+        self.lbl_printer_count.setStyleSheet(f"font-size: 13px; color: {self._p['text_muted']};")
         toolbar.addWidget(self.lbl_printer_count)
 
         layout.addLayout(toolbar)
 
         # Printers table
         self.printer_table = QTableWidget()
-        self.printer_table.setStyleSheet(TABLE_STYLE)
+        self.printer_table.setStyleSheet(self._table_style)
         self.printer_table.setColumnCount(7)
         self.printer_table.setHorizontalHeaderLabels([
             "الاسم", "النوع", "الحالة", "المنفذ", "التعريف", "الموقع", "افتراضي"
@@ -363,28 +337,28 @@ class DeviceManagerWindow(BaseWindow):
 
         # Print Settings Section
         settings_group = QGroupBox("إعدادات الطباعة")
-        settings_group.setStyleSheet(SECTION_STYLE)
+        settings_group.setStyleSheet(self._section_style)
         settings_layout = QGridLayout()
         settings_layout.setSpacing(10)
 
         # Paper size
         settings_layout.addWidget(self._make_label("حجم الورق:"), 0, 3)
         self.combo_paper = QComboBox()
-        self.combo_paper.setStyleSheet(INPUT_STYLE)
+        self.combo_paper.setStyleSheet(self._input_style)
         self.combo_paper.addItems(["A4 قياسي", "A3 كبير", "A5 صغير", "Letter أمريكي", "Legal قانوني"])
         settings_layout.addWidget(self.combo_paper, 0, 2)
 
         # Orientation
         settings_layout.addWidget(self._make_label("الاتجاه:"), 0, 1)
         self.combo_orientation = QComboBox()
-        self.combo_orientation.setStyleSheet(INPUT_STYLE)
+        self.combo_orientation.setStyleSheet(self._input_style)
         self.combo_orientation.addItems(["عمودي", "أفقي"])
         settings_layout.addWidget(self.combo_orientation, 0, 0)
 
         # Copies
         settings_layout.addWidget(self._make_label("عدد النسخ:"), 1, 3)
         self.spin_copies = QSpinBox()
-        self.spin_copies.setStyleSheet(INPUT_STYLE)
+        self.spin_copies.setStyleSheet(self._input_style)
         self.spin_copies.setRange(1, 999)
         self.spin_copies.setValue(1)
         settings_layout.addWidget(self.spin_copies, 1, 2)
@@ -392,7 +366,7 @@ class DeviceManagerWindow(BaseWindow):
         # Quality
         settings_layout.addWidget(self._make_label("الجودة:"), 1, 1)
         self.combo_quality = QComboBox()
-        self.combo_quality.setStyleSheet(INPUT_STYLE)
+        self.combo_quality.setStyleSheet(self._input_style)
         self.combo_quality.addItems(["مسودة", "عادي", "عالي", "أفضل جودة"])
         self.combo_quality.setCurrentIndex(1)
         settings_layout.addWidget(self.combo_quality, 1, 0)
@@ -400,14 +374,14 @@ class DeviceManagerWindow(BaseWindow):
         # Color mode
         settings_layout.addWidget(self._make_label("الألوان:"), 2, 3)
         self.combo_color = QComboBox()
-        self.combo_color.setStyleSheet(INPUT_STYLE)
+        self.combo_color.setStyleSheet(self._input_style)
         self.combo_color.addItems(["ألوان", "تدرج رمادي", "أبيض وأسود"])
         settings_layout.addWidget(self.combo_color, 2, 2)
 
         # Duplex
         settings_layout.addWidget(self._make_label("الوجهين:"), 2, 1)
         self.combo_duplex = QComboBox()
-        self.combo_duplex.setStyleSheet(INPUT_STYLE)
+        self.combo_duplex.setStyleSheet(self._input_style)
         self.combo_duplex.addItems(["وجه واحد", "وجهين - الحافة الطويلة", "وجهين - الحافة القصيرة"])
         settings_layout.addWidget(self.combo_duplex, 2, 0)
 
@@ -431,36 +405,36 @@ class DeviceManagerWindow(BaseWindow):
         toolbar = QHBoxLayout()
 
         btn_refresh_scanners = QPushButton("تحديث الماسحات")
-        btn_refresh_scanners.setStyleSheet(BTN_STYLE)
+        btn_refresh_scanners.setStyleSheet(self._btn_style)
         btn_refresh_scanners.setObjectName("btn_refresh_scanners")
         toolbar.addWidget(btn_refresh_scanners)
 
         btn_scan = QPushButton("مسح ضوئي")
-        btn_scan.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_scan.setStyleSheet(self._btn_secondary_style)
         btn_scan.setObjectName("btn_scan")
         toolbar.addWidget(btn_scan)
 
         btn_batch_scan = QPushButton("مسح دفعي (ADF)")
-        btn_batch_scan.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_batch_scan.setStyleSheet(self._btn_secondary_style)
         btn_batch_scan.setObjectName("btn_batch_scan")
         toolbar.addWidget(btn_batch_scan)
 
         btn_scan_to_pdf = QPushButton("مسح إلى PDF")
-        btn_scan_to_pdf.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_scan_to_pdf.setStyleSheet(self._btn_secondary_style)
         btn_scan_to_pdf.setObjectName("btn_scan_to_pdf")
         toolbar.addWidget(btn_scan_to_pdf)
 
         toolbar.addStretch()
 
         self.lbl_scanner_count = QLabel("الماسحات: 0")
-        self.lbl_scanner_count.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo';")
+        self.lbl_scanner_count.setStyleSheet(f"font-size: 13px; color: {self._p['text_muted']};")
         toolbar.addWidget(self.lbl_scanner_count)
 
         layout.addLayout(toolbar)
 
         # Scanners table
         self.scanner_table = QTableWidget()
-        self.scanner_table.setStyleSheet(TABLE_STYLE)
+        self.scanner_table.setStyleSheet(self._table_style)
         self.scanner_table.setColumnCount(7)
         self.scanner_table.setHorizontalHeaderLabels([
             "الاسم", "النوع", "الحالة", "الشركة", "الموديل", "ADF", "الدقة القصوى"
@@ -475,14 +449,14 @@ class DeviceManagerWindow(BaseWindow):
 
         # Scan settings
         scan_group = QGroupBox("إعدادات المسح الضوئي")
-        scan_group.setStyleSheet(SECTION_STYLE)
+        scan_group.setStyleSheet(self._section_style)
         scan_layout = QGridLayout()
         scan_layout.setSpacing(10)
 
         # Resolution
         scan_layout.addWidget(self._make_label("الدقة (DPI):"), 0, 3)
         self.combo_resolution = QComboBox()
-        self.combo_resolution.setStyleSheet(INPUT_STYLE)
+        self.combo_resolution.setStyleSheet(self._input_style)
         self.combo_resolution.addItems(["75", "150", "200", "300", "600", "1200"])
         self.combo_resolution.setCurrentIndex(3)  # 300 DPI default
         scan_layout.addWidget(self.combo_resolution, 0, 2)
@@ -490,38 +464,38 @@ class DeviceManagerWindow(BaseWindow):
         # Color mode
         scan_layout.addWidget(self._make_label("وضع اللون:"), 0, 1)
         self.combo_scan_color = QComboBox()
-        self.combo_scan_color.setStyleSheet(INPUT_STYLE)
+        self.combo_scan_color.setStyleSheet(self._input_style)
         self.combo_scan_color.addItems(["ألوان", "تدرج رمادي", "أبيض وأسود"])
         scan_layout.addWidget(self.combo_scan_color, 0, 0)
 
         # Source
         scan_layout.addWidget(self._make_label("المصدر:"), 1, 3)
         self.combo_scan_source = QComboBox()
-        self.combo_scan_source.setStyleSheet(INPUT_STYLE)
+        self.combo_scan_source.setStyleSheet(self._input_style)
         self.combo_scan_source.addItems(["السطح المستوي", "التلقيم التلقائي - وجه واحد", "التلقيم التلقائي - وجهين"])
         scan_layout.addWidget(self.combo_scan_source, 1, 2)
 
         # Format
         scan_layout.addWidget(self._make_label("الصيغة:"), 1, 1)
         self.combo_scan_format = QComboBox()
-        self.combo_scan_format.setStyleSheet(INPUT_STYLE)
+        self.combo_scan_format.setStyleSheet(self._input_style)
         self.combo_scan_format.addItems(["PNG", "JPEG", "TIFF", "BMP", "PDF"])
         scan_layout.addWidget(self.combo_scan_format, 1, 0)
 
         # Paper size
         scan_layout.addWidget(self._make_label("حجم الورق:"), 2, 3)
         self.combo_scan_paper = QComboBox()
-        self.combo_scan_paper.setStyleSheet(INPUT_STYLE)
+        self.combo_scan_paper.setStyleSheet(self._input_style)
         self.combo_scan_paper.addItems(["A4", "A3", "A5", "Letter", "Legal", "تلقائي"])
         scan_layout.addWidget(self.combo_scan_paper, 2, 2)
 
         # Checkboxes
         self.chk_auto_crop = QCheckBox("قص تلقائي")
-        self.chk_auto_crop.setStyleSheet("font-family: 'Cairo'; font-size: 13px; color: #e5e7eb;")
+        self.chk_auto_crop.setStyleSheet(f"font-size: 13px; color: {self._p['text_primary']};")
         scan_layout.addWidget(self.chk_auto_crop, 2, 1)
 
         self.chk_auto_deskew = QCheckBox("تعديل الميل تلقائياً")
-        self.chk_auto_deskew.setStyleSheet("font-family: 'Cairo'; font-size: 13px; color: #e5e7eb;")
+        self.chk_auto_deskew.setStyleSheet(f"font-size: 13px; color: {self._p['text_primary']};")
         scan_layout.addWidget(self.chk_auto_deskew, 2, 0)
 
         scan_group.setLayout(scan_layout)
@@ -529,17 +503,17 @@ class DeviceManagerWindow(BaseWindow):
 
         # Progress bar
         self.scan_progress = QProgressBar()
+        p = self._p
         self.scan_progress.setStyleSheet(f"""
             QProgressBar {{
-                border: 1px solid #374151;
+                border: 1px solid {p['border']};
                 border-radius: 4px;
                 text-align: center;
-                font-family: 'Cairo';
-                color: #e5e7eb;
-                background-color: #1f2937;
+                color: {p['text_primary']};
+                background-color: {p['bg_input']};
             }}
             QProgressBar::chunk {{
-                background-color: {ACCENT_COLOR};
+                background-color: {p['primary']};
                 border-radius: 3px;
             }}
         """)
@@ -563,13 +537,13 @@ class DeviceManagerWindow(BaseWindow):
         adapter_bar = QHBoxLayout()
 
         self.lbl_bt_adapter = QLabel("محول البلوتوث: جاري الفحص...")
-        self.lbl_bt_adapter.setStyleSheet("font-size: 14px; color: #9ca3af; font-family: 'Cairo'; font-weight: bold;")
+        self.lbl_bt_adapter.setStyleSheet(f"font-size: 14px; color: {self._p['text_muted']}; font-weight: bold;")
         adapter_bar.addWidget(self.lbl_bt_adapter)
 
         adapter_bar.addStretch()
 
         self.btn_bt_toggle = QPushButton("تشغيل البلوتوث")
-        self.btn_bt_toggle.setStyleSheet(BTN_SECONDARY_STYLE)
+        self.btn_bt_toggle.setStyleSheet(self._btn_secondary_style)
         self.btn_bt_toggle.setObjectName("btn_bt_toggle")
         adapter_bar.addWidget(self.btn_bt_toggle)
 
@@ -579,36 +553,36 @@ class DeviceManagerWindow(BaseWindow):
         toolbar = QHBoxLayout()
 
         btn_bt_scan = QPushButton("بحث عن أجهزة")
-        btn_bt_scan.setStyleSheet(BTN_STYLE)
+        btn_bt_scan.setStyleSheet(self._btn_style)
         btn_bt_scan.setObjectName("btn_bt_scan")
         toolbar.addWidget(btn_bt_scan)
 
         btn_bt_pair = QPushButton("اقتران")
-        btn_bt_pair.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_bt_pair.setStyleSheet(self._btn_secondary_style)
         btn_bt_pair.setObjectName("btn_bt_pair")
         toolbar.addWidget(btn_bt_pair)
 
         btn_bt_connect = QPushButton("اتصال")
-        btn_bt_connect.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_bt_connect.setStyleSheet(self._btn_secondary_style)
         btn_bt_connect.setObjectName("btn_bt_connect")
         toolbar.addWidget(btn_bt_connect)
 
         btn_bt_disconnect = QPushButton("قطع الاتصال")
-        btn_bt_disconnect.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_bt_disconnect.setStyleSheet(self._btn_secondary_style)
         btn_bt_disconnect.setObjectName("btn_bt_disconnect")
         toolbar.addWidget(btn_bt_disconnect)
 
         toolbar.addStretch()
 
         self.lbl_bt_count = QLabel("الأجهزة: 0")
-        self.lbl_bt_count.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo';")
+        self.lbl_bt_count.setStyleSheet(f"font-size: 13px; color: {self._p['text_muted']};")
         toolbar.addWidget(self.lbl_bt_count)
 
         layout.addLayout(toolbar)
 
         # Bluetooth devices table
         self.bt_table = QTableWidget()
-        self.bt_table.setStyleSheet(TABLE_STYLE)
+        self.bt_table.setStyleSheet(self._table_style)
         self.bt_table.setColumnCount(7)
         self.bt_table.setHorizontalHeaderLabels([
             "الجهاز", "النوع", "الحالة", "العنوان (MAC)", "الإشارة", "البطارية", "مقترن"
@@ -623,7 +597,7 @@ class DeviceManagerWindow(BaseWindow):
 
         # Device info panel
         info_group = QGroupBox("معلومات الجهاز")
-        info_group.setStyleSheet(SECTION_STYLE)
+        info_group.setStyleSheet(self._section_style)
         info_layout = QGridLayout()
         info_layout.setSpacing(8)
 
@@ -1056,7 +1030,7 @@ class DeviceManagerWindow(BaseWindow):
             }.get(status.value, '#6b7280')
 
             self.lbl_bt_adapter.setText(status_text)
-            self.lbl_bt_adapter.setStyleSheet(f"font-size: 14px; color: {color}; font-family: 'Cairo'; font-weight: bold;")
+            self.lbl_bt_adapter.setStyleSheet(f"font-size: 14px; color: {color}; font-weight: bold;")
 
             self.btn_bt_toggle.setText("إيقاف البلوتوث" if status.value == 'on' else "تشغيل البلوتوث")
 
@@ -1247,14 +1221,14 @@ class DeviceManagerWindow(BaseWindow):
     def _make_label(self, text: str) -> QLabel:
         """Create a styled label."""
         label = QLabel(text)
-        label.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo';")
+        label.setStyleSheet(f"font-size: 13px; color: {self._p['text_muted']};")
         label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         return label
 
     def _make_value_label(self, text: str) -> QLabel:
         """Create a styled value label."""
         label = QLabel(text)
-        label.setStyleSheet("font-size: 14px; font-weight: bold; color: #e5e7eb; font-family: 'Cairo';")
+        label.setStyleSheet(f"font-size: 14px; font-weight: bold; color: {self._p['text_primary']};")
         label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         return label
 

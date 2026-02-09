@@ -30,106 +30,7 @@ from PyQt5.QtCore import Qt, pyqtSignal
 
 from ui.windows.base import BaseWindow
 from core.logging import app_logger
-
-
-# ═══════════════════════════════════════════════════════
-# Styles
-# ═══════════════════════════════════════════════════════
-
-ACCENT_COLOR = "#06b6d4"  # Cyan
-
-SECTION_STYLE = f"""
-    QGroupBox {{
-        font-size: 16px;
-        font-weight: bold;
-        color: {ACCENT_COLOR};
-        border: 2px solid {ACCENT_COLOR}40;
-        border-radius: 10px;
-        margin-top: 10px;
-        padding-top: 20px;
-        font-family: 'Cairo', sans-serif;
-    }}
-    QGroupBox::title {{
-        subcontrol-origin: margin;
-        left: 15px;
-        padding: 0 8px;
-    }}
-"""
-
-BTN_STYLE = f"""
-    QPushButton {{
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        padding: 8px 16px;
-        background-color: {ACCENT_COLOR};
-        color: #1f2937;
-        border: none;
-        border-radius: 6px;
-        font-weight: bold;
-    }}
-    QPushButton:hover {{
-        background-color: #0891b2;
-    }}
-    QPushButton:disabled {{
-        background-color: #374151;
-        color: #6b7280;
-    }}
-"""
-
-BTN_SECONDARY_STYLE = """
-    QPushButton {
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        padding: 8px 16px;
-        background-color: #374151;
-        color: #e5e7eb;
-        border: 1px solid #4b5563;
-        border-radius: 6px;
-    }
-    QPushButton:hover {
-        background-color: #4b5563;
-    }
-"""
-
-TABLE_STYLE = """
-    QTableWidget {
-        background-color: #1f2937;
-        color: #e5e7eb;
-        border: 1px solid #374151;
-        border-radius: 6px;
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        gridline-color: #374151;
-    }
-    QTableWidget::item {
-        padding: 5px;
-    }
-    QTableWidget::item:selected {
-        background-color: #06b6d440;
-    }
-    QHeaderView::section {
-        background-color: #111827;
-        color: #9ca3af;
-        padding: 8px;
-        border: 1px solid #374151;
-        font-weight: bold;
-    }
-"""
-
-INPUT_STYLE = """
-    QLineEdit, QComboBox, QSpinBox {
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        padding: 6px 10px;
-        background-color: #1f2937;
-        color: #e5e7eb;
-        border: 1px solid #374151;
-        border-radius: 6px;
-    }
-    QLineEdit:focus, QComboBox:focus {
-        border-color: #06b6d4;
-    }
-"""
+from core.themes import get_current_palette
 
 
 class FileManagerWindow(BaseWindow):
@@ -154,8 +55,110 @@ class FileManagerWindow(BaseWindow):
 
         self._setup_ui()
 
+    def _build_styles(self):
+        """Build palette-based styles."""
+        p = get_current_palette()
+        self._p = p
+
+        self._section_style = f"""
+            QGroupBox {{
+                font-size: 16px;
+                font-weight: bold;
+                color: {p['accent']};
+                border: 2px solid {p['accent']}40;
+                border-radius: 10px;
+                margin-top: 10px;
+                padding-top: 20px;
+            }}
+            QGroupBox::title {{
+                subcontrol-origin: margin;
+                left: 15px;
+                padding: 0 8px;
+            }}
+        """
+
+        self._btn_style = f"""
+            QPushButton {{
+                padding: 8px 16px;
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+            }}
+            QPushButton:hover {{
+                background-color: {p['primary_hover']};
+            }}
+            QPushButton:disabled {{
+                background-color: {p['disabled_bg']};
+                color: {p['disabled_text']};
+            }}
+        """
+
+        self._btn_secondary_style = f"""
+            QPushButton {{
+                padding: 8px 16px;
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+                border: 1px solid {p['border']};
+                border-radius: 6px;
+            }}
+            QPushButton:hover {{
+                background-color: {p['bg_hover']};
+            }}
+        """
+
+        self._table_style = f"""
+            QTableWidget {{
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+                border: 1px solid {p['border']};
+                border-radius: 6px;
+                gridline-color: {p['border']};
+            }}
+            QTableWidget::item {{
+                padding: 5px;
+            }}
+            QTableWidget::item:selected {{
+                background-color: {p['selection_bg']};
+            }}
+            QHeaderView::section {{
+                background-color: {p['bg_header']};
+                color: {p['text_muted']};
+                padding: 8px;
+                border: 1px solid {p['border']};
+                font-weight: bold;
+            }}
+        """
+
+        self._input_style = f"""
+            QLineEdit, QComboBox, QSpinBox {{
+                padding: 6px 10px;
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+                border: 1px solid {p['border']};
+                border-radius: 6px;
+            }}
+            QLineEdit:focus, QComboBox:focus {{
+                border-color: {p['border_focus']};
+            }}
+        """
+
+        self._textedit_style = f"""
+            QTextEdit {{
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+                border: 1px solid {p['border']};
+                border-radius: 6px;
+                padding: 10px;
+            }}
+        """
+
     def _setup_ui(self):
         """Setup the window UI."""
+        self._build_styles()
+        p = self._p
+
         central = QWidget()
         self.setCentralWidget(central)
 
@@ -169,44 +172,41 @@ class FileManagerWindow(BaseWindow):
         title.setStyleSheet(f"""
             font-size: 24px;
             font-weight: bold;
-            color: {ACCENT_COLOR};
+            color: {p['accent']};
             padding: 8px;
-            font-family: 'Cairo', sans-serif;
         """)
         main_layout.addWidget(title)
 
         # Status bar (created early - tabs may call _set_status during init)
         self.status_label = QLabel("جاهز")
         self.status_label.setStyleSheet(
-            "font-size: 12px; color: #6b7280; font-family: 'Cairo'; padding: 5px;"
+            f"font-size: 12px; color: {p['text_muted']}; padding: 5px;"
         )
 
         # Tab Widget
         self.tabs = QTabWidget()
         self.tabs.setStyleSheet(f"""
             QTabWidget::pane {{
-                border: 1px solid #374151;
+                border: 1px solid {p['border']};
                 border-radius: 6px;
-                background-color: #111827;
+                background-color: {p['bg_main']};
             }}
             QTabBar::tab {{
-                background-color: #1f2937;
-                color: #9ca3af;
+                background-color: {p['bg_input']};
+                color: {p['text_muted']};
                 padding: 10px 20px;
                 margin-right: 2px;
                 border-top-left-radius: 6px;
                 border-top-right-radius: 6px;
-                font-family: 'Cairo', sans-serif;
-                font-size: 13px;
                 font-weight: bold;
             }}
             QTabBar::tab:selected {{
-                background-color: {ACCENT_COLOR};
-                color: #1f2937;
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
             }}
             QTabBar::tab:hover:!selected {{
-                background-color: #374151;
-                color: #e5e7eb;
+                background-color: {p['bg_hover']};
+                color: {p['text_primary']};
             }}
         """)
         self.tabs.setLayoutDirection(Qt.RightToLeft)
