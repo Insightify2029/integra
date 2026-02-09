@@ -22,6 +22,7 @@ from pathlib import Path
 from datetime import datetime
 
 from core.logging import app_logger
+from core.device_manager.subprocess_utils import HIDDEN_STARTUPINFO
 
 
 class ScanColorMode(Enum):
@@ -377,7 +378,11 @@ class ScanEngine:
             "} else { Write-Output 'NO_SCANNER' }"
         )
 
-        result = subprocess.run(['powershell', '-Command', ps_script], capture_output=True, text=True, timeout=60)
+        result = subprocess.run(
+            ['powershell', '-Command', ps_script],
+            capture_output=True, text=True, timeout=60,
+            startupinfo=HIDDEN_STARTUPINFO,
+        )
 
         if 'SUCCESS' in result.stdout:
             if on_progress:

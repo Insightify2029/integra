@@ -175,6 +175,12 @@ class FileManagerWindow(BaseWindow):
         """)
         main_layout.addWidget(title)
 
+        # Status bar (created early - tabs may call _set_status during init)
+        self.status_label = QLabel("جاهز")
+        self.status_label.setStyleSheet(
+            "font-size: 12px; color: #6b7280; font-family: 'Cairo'; padding: 5px;"
+        )
+
         # Tab Widget
         self.tabs = QTabWidget()
         self.tabs.setStyleSheet(f"""
@@ -214,11 +220,7 @@ class FileManagerWindow(BaseWindow):
 
         main_layout.addWidget(self.tabs)
 
-        # Status bar
-        self.status_label = QLabel("جاهز")
-        self.status_label.setStyleSheet(
-            "font-size: 12px; color: #6b7280; font-family: 'Cairo'; padding: 5px;"
-        )
+        # Add status bar at the bottom (was created above before tabs)
         main_layout.addWidget(self.status_label)
 
     # ═══════════════════════════════════════════════════════

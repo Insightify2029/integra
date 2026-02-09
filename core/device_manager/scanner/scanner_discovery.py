@@ -18,6 +18,7 @@ from enum import Enum
 from datetime import datetime
 
 from core.logging import app_logger
+from core.device_manager.subprocess_utils import HIDDEN_STARTUPINFO
 
 
 class ScannerType(Enum):
@@ -307,7 +308,11 @@ class ScannerDiscovery:
                 }
                 $result | ConvertTo-Json
             """
-            result = subprocess.run(['powershell', '-Command', ps_script], capture_output=True, text=True, timeout=15)
+            result = subprocess.run(
+                ['powershell', '-Command', ps_script],
+                capture_output=True, text=True, timeout=15,
+                startupinfo=HIDDEN_STARTUPINFO,
+            )
             if result.returncode == 0 and result.stdout.strip():
                 import json
                 data = json.loads(result.stdout)

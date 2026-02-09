@@ -73,11 +73,17 @@ class ToastManager:
     def show_success(self, parent: QWidget, title: str, message: str,
                      duration: Optional[int] = None):
         """Show success toast notification."""
+        if not self._enabled:
+            app_logger.info(f"Toast [SUCCESS]: {title} - {message}")
+            return
         self._show_toast(parent, title, message, ToastPreset.SUCCESS, duration)
 
     def show_error(self, parent: QWidget, title: str, message: str,
                    duration: Optional[int] = None):
         """Show error toast notification."""
+        if not self._enabled:
+            app_logger.info(f"Toast [ERROR]: {title} - {message}")
+            return
         # Errors stay longer by default
         duration = duration or self.duration + 2000
         self._show_toast(parent, title, message, ToastPreset.ERROR, duration)
@@ -85,11 +91,17 @@ class ToastManager:
     def show_warning(self, parent: QWidget, title: str, message: str,
                      duration: Optional[int] = None):
         """Show warning toast notification."""
+        if not self._enabled:
+            app_logger.info(f"Toast [WARNING]: {title} - {message}")
+            return
         self._show_toast(parent, title, message, ToastPreset.WARNING, duration)
 
     def show_info(self, parent: QWidget, title: str, message: str,
                   duration: Optional[int] = None):
         """Show info toast notification."""
+        if not self._enabled:
+            app_logger.info(f"Toast [INFO]: {title} - {message}")
+            return
         self._show_toast(parent, title, message, ToastPreset.INFORMATION, duration)
 
     def _show_toast(self, parent: QWidget, title: str, message: str,

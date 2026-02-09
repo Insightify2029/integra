@@ -14,10 +14,12 @@ from .printer import PrinterDiscovery, PrintManager, PrinterInfo
 from .scanner import ScannerDiscovery, ScanEngine, BatchScanner, ScannerInfo
 from .bluetooth import BluetoothManager, BluetoothDevice
 from .integration import PDFStudioBridge
+from .subprocess_utils import HIDDEN_STARTUPINFO
 
 __all__ = [
     'PrinterDiscovery', 'PrintManager', 'PrinterInfo',
     'ScannerDiscovery', 'ScanEngine', 'BatchScanner', 'ScannerInfo',
     'BluetoothManager', 'BluetoothDevice',
     'PDFStudioBridge',
+    'HIDDEN_STARTUPINFO',
 ]

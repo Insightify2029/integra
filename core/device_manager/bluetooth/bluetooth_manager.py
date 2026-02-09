@@ -20,6 +20,7 @@ from enum import Enum
 from datetime import datetime
 
 from core.logging import app_logger
+from core.device_manager.subprocess_utils import HIDDEN_STARTUPINFO
 
 
 class BluetoothDeviceType(Enum):
@@ -362,7 +363,8 @@ class BluetoothManager:
         try:
             result = subprocess.run(
                 ['powershell', '-Command', 'Get-PnpDevice -Class Bluetooth -Status OK | Select-Object -First 1 | ConvertTo-Json'],
-                capture_output=True, text=True, timeout=10
+                capture_output=True, text=True, timeout=10,
+                startupinfo=HIDDEN_STARTUPINFO,
             )
             if result.returncode == 0 and result.stdout.strip():
                 return BluetoothAdapterStatus.ON
@@ -374,7 +376,8 @@ class BluetoothManager:
         try:
             result = subprocess.run(
                 ['powershell', '-Command', 'Get-PnpDevice -Class Bluetooth | Enable-PnpDevice -Confirm:$false'],
-                capture_output=True, text=True, timeout=10
+                capture_output=True, text=True, timeout=10,
+                startupinfo=HIDDEN_STARTUPINFO,
             )
             return result.returncode == 0
         except Exception:
@@ -384,7 +387,8 @@ class BluetoothManager:
         try:
             result = subprocess.run(
                 ['powershell', '-Command', 'Get-PnpDevice -Class Bluetooth -Status OK | Disable-PnpDevice -Confirm:$false'],
-                capture_output=True, text=True, timeout=10
+                capture_output=True, text=True, timeout=10,
+                startupinfo=HIDDEN_STARTUPINFO,
             )
             return result.returncode == 0
         except Exception:
@@ -401,7 +405,11 @@ class BluetoothManager:
                 "}; "
                 "$devices | ConvertTo-Json"
             )
-            result = subprocess.run(['powershell', '-Command', ps_script], capture_output=True, text=True, timeout=timeout + 5)
+            result = subprocess.run(
+                ['powershell', '-Command', ps_script],
+                capture_output=True, text=True, timeout=timeout + 5,
+                startupinfo=HIDDEN_STARTUPINFO,
+            )
             if result.returncode == 0 and result.stdout.strip():
                 data = json.loads(result.stdout)
                 if isinstance(data, dict):
@@ -453,7 +461,11 @@ class BluetoothManager:
     def _unpair_windows(self, address: str) -> bool:
         try:
             ps_script = f"Get-PnpDevice | Where-Object {{ $_.InstanceId -like '*{address}*' }} | Remove-PnpDevice -Confirm:$false"
-            result = subprocess.run(['powershell', '-Command', ps_script], capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                ['powershell', '-Command', ps_script],
+                capture_output=True, text=True, timeout=10,
+                startupinfo=HIDDEN_STARTUPINFO,
+            )
             return result.returncode == 0
         except Exception:
             return False
@@ -461,7 +473,11 @@ class BluetoothManager:
     def _connect_windows(self, address: str) -> bool:
         try:
             ps_script = f"Get-PnpDevice | Where-Object {{ $_.InstanceId -like '*{address}*' }} | Enable-PnpDevice -Confirm:$false"
-            result = subprocess.run(['powershell', '-Command', ps_script], capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                ['powershell', '-Command', ps_script],
+                capture_output=True, text=True, timeout=10,
+                startupinfo=HIDDEN_STARTUPINFO,
+            )
             return result.returncode == 0
         except Exception:
             return False
@@ -469,7 +485,11 @@ class BluetoothManager:
     def _disconnect_windows(self, address: str) -> bool:
         try:
             ps_script = f"Get-PnpDevice | Where-Object {{ $_.InstanceId -like '*{address}*' }} | Disable-PnpDevice -Confirm:$false"
-            result = subprocess.run(['powershell', '-Command', ps_script], capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                ['powershell', '-Command', ps_script],
+                capture_output=True, text=True, timeout=10,
+                startupinfo=HIDDEN_STARTUPINFO,
+            )
             return result.returncode == 0
         except Exception:
             return False
