@@ -28,6 +28,10 @@ SYNC.bat
 # Theme preferences (user-specific)
 theme_settings.json
 
+# Local runtime files
+email_cache.db
+modules/data/copilot/
+
 # Logging (A1)
 logs/
 
