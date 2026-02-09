@@ -24,6 +24,7 @@ from PyQt5.QtCore import Qt, QRect, QPoint, QSize, pyqtSignal, QMimeData
 from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QDrag, QCursor
 
 from core.logging import app_logger
+from core.themes import get_current_palette
 
 
 class WidgetType(Enum):
@@ -285,7 +286,8 @@ class DesignWidgetItem(QFrame):
         style = self.widget.style
 
         if self._selected:
-            border = f"2px solid #2563eb"
+            p = get_current_palette()
+            border = f"2px solid {p['primary']}"
         else:
             border = f"{style.border_width}px solid {style.border_color}"
 
@@ -312,8 +314,9 @@ class DesignWidgetItem(QFrame):
             painter.setRenderHint(QPainter.Antialiasing)
 
             # Draw resize handles
-            painter.setPen(QPen(QColor("#2563eb"), 1))
-            painter.setBrush(QBrush(Qt.white))
+            p = get_current_palette()
+            painter.setPen(QPen(QColor(p['primary']), 1))
+            painter.setBrush(QBrush(QColor(p['bg_card'])))
 
             size = self._handle_size
             rect = self.rect()
@@ -486,11 +489,13 @@ class FormCanvas(QScrollArea):
         self.setWidget(self._canvas)
 
         # Style
-        self._canvas.setStyleSheet("background: #f9fafb;")
-        self.setStyleSheet("""
-            QScrollArea {
-                border: 1px solid #e5e7eb;
-            }
+        p = get_current_palette()
+        self._p = p
+        self._canvas.setStyleSheet(f"background: {p['bg_main']};")
+        self.setStyleSheet(f"""
+            QScrollArea {{
+                border: 1px solid {p['border']};
+            }}
         """)
 
     def _paint_canvas(self, event) -> None:
@@ -498,17 +503,18 @@ class FormCanvas(QScrollArea):
         painter = QPainter(self._canvas)
 
         # Background
-        painter.fillRect(self._canvas.rect(), QColor("#f9fafb"))
+        p = self._p
+        painter.fillRect(self._canvas.rect(), QColor(p['bg_main']))
 
         # Form area
         form_rect = QRect(20, 20, 600, 500)
-        painter.fillRect(form_rect, QColor("#ffffff"))
-        painter.setPen(QPen(QColor("#e5e7eb"), 1))
+        painter.fillRect(form_rect, QColor(p['bg_card']))
+        painter.setPen(QPen(QColor(p['border']), 1))
         painter.drawRect(form_rect)
 
         # Grid
         if self._show_grid:
-            painter.setPen(QPen(QColor("#f0f0f0"), 1))
+            painter.setPen(QPen(QColor(p['border_light']), 1))
 
             for x in range(form_rect.left(), form_rect.right(), self._grid_size):
                 painter.drawLine(x, form_rect.top(), x, form_rect.bottom())

@@ -25,6 +25,7 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QKeySequence, QCloseEvent
 
 from core.logging import app_logger
+from core.themes import get_current_palette
 
 from .form_canvas import FormCanvas, WidgetType
 from .widget_toolbox import WidgetToolbox
@@ -130,19 +131,20 @@ class FormBuilderWindow(QMainWindow):
         self.setCentralWidget(central)
 
         # Style
-        self.setStyleSheet("""
-            QMainWindow {
-                background: #f3f4f6;
-            }
-            QToolBar {
-                background: #ffffff;
-                border-bottom: 1px solid #e5e7eb;
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            QMainWindow {{
+                background: {p['bg_main']};
+            }}
+            QToolBar {{
+                background: {p['bg_card']};
+                border-bottom: 1px solid {p['border']};
                 padding: 4px;
-            }
-            QMenuBar {
-                background: #ffffff;
-                border-bottom: 1px solid #e5e7eb;
-            }
+            }}
+            QMenuBar {{
+                background: {p['bg_card']};
+                border-bottom: 1px solid {p['border']};
+            }}
         """)
 
     def _setup_menus(self) -> None:

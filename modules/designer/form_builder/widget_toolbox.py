@@ -19,6 +19,7 @@ from PyQt5.QtCore import Qt, QMimeData
 from PyQt5.QtGui import QDrag, QPixmap, QPainter, QColor, QFont, QCursor
 
 from core.logging import app_logger
+from core.themes import get_current_palette
 from .form_canvas import WidgetType
 
 
@@ -143,16 +144,18 @@ class DraggableWidgetButton(QToolButton):
         """Setup button UI."""
         self.setFixedSize(70, 60)
 
-        self.setStyleSheet("""
-            QToolButton {
-                background: #ffffff;
-                border: 1px solid #e5e7eb;
+        p = get_current_palette()
+        self._p = p
+        self.setStyleSheet(f"""
+            QToolButton {{
+                background: {p['bg_card']};
+                border: 1px solid {p['border']};
                 border-radius: 6px;
-            }
-            QToolButton:hover {
-                background: #f3f4f6;
-                border-color: #2563eb;
-            }
+            }}
+            QToolButton:hover {{
+                background: {p['bg_hover']};
+                border-color: {p['primary']};
+            }}
         """)
 
         self.setToolTip(
@@ -169,15 +172,16 @@ class DraggableWidgetButton(QToolButton):
         painter.setRenderHint(QPainter.Antialiasing)
 
         # Draw icon
+        p = self._p
         icon = self._definition.get("icon", "?")
         painter.setFont(QFont("Segoe UI Emoji", 16))
-        painter.setPen(QColor("#2563eb"))
+        painter.setPen(QColor(p['primary']))
         painter.drawText(self.rect().adjusted(0, -8, 0, 0), Qt.AlignHCenter | Qt.AlignVCenter, icon)
 
         # Draw label
         name = self._definition.get("name_ar", "")
         painter.setFont(QFont("Cairo", 8))
-        painter.setPen(QColor("#374151"))
+        painter.setPen(QColor(p['text_primary']))
         painter.drawText(self.rect().adjusted(0, 20, 0, 0), Qt.AlignHCenter | Qt.AlignBottom, name)
 
     def mousePressEvent(self, event) -> None:
@@ -203,10 +207,11 @@ class DraggableWidgetButton(QToolButton):
             pixmap = QPixmap(60, 50)
             pixmap.fill(Qt.transparent)
 
+            p = self._p
             painter = QPainter(pixmap)
             painter.setRenderHint(QPainter.Antialiasing)
-            painter.setBrush(QColor("#f0f9ff"))
-            painter.setPen(QColor("#2563eb"))
+            painter.setBrush(QColor(p['primary_light']))
+            painter.setPen(QColor(p['primary']))
             painter.drawRoundedRect(2, 2, 56, 46, 6, 6)
 
             icon = self._definition.get("icon", "?")
@@ -240,11 +245,12 @@ class WidgetToolbox(QWidget):
         layout.setSpacing(10)
 
         # Title
+        p = get_current_palette()
         title = QLabel("الأدوات")
-        title.setStyleSheet("""
+        title.setStyleSheet(f"""
             font-size: 14px;
             font-weight: bold;
-            color: #1f2937;
+            color: {p['text_primary']};
             padding: 5px;
         """)
         layout.addWidget(title)
@@ -278,11 +284,11 @@ class WidgetToolbox(QWidget):
 
                 # Category header
                 header = QLabel(f"{category.get('icon', '')} {category.get('name_ar', '')}")
-                header.setStyleSheet("""
+                header.setStyleSheet(f"""
                     font-weight: bold;
-                    color: #374151;
+                    color: {p['text_primary']};
                     padding: 5px;
-                    background: #f3f4f6;
+                    background: {p['bg_main']};
                     border-radius: 4px;
                 """)
                 content_layout.addWidget(header)
@@ -310,11 +316,11 @@ class WidgetToolbox(QWidget):
         layout.addWidget(scroll)
 
         # Style
-        self.setStyleSheet("""
-            WidgetToolbox {
-                background: #ffffff;
-                border-left: 1px solid #e5e7eb;
-            }
+        self.setStyleSheet(f"""
+            WidgetToolbox {{
+                background: {p['bg_card']};
+                border-left: 1px solid {p['border']};
+            }}
         """)
 
         self.setMinimumWidth(180)

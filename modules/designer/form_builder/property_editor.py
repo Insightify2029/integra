@@ -20,6 +20,7 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QColor
 
 from core.logging import app_logger
+from core.themes import get_current_palette
 from .form_canvas import FormWidget, WidgetType, ValidationRule
 
 
@@ -36,10 +37,11 @@ class ColorButton(QPushButton):
         self.setFixedSize(60, 25)
 
     def _update_style(self) -> None:
+        p = get_current_palette()
         self.setStyleSheet(f"""
             QPushButton {{
                 background: {self._color};
-                border: 1px solid #d1d5db;
+                border: 1px solid {p['border']};
                 border-radius: 4px;
             }}
         """)
@@ -69,23 +71,25 @@ class PropertyGroup(QGroupBox):
         self._layout.setSpacing(8)
         self._row = 0
 
-        self.setStyleSheet("""
-            QGroupBox {
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            QGroupBox {{
                 font-weight: bold;
-                border: 1px solid #e5e7eb;
+                border: 1px solid {p['border']};
                 border-radius: 6px;
                 margin-top: 12px;
-            }
-            QGroupBox::title {
+            }}
+            QGroupBox::title {{
                 subcontrol-origin: margin;
                 subcontrol-position: top right;
                 padding: 0 8px;
-            }
+            }}
         """)
 
     def add_property(self, label: str, widget: QWidget) -> None:
+        p = get_current_palette()
         lbl = QLabel(label)
-        lbl.setStyleSheet("font-weight: normal; color: #6b7280;")
+        lbl.setStyleSheet(f"font-weight: normal; color: {p['text_muted']};")
         self._layout.addWidget(lbl, self._row, 0)
         self._layout.addWidget(widget, self._row, 1)
         self._row += 1
@@ -117,17 +121,18 @@ class FormPropertyEditor(QWidget):
         layout.setSpacing(10)
 
         # Title
+        p = get_current_palette()
         self._title = QLabel("الخصائص")
-        self._title.setStyleSheet("""
+        self._title.setStyleSheet(f"""
             font-size: 14px;
             font-weight: bold;
-            color: #1f2937;
+            color: {p['text_primary']};
         """)
         layout.addWidget(self._title)
 
         # No selection message
         self._no_selection = QLabel("اختر عنصراً لتعديل خصائصه")
-        self._no_selection.setStyleSheet("color: #9ca3af; padding: 20px;")
+        self._no_selection.setStyleSheet(f"color: {p['text_muted']}; padding: 20px;")
         self._no_selection.setAlignment(Qt.AlignCenter)
         layout.addWidget(self._no_selection)
 
@@ -145,11 +150,11 @@ class FormPropertyEditor(QWidget):
         self._general = PropertyGroup("عام")
 
         self._id_label = QLabel()
-        self._id_label.setStyleSheet("color: #6b7280;")
+        self._id_label.setStyleSheet(f"color: {p['text_muted']};")
         self._general.add_property("المعرّف:", self._id_label)
 
         self._type_label = QLabel()
-        self._type_label.setStyleSheet("color: #2563eb; font-weight: bold;")
+        self._type_label.setStyleSheet(f"color: {p['primary']}; font-weight: bold;")
         self._general.add_property("النوع:", self._type_label)
 
         self._label_edit = QLineEdit()
@@ -241,16 +246,16 @@ class FormPropertyEditor(QWidget):
         self._props_widget.hide()
 
         # Style
-        self.setStyleSheet("""
-            FormPropertyEditor {
-                background: #ffffff;
-                border-right: 1px solid #e5e7eb;
-            }
-            QLineEdit, QSpinBox, QComboBox {
+        self.setStyleSheet(f"""
+            FormPropertyEditor {{
+                background: {p['bg_card']};
+                border-right: 1px solid {p['border']};
+            }}
+            QLineEdit, QSpinBox, QComboBox {{
                 padding: 5px;
-                border: 1px solid #d1d5db;
+                border: 1px solid {p['border']};
                 border-radius: 4px;
-            }
+            }}
         """)
 
         self.setMinimumWidth(250)

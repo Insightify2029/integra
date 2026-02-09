@@ -22,6 +22,7 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QColor, QFont
 
 from core.logging import app_logger
+from core.themes import get_current_palette
 
 from .design_canvas import CanvasElement, ElementType, ElementStyle
 
