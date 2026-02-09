@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "saved_at": "2026-02-09T10:05:22.338480",
+  "sessions": [
+    {
+      "id": "04e02b30-b418-4acb-8e01-199f22729429",
+      "title": "جلسة جديدة",
+      "summary": "جلسة فارغة",
+      "entry_count": 0,
+      "query_count": 0,
+      "response_count": 0,
+      "action_count": 0,
+      "error_count": 0,
+      "started_from_screen": "",
+      "started_from_module": "",
+      "started_at": "2026-02-09T10:05:19.558610",
+      "ended_at": "2026-02-09T10:05:22.338480",
+      "last_activity": "2026-02-09T10:05:19.558610",
+      "is_active": false,
+      "entries": []
+    },
+    {
+      "id": "dc41a725-3d17-4509-8b3c-6f7c1370d0ef",
+      "title": "جلسة جديدة",
+      "summary": "جلسة فارغة",
+      "entry_count": 0,
+      "query_count": 0,
+      "response_count": 0,
+      "action_count": 0,
+      "error_count": 0,
+      "started_from_screen": "",
+      "started_from_module": "",
+      "started_at": "2026-02-09T09:18:58.291913",
+      "ended_at": "2026-02-09T09:18:59.768289",
+      "last_activity": "2026-02-09T10:05:19.557623",
+      "is_active": false,
+      "entries": []
+    },
+    {
+      "id": "dacb34f1-6fbc-4f8c-b8f7-c1713ac3017d",
+      "title": "جلسة جديدة",
+      "summary": "جلسة فارغة",
+      "entry_count": 0,
+      "query_count": 0,
+      "response_count": 0,
+      "action_count": 0,
+      "error_count": 0,
+      "started_from_screen": "",
+      "started_from_module": "",
+      "started_at": "2026-02-08T12:04:16.414164",
+      "ended_at": "2026-02-08T12:04:20.174442",
+      "last_activity": "2026-02-09T10:05:19.557623",
+      "is_active": false,
+      "entries": []
+    }
+  ]
+}

@@ -1,0 +1,858 @@
+{
+  "version": 1,
+  "stats": {
+    "total_items": 35,
+    "items_by_type": {
+      "document": 10,
+      "database": 7,
+      "module": 15,
+      "help": 3
+    },
+    "last_indexed": "2026-02-09T10:05:19.532609",
+    "index_duration_ms": 131.99639320373535
+  },
+  "items": [
+    {
+      "id": "doc_docs_ALL_Libraries.txt",
+      "source_type": "document",
+      "title": "All Libraries.Txt",
+      "content": "<<<<<<< HEAD\nPackage                       Version\n----------------------------- -----------\naiofiles                      25.1.0\naiohappyeyeballs              2.6.1\naiohttp                       3.13.3\naiosignal                     1.4.0\naiosqlite                     0.22.1\nalembic                       1.18.3\nalphashape                    1.3.1\naltgraph                      0.17.5\nannotated-types               0.7.0\nanyio                         4.12.0\nAPScheduler                   3.11.2\nargon2-cffi                   25.1.0\nargon2-cffi-bindings          25.1.0\nastroid                       4.0.3\nasttokens                     3.0.1\nattrs                         25.4.0\nbackports.tarfile             1.2.0\nbeautifulsoup4                4.14.3\nblack                         26.1.0\nbrotli                        1.2.0\ncairocffi                     1.7.1\nCairoSVG                      2.8.2\ncertifi                       2025.11.12\ncffi                          2.0.0\nchardet                       5.2.0\ncharset-normalizer            3.4.4\nclick                         8.3.1\nclick-log                     0.4.0\ncloudscraper                  1.2.71\ncolorama                      0.4.6\ncolorthief                    0.2.1\ncomm                          0.2.3\ncontourpy                     1.3.3\nCrawl4AI                      0.7.8\ncryptography                  46.0.3\ncssselect                     1.3.0\ncssselect2                    0.8.0\ncurl_cffi                     0.14.0\ncycler                        0.12.1\ndarkdetect                    0.7.1\nDataRecorder                  3.6.2\ndebugpy                       1.8.20\ndecorator                     5.2.1\ndefusedxml                    0.7.1\ndill                          0.4.1\ndistro                        1.9.0\ndnspython                     2.8.0\nDownloadKit                   2.0.7\nDrissionPage                  4.1.1.2\net_xmlfile                    2.0.0\nexecuting                     2.2.1\nfake-http-header              0.3.5\nfake-useragent                2.2.0\nFaker                         40.1.0\nfastuuid                      0.14.0\nfeedparser                    6.0.12\nfilelock                      3.20.2\nfonttools                     4.61.1\nfrozenlist                    1.8.0\nfsspec                        2025.12.0\ngreenlet                      3.3.0\ngrpcio                        1.67.1\nh11                           0.16.0\nh2                            4.3.0\nhelpdev                       0.7.1\nhf-xet                        1.2.0\nhpack                         4.1.0\nhtml5lib                      1.1\nhttpcore                      1.0.9\nhttpx                         0.28.1\nhuggingface_hub               1.2.3\nhumanize                      4.15.0\nhyperframe                    6.1.0\nidna                          3.11\nimportlib_metadata            8.7.1\nipykernel                     7.1.0\nipython                       9.10.0\nipython_pygments_lexers       1.1.1\nisort                         7.0.0\njaraco.classes                3.4.0\njaraco.context                6.1.0\njaraco.functools              4.4.0\njedi                          0.19.2\nJinja2                        3.1.6\njiter                         0.12.0\njoblib                        1.5.3\njsonschema                    4.25.1\njsonschema-specifications     2025.9.1\njupyter_client                8.8.0\njupyter_core                  5.9.1\nkeyring                       25.7.0\nkids.cache                    0.0.7\nkiwisolver                    1.4.9\nlark                          1.3.1\nlibsass                       0.23.0\nlitellm                       1.80.11\nloguru                        0.7.3\nlxml                          5.4.0\nMako                          1.3.10\nmarkdown-it-py                4.0.0\nMarkupSafe                    3.0.3\nmatplotlib                    3.10.8\nmatplotlib-inline             0.2.1\nmccabe                        0.7.0\nmdurl                         0.1.2\nmock                          5.2.0\nmore-itertools                10.8.0\nmultidict                     6.7.0\nmypy_extensions               1.1.0\nnarwhals                      2.16.0\nnest-asyncio                  1.6.0\nnetworkx                      3.6.1\nnltk                          3.9.2\nnumpy                         2.2.6\nollama                        0.6.1\nopenai                        2.14.0\nopencv-python                 4.12.0.88\nopenpyxl                      3.1.5\noutcome                       1.3.0.post0\npackaging                     25.0\npandas                        2.3.3\nparso                         0.8.5\npatchright                    1.57.2\npathspec                      1.0.4\npdfminer.six                  20251107\npdfplumber                    0.11.8\npefile                        2024.8.26\nperlin_noise                  1.14\npillow                        12.0.0\npip                           26.0\nplatformdirs                  4.5.1\nplaywright                    1.57.0\nplaywright-stealth            2.0.0\nplotly                        6.5.2\nprompt_toolkit ",
+      "keywords": [],
+      "metadata": {
+        "file_path": "D:\\Projects\\Integra\\claude\\ALL_Libraries.txt",
+        "file_name": "ALL_Libraries.txt",
+        "source": "Documentation",
+        "source_id": "docs"
+      },
+      "indexed_at": "2026-02-09T10:05:19.401611"
+    },
+    {
+      "id": "doc_docs_CODE_REVIEW_AUDIT.md",
+      "source_type": "document",
+      "title": "INTEGRA - تقرير مراجعة شامل للكود",
+      "content": "# INTEGRA - تقرير مراجعة شامل للكود\n**تاريخ المراجعة:** 2026-02-06\n**النطاق:** جميع ملفات Python في المشروع (526 ملف)\n**المراجع:** Claude Code Audit\n\n---\n\n## ملخص تنفيذي\n\nتمت مراجعة كامل قاعدة الكود الخاصة بمشروع INTEGRA. تم اكتشاف **95 مشكلة** مصنفة كالتالي:\n\n| التصنيف | عدد المشاكل | حرج | عالي | متوسط | منخفض |\n|---------|------------|------|------|--------|-------|\n| أخطاء برمجية (Logic/Crash) | 17 | 4 | 5 | 5 | 3 |\n| ثغرات أمنية (Security) | 10 | 2 | 2 | 3 | 3 |\n| مشاكل تصميمية (Design) | 14 | 0 | 1 | 8 | 5 |\n| مشاكل Threading | 14 | 0 | 3 | 6 | 5 |\n| مشاكل قاعدة البيانات | 7 | 1 | 2 | 2 | 2 |\n| أخطاء Import | 4 | 1 | 0 | 2 | 1 |\n| مشاكل واجهة المستخدم | 16 | 3 | 2 | 7 | 4 |\n| مشاكل منطق الأعمال | 5 | 0 | 3 | 2 | 0 |\n| مشاكل الأداء | 4 | 0 | 0 | 4 | 0 |\n| أخطاء معالجة الأخطاء | 4 | 0 | 0 | 3 | 1 |\n| **المجموع** | **95** | **11** | **18** | **42** | **24** |\n\n---\n\n## القسم 1: أخطاء حرجة (CRITICAL) - يجب إصلاحها فوراً\n\n### CRIT-01: تسرب اتصالات قاعدة البيانات في جميع وحدات الاستعلام\n**الملفات:**\n- `core/database/queries/select_query.py`\n- `core/database/queries/insert_query.py`\n- `core/database/queries/update_query.py`\n- `core/database/queries/delete_query.py`\n- `core/database/queries/scalar_query.py`\n\n**المشكلة:** جميع ملفات الاستعلام تحصل على اتصال من المجمع ولا تعيده أبداً:\n```python\nconn = get_connection()\ncursor = conn.cursor()\ntry:\n    # ... use cursor ...\nfinally:\n    if cursor:\n        cursor.close()\n    # conn is NEVER returned to the pool!\n```\n**التأثير:** مع كل استعلام، يتم حجز اتصال ولا يُعاد. بمرور الوقت، سيُستنزف مجمع الاتصالات وسيتوقف التطبيق عن العمل.\n\n---\n\n### CRIT-02: `execute_query` غير موجودة - ImportError عند تشغيل وحدة BI\n**الملف:** `core/bi/views_manager.py:22`\n```python\nfrom core.database import select_all, select_one, execute_query  # execute_query لا وجود لها!\n```\n**التأثير:** أي محاولة لاستخدام `BIViewsManager` ستفشل فوراً بخطأ `ImportError`.\n\n---\n\n### CRIT-03: انهيار المجدول عند الساعة 23:00 يومياً\n**الملف:** `core/bi/export_scheduler.py:170`\n```python\nnext_run = now.replace(minute=0, second=0, microsecond=0)\nnext_run = next_run.replace(hour=next_run.hour + 1)  # hour=24 → ValueError!\n```\n**التأثير:** عندما تكون الساعة 23، يحسب `hour=24` مما يسبب `ValueError` وانهيار المجدول يومياً.\n\n---\n\n### CRIT-04: انهيار EventBus عند أحداث متزامنة بنفس الأولوية\n**الملف:** `core/ai/orchestration/event_bus.py`\n**المشكلة:** عندما يكون لحدثين نفس الأولوية والتوقيت، يحاول `PriorityQueue` مقارنة كائنات `Event` التي لا تملك `__lt__`، مما يسبب `TypeError`.\n\n---\n\n### CRIT-05: `os.startfile()` غير متوفرة على Linux/macOS\n**الملف:** `ui/components/tables/enterprise/export_manager.py:500`\n```python\nos.startfile(message)  # Windows-only function!\n```\n**التأثير:** فتح ملف التصدير يسبب `AttributeError` على أي نظام غير Windows.\n\n---\n\n### CRIT-06: `FilterPanel` الجديدة لا تُضاف للواجهة بعد `set_columns()`\n**الملف:** `ui/components/tables/enterprise/enterprise_table_widget.py:109-126`\n```python\ndef set_columns(self, columns, keys=None):\n    self._filter_panel = FilterPanel(columns)  # تُنشأ لكن لا تُضاف للـ layout!\n```\n**التأثير:** بعد استدعاء `set_columns()`، تتوقف لوحة الفلترة عن العمل نهائياً.\n\n---\n\n### CRIT-07: `QThread.terminate()` يسبب انهياراً غير متوقع\n**الملف:** `ui/components/email/email_panel.py:460-461, 506`\n```python\nself._load_worker.terminate()  # خطير جداً حسب توثيق Qt!\n```\n**التأثير:** إنهاء Thread بشكل قسري يمكن أن يترك البيانات في حالة غير متسقة ويسبب انهيار التطبيق.\n\n---\n\n### CRIT-08: انهيار خاصية `due_date_formatted` في آخر أيام الشهر\n**الملف:** `modules/tasks/models/task_models.py:519`\n```python\nelif due == today.replace(day=today.day + 1) if today.day < 28 else today:\n    return \"غداً\"\n```\n**التأثير:** لن تظهر كلمة \"غداً\" أبداً بعد اليوم 28 من الشهر، وقد يسبب `ValueError` في بعض الحالات.\n\n---\n\n### CRIT-09: انهيار التنقل في التقويم عند عبور حدود الشهر\n**الملف:** `modules/calendar/widgets/calendar_header.py:149-193`\n```python\nweek_start = self.current_date.replace(day=self.current_date.day - days_since_sunday)  # day < 1 → crash!\nself.current_date = self.current_date.replace(day=self.current_date.day + 7)  # day > 31 → crash!\n```\n**التأثير:** أزرار التنقل (السابق/التالي) تسبب انهيار التطبيق عند عبور حدود الشهر في عرض الأسبوع واليوم.\n\n---\n\n### CRIT-10: `QPixmap.scaled()` يستقبل float بدل int\n**الملف:** `modules/tasks/screens/task_board/kanban_board.py:145-152`\n```python\npixmap = pixmap.scaled(pixmap.width() * 0.8, pixmap.height() * 0.8, ...)  # float → TypeError\ndrag.setHotSpot(event.pos() * 0.8)  # QPoint * float → TypeError\n```\n**التأثير:** سحب بطاقة مهمة على لوحة Kanban يسبب `TypeError`.\n\n---\n\n### CRIT-11: حقن SQL في مصمم النماذج\n**الملف:** `modules/designer/form_builder/data_binding.py:158-203`\n```python\nf\"SELECT * FROM {table_name} WHERE id = %s\"     # table_name غير محمي!\nf\"UPDATE {table_name} SET {set_clause} WHERE id = %s\"  # أسماء الأعمدة غير محمية!\nf\"INSERT INTO {table_name} ({columns}) VALUES ...\"      # كل شيء غير محمي!\n```\n**التأثير:** ثغرة حقن SQL تسمح بتنفيذ أوامر SQL عشوائ",
+      "keywords": [
+        "اتصالات",
+        "شامل",
+        "تنفيذي",
+        "(critical)",
+        "تسرب",
+        "-",
+        "فوراً",
+        "مراجعة",
+        "حرجة",
+        "integra",
+        "القسم",
+        "crit-01:",
+        "يجب",
+        "للكود",
+        "أخطاء",
+        "ملخص",
+        "تقرير",
+        "إصلاحها",
+        "1:"
+      ],
+      "metadata": {
+        "file_path": "D:\\Projects\\Integra\\claude\\CODE_REVIEW_AUDIT.md",
+        "file_name": "CODE_REVIEW_AUDIT.md",
+        "source": "Documentation",
+        "source_id": "docs"
+      },
+      "indexed_at": "2026-02-09T10:05:19.402609"
+    },
+    {
+      "id": "doc_docs_ERP infrastructure research.txt",
+      "source_type": "document",
+      "title": "Erp Infrastructure Research.Txt",
+      "content": "ERP infrastructure research\n\nResearch plan created\n\n\n\n\n\n\n\nGathered 595 sources\n\nfavicon\ngithub.com\n\n68 sources\n\nfavicon\nmedium.com\n\n39 sources\n\nfavicon\ndoc.qt.io\n\n35 sources\n\nfavicon\npypi.org\n\n25 sources\n\n428 other sources\n\n\nProfessional Excel/file integration patterns for PyQt5+PostgreSQL ERP apps require watchdog library with debouncing for file monitoring, periodic sync (15-30 min) over real-time, and database-wins conflict resolution strategy\n91 sources\n\nPyQt5 desktop ERP applications benefit from enterprise patterns including QTimer-based scheduled tasks, QThreadPool for thread-safe database operations, QSystemTrayIcon for background running, and MVP architecture with signal/slot event buses for decoupled module communication\n120 sources\n\nComprehensive security architecture for PyQt5/PostgreSQL ERP applications requires multi-layer validation, Argon2 password hashing, OS keyring credential storage, and session-per-user-action transaction patterns\n110 sources\n\nComprehensive automation patterns for PyQt5/PostgreSQL ERP apps including watchdog/QFileSystemWatcher for file monitoring, APScheduler's QtScheduler for cron-based scheduling, business-rules library for JSON-configurable if-then automation, python-statemachine for approval workflows, and QThreadPool with connection pooling for thread-safe background processing\n82 sources\n\nComprehensive best practices documented for Python/PyQt5/PostgreSQL ERP applications covering logging (Loguru), global exception handling, auto-save recovery, PostgreSQL trigger-based audit trails, health monitoring, and connection pooling\n92 sources\n\nPyQt5 desktop ERP applications can implement system tray notifications via QSystemTrayIcon, in-app toast notifications using pyqttoast/QNotifications libraries, and PDF reports through ReportLab or WeasyPrint with full export support for CSV, Excel, and JSON formats\n100 sources\n\n# Building enterprise-grade desktop ERP software with PyQt5 and PostgreSQL\n\nThe architecture of professional ERP systems like Odoo and ERPNext reveals a consistent pattern: **three-tier layered architecture with module-based extensibility, hierarchical configuration management, and event-driven automation**. For a PyQt5 + PostgreSQL desktop application, you should implement a manifest-based plugin system, optimistic locking with version columns for multi-user support, and integrate APScheduler with SQLAlchemyJobStore for persistent job scheduling. The most critical insight is that modern Python-based ERPs (Odoo, ERPNext/Frappe) provide directly applicable patterns since they share the same technology stack—PostgreSQL databases, Python business logic, and module-driven architecture that can be adapted from web to desktop with PyQt5 replacing the presentation layer.\n\n---\n\n## How Odoo and ERPNext structure their module architecture\n\nProfessional ERP systems share a remarkably consistent architectural foundation despite their different target markets. **Odoo uses a strict three-tier MVC architecture** where models are Python classes with automatic PostgreSQL mapping, views are XML templates, and controllers handle business logic. Every feature exists as a module—a self-contained directory with a `__manifest__.py` file declaring dependencies, version, and data files. ERPNext takes this further with its **DocType system**, where every business entity (Customer, Invoice, Order) is metadata-driven with auto-generated forms, REST APIs, and role-based permissions baked into the framework.\n\nThe key infrastructure pattern across both systems is **manifest-based module discovery**. When the application starts, it scans designated directories for modules, reads their manifests to determine dependencies, and loads them in topologically sorted order. This enables third-party extensions without modifying core code. For PyQt5 implementation, Python's `importlib` module provides the foundation:\n\n```python\nclass PluginManager:\n    def discover_plugins(self, plugin_dir):\n        for finder, name, ispkg in pkgutil.iter_modules([plugin_dir]):\n            if ispkg:\n                manifest = self._load_manifest(f\"{plugin_dir}/{name}/__manifest__.py\")\n                self.plugins[name] = {'manifest': manifest, 'loaded': False}\n    \n    def load_plugin(self, name):\n        spec = importlib.util.spec_from_file_location(name, f\"plugins/{name}/__init__.py\")\n        module = importlib.util.module_from_spec(spec)\n        spec.loader.exec_module(module)\n        if hasattr(module, 'init_plugin'):\n            module.init_plugin(self.get_api())\n```\n\nSAP S/4HANA and Oracle NetSuite use different approaches—SAP with ABAP-based modules organized by Lines of Business (Finance, Procurement, Manufacturing), NetSuite with SuiteScript JavaScript customization. However, both reinforce the principle of **domain-separated modules with well-defined extension points**.\n\n## Configuration management follows a three-level hierarchy\n\nEnterprise software universally implements hierarchical settings where **sys",
+      "keywords": [
+        "and",
+        "software",
+        "odoo",
+        "postgresql",
+        "structure",
+        "architecture",
+        "building",
+        "their",
+        "with",
+        "erp",
+        "erpnext",
+        "how",
+        "pyqt5",
+        "module",
+        "configuration",
+        "follows",
+        "enterprise-grade",
+        "management",
+        "desktop"
+      ],
+      "metadata": {
+        "file_path": "D:\\Projects\\Integra\\claude\\ERP infrastructure research.txt",
+        "file_name": "ERP infrastructure research.txt",
+        "source": "Documentation",
+        "source_id": "docs"
+      },
+      "indexed_at": "2026-02-09T10:05:19.403612"
+    },
+    {
+      "id": "doc_docs_FIX_PLAN.md",
+      "source_type": "document",
+      "title": "INTEGRA - خطة إصلاح شاملة للكود",
+      "content": "# INTEGRA - خطة إصلاح شاملة للكود\n**تاريخ الإنشاء:** 6 فبراير 2026\n**المرجع:** `claude/CODE_REVIEW_AUDIT.md` (95 مشكلة)\n**الحالة:** جارٍ التنفيذ\n\n---\n\n## منهجية المتابعة عبر الجلسات\n\n### كيف تبدأ كل جلسة جديدة:\n```\nاقرأ الملف claude/FIX_PLAN.md وأكمل الجلسة التالية غير المكتملة في خطة الإصلاح\n```\n\n### قواعد العمل:\n1. **بداية الجلسة:** اقرأ هذا الملف → حدد الجلسة المطلوبة → ابدأ التنفيذ\n2. **أثناء الجلسة:** حدّث حالة كل مشكلة فور إصلاحها (🔴 → ✅)\n3. **نهاية الجلسة:** حدّث هذا الملف + SESSION_LOG.md → commit + push + PR\n4. **لا تنتقل للجلسة التالية** قبل إكمال الحالية بالكامل\n\n### رموز الحالة:\n| الرمز | المعنى |\n|-------|--------|\n| ✅ | لم يبدأ |\n| 🟡 | قيد التنفيذ |\n| ✅ | مكتمل |\n| ⏭️ | مؤجل (مع سبب) |\n\n---\n\n## الجلسة 1: الأخطاء الحرجة - انهيارات التطبيق\n**المدة المتوقعة:** جلسة واحدة\n**الهدف:** منع كل حالات الانهيار (Crash) الفورية\n**الحالة:** ✅ مكتمل (2026-02-06)\n\n| # | المشكلة | الخطورة | الملفات | الحالة |\n|---|---------|---------|---------|--------|\n| CRIT-01 | تسرب اتصالات قاعدة البيانات | حرج | `core/database/queries/*.py` (5 ملفات) | ✅ |\n| CRIT-03 | انهيار المجدول عند الساعة 23:00 | حرج | `core/bi/export_scheduler.py` | ✅ |\n| CRIT-04 | انهيار EventBus عند أحداث متزامنة | حرج | `core/ai/orchestration/event_bus.py` | ✅ |\n| CRIT-08 | انهيار `due_date_formatted` آخر الشهر | حرج | `modules/tasks/models/task_models.py` | ✅ |\n| CRIT-09 | انهيار التنقل في التقويم | حرج | `modules/calendar/widgets/calendar_header.py` | ✅ |\n| CRIT-10 | `QPixmap.scaled()` float بدل int | حرج | `modules/tasks/screens/task_board/kanban_board.py` | ✅ |\n\n**الإصلاحات المنفذة:**\n- CRIT-01: إضافة `return_connection(conn)` في `finally` block لجميع ملفات الاستعلام (5 ملفات) + إنشاء دالة `return_connection()` في `connector.py`\n- CRIT-03: استخدام `timedelta(hours=1)` بدل `hour + 1`\n- CRIT-04: إضافة `__lt__` لكلاس `Event` للمقارنة عبر `timestamp`\n- CRIT-08: استخدام `timedelta(days=1)` بدل `replace(day=today.day + 1)`\n- CRIT-09: استخدام `timedelta(days=7)` و `timedelta(days=1)` بدل `replace(day=...)` في جميع دوال التنقل + إصلاح عرض الأسبوع عبر حدود الشهر\n- CRIT-10: تحويل لـ `int()` قبل `scaled()` + إنشاء `QPoint` يدوياً بدل `event.pos() * 0.8`\n\n---\n\n## الجلسة 2: الأخطاء الحرجة - أمان + Import + واجهة\n**المدة المتوقعة:** جلسة واحدة\n**الهدف:** سد ثغرات SQL Injection + إصلاح ImportError + إصلاح واجهة معطلة\n**الحالة:** ✅ مكتمل (2026-02-06)\n\n| # | المشكلة | الخطورة | الملفات | الحالة |\n|---|---------|---------|---------|--------|\n| CRIT-11 | حقن SQL في مصمم النماذج | حرج | `modules/designer/form_builder/data_binding.py` | ✅ |\n| HIGH-01 | حقن SQL في BI Exporter | عالي | `core/bi/data_exporter.py` | ✅ |\n| HIGH-02 | حقن SQL في BI Views Manager | عالي | `core/bi/views_manager.py` | ✅ |\n| CRIT-02 | `execute_query` ImportError | حرج | `core/bi/views_manager.py` | ✅ |\n| CRIT-05 | `os.startfile()` Linux/macOS | حرج | `ui/components/tables/enterprise/export_manager.py` | ✅ |\n| CRIT-06 | FilterPanel لا تُضاف للواجهة | حرج | `ui/components/tables/enterprise/enterprise_table_widget.py` | ✅ |\n| CRIT-07 | `QThread.terminate()` خطير | حرج | `ui/components/email/email_panel.py` | ✅ |\n\n**الإصلاحات المنفذة:**\n- CRIT-11: استخدام `psycopg2.sql.Identifier()` و `sql.SQL()` في `load_data()` و `save_data()` + التحقق من `table_name` ضد `_schemas`\n- HIGH-01: استخدام `psql.SQL(\"SELECT * FROM {}.{}\").format(psql.Identifier(\"bi_views\"), psql.Identifier(view_name))` في `export_to_csv()` و `export_to_excel()`\n- HIGH-02: نفس المنهج لـ `get_view_row_count()`, `drop_view()`, `get_view_data()` باستخدام `psycopg2.sql.Identifier`\n- CRIT-02: إنشاء دالة `execute_query()` جديدة في `core/database/queries/execute_query.py` وتسجيلها في `__init__.py`\n- CRIT-05: استخدام `sys.platform` للتمييز: `os.startfile` (Windows) / `subprocess.Popen(['open', ...])` (macOS) / `subprocess.Popen(['xdg-open', ...])` (Linux)\n- CRIT-06: استبدال FilterPanel القديمة بالجديدة في الـ layout عبر `replaceWidget()` + `deleteLater()` للقديمة\n- CRIT-07: استبدال `terminate()` بـ `requestInterruption()` + `quit()` + `wait(3000)` في كلا العاملين\n\n---\n\n## الجلسة 3: المشاكل العالية - وظائف معطلة\n**المدة المتوقعة:** جلسة واحدة\n**الهدف:** إصلاح الوظائف التي لا تعمل أصلاً\n**الحالة:** ✅ مكتمل (2026-02-06)\n\n| # | المشكلة | الخطورة | الملفات | الحالة |\n|---|---------|---------|---------|--------|\n| HIGH-08 | زر \"حفظ\" لا يحفظ | عالي | `ui/dialogs/settings/settings_dialog.py` | ✅ |\n| HIGH-09 | \"اختبار الاتصال\" لا يختبر المدخلات | عالي | `ui/dialogs/settings/settings_dialog.py` | ✅ |\n| HIGH-10 | فلاتر \"اليوم\" و\"المتأخرة\" لا تعمل | عالي | `modules/tasks/screens/task_list/task_list_screen.py` | ✅ |\n| HIGH-11 | `get_by_employee()` تستثني IN_PROGRESS | عالي | `modules/tasks/repository/task_repository.py` | ✅ |\n| HIGH-14 | PDFAIStudio غير مستوردة | عالي | `modules/file_manager/window/file_manager_window.py` | ✅ |\n| HIGH-03 | ActionType ValueError غير محمي | عالي | `core/ai/agents/action_agent.py` | ✅ |\n| HIGH-04 | Singleton يتجاهل host | عالي | `core/ai/ollama_client.py` | ✅ |\n\n**الإصلاحات المنفذة:**\n- HIGH-08: ربط `save_btn` بدالة `_sa",
+      "keywords": [
+        "كيف",
+        "شاملة",
+        "إصلاح",
+        "الجلسة",
+        "المتابعة",
+        "كل",
+        "منهجية",
+        "-",
+        "جديدة:",
+        "رموز",
+        "integra",
+        "الحالة:",
+        "للكود",
+        "عبر",
+        "خطة",
+        "قواعد",
+        "العمل:",
+        "جلسة",
+        "الجلسات",
+        "تبدأ"
+      ],
+      "metadata": {
+        "file_path": "D:\\Projects\\Integra\\claude\\FIX_PLAN.md",
+        "file_name": "FIX_PLAN.md",
+        "source": "Documentation",
+        "source_id": "docs"
+      },
+      "indexed_at": "2026-02-09T10:05:19.404611"
+    },
+    {
+      "id": "doc_docs_INTEGRA_AUDIT_PROGRAM.md",
+      "source_type": "document",
+      "title": "INTEGRA Comprehensive Audit Program",
+      "content": "# INTEGRA Comprehensive Audit Program\n# برنامج التدقيق والمراجعة الشامل\n\n**Version:** 1.0\n**Date:** 8 February 2026\n**Scope:** Full system audit across 10 dimensions\n**Codebase:** 528 Python files | ~97,000 lines of code\n\n---\n\n## Overview / نظرة عامة\n\nThis program defines a **10-phase audit system** modeled after enterprise ERP quality standards\n(SAP, Oracle, Odoo). Each phase is independent and produces a scored report.\n\n```\nPhase 1: Code Quality ──→ Phase 2: Architecture ──→ Phase 3: Database\n    │                          │                          │\nPhase 4: Performance ──→ Phase 5: Security ──→ Phase 6: Thread Safety\n    │                          │                          │\nPhase 7: UI/UX ──→ Phase 8: Testing ──→ Phase 9: Dead Code ──→ Phase 10: Final Score\n```\n\n**Target:** Zero errors, maximum speed, bulletproof architecture.\n\n---\n\n## Scoring System / نظام التقييم\n\nEach phase scores 0-100. Final grade is weighted average:\n\n| Phase | Weight | Description |\n|-------|--------|-------------|\n| 1. Code Quality | 15% | Clean, typed, documented code |\n| 2. Architecture | 15% | Module separation, patterns, coupling |\n| 3. Database | 15% | Schema, queries, performance, safety |\n| 4. Performance | 15% | Speed, memory, startup time |\n| 5. Security | 10% | OWASP, secrets, injection prevention |\n| 6. Thread Safety | 10% | Locks, race conditions, deadlocks |\n| 7. UI/UX | 8% | Theme, responsiveness, memory |\n| 8. Testing | 5% | Coverage, regression, integration |\n| 9. Dead Code | 4% | Unused imports, functions, files |\n| 10. Final Report | 3% | Documentation completeness |\n\n**Grade Scale:**\n- **A+ (95-100):** Enterprise production ready\n- **A (90-94):** Professional quality\n- **B (80-89):** Good, minor issues\n- **C (70-79):** Needs improvement\n- **D (60-69):** Significant problems\n- **F (<60):** Critical issues, not production ready\n\n---\n\n## Phase 1: Code Quality Audit / تدقيق جودة الكود\n\n### 1.1 Static Analysis with Pylint\n```bash\npython -m pylint core/ modules/ ui/ --rcfile=.pylintrc --output-format=json > audit_results/pylint_report.json\n```\n\n**Checks:**\n- [ ] All functions have type hints\n- [ ] No bare `except: pass`\n- [ ] No `except Exception: pass` without logging\n- [ ] Cyclomatic complexity < 15 per function\n- [ ] No functions > 50 lines\n- [ ] No files > 500 lines (flag for refactoring)\n- [ ] No duplicate code blocks > 6 lines\n- [ ] All imports are used\n- [ ] No wildcard imports (`from x import *`)\n- [ ] Consistent naming (snake_case functions, PascalCase classes)\n\n### 1.2 Type Checking with MyPy\n```bash\npython -m mypy core/ modules/ ui/ --config-file=mypy.ini --html-report audit_results/mypy/\n```\n\n**Checks:**\n- [ ] All public functions have return type annotations\n- [ ] All function parameters have type annotations\n- [ ] No `Any` type used without justification\n- [ ] Qt method calls use `int()` conversion (Rule 7)\n- [ ] No implicit `Optional` without explicit annotation\n\n### 1.3 Code Complexity with Radon\n```bash\npip install radon\nradon cc core/ modules/ ui/ -s -n C  # Show functions with complexity >= C\nradon mi core/ modules/ ui/ -s -n B  # Show files with maintainability < B\n```\n\n**Thresholds:**\n| Metric | Target | Action if exceeded |\n|--------|--------|--------------------|\n| Cyclomatic Complexity | < 10 (A/B) | Refactor function |\n| Maintainability Index | > 20 (A/B) | Simplify module |\n| Lines per function | < 50 | Split function |\n| Lines per file | < 500 | Split into modules |\n| Lines per class | < 300 | Extract sub-classes |\n\n### 1.4 Known INTEGRA Patterns Scanner\nRun the custom scanner from `scripts/integra_scanner.py`:\n```bash\npython scripts/integra_scanner.py core/ modules/ ui/\n```\n\n**Scans for all 13 mandatory rules violations:**\n1. `date.replace(day=` without timedelta\n2. f-string SQL queries\n3. Shared state without Lock\n4. Non-thread-safe singletons\n5. `QThread.terminate()`\n6. Widget lifecycle violations\n7. Float passed to Qt int methods\n8. DB connections not in finally\n9. Bare except/silent exception\n10. Password/secret exposure\n11. Hardcoded colors\n12. `os.startfile()` without platform check\n13. Blocking operations in UI thread\n\n### 1.5 Flagged Files (from current analysis)\nThese files exceed 800 lines and need refactoring:\n\n| File | Lines | Priority |\n|------|-------|----------|\n| `modules/desktop_apps/window/desktop_apps_window.py` | 1,390 | HIGH |\n| `modules/file_manager/window/file_manager_window.py` | 1,294 | HIGH |\n| `modules/device_manager/window/device_manager_window.py` | 1,280 | HIGH |\n| `modules/tasks/repository/task_repository.py` | 905 | MEDIUM |\n| `modules/designer/report_designer/design_canvas.py` | 862 | MEDIUM |\n| `core/reporting/template_engine.py` | 850 | MEDIUM |\n| `modules/calendar/repository/calendar_repository.py` | 827 | MEDIUM |\n| `core/desktop_apps/automation/desktop_automation.py` | 826 | MEDIUM |\n| `core/ai/workflow/workflow_engine.py` | 824 | MEDIUM |\n| `modules/copilot/components/chat_sidebar.py` | 806 | MEDIUM |\n| `core/reporting/pdf_generator.py` | 801 | ME",
+      "keywords": [
+        "program",
+        "نظرة",
+        "برنامج",
+        "audit",
+        "code",
+        "overview",
+        "comprehensive",
+        "والمراجعة",
+        "نظام",
+        "system",
+        "integra",
+        "phase",
+        "التقييم",
+        "عامة",
+        "الشامل",
+        "scoring",
+        "/",
+        "1:",
+        "التدقيق"
+      ],
+      "metadata": {
+        "file_path": "D:\\Projects\\Integra\\claude\\INTEGRA_AUDIT_PROGRAM.md",
+        "file_name": "INTEGRA_AUDIT_PROGRAM.md",
+        "source": "Documentation",
+        "source_id": "docs"
+      },
+      "indexed_at": "2026-02-09T10:05:19.405610"
+    },
+    {
+      "id": "doc_docs_INTEGRA_ERROR_REPORT.md",
+      "source_type": "document",
+      "title": "INTEGRA - Code Review Error Report",
+      "content": "# INTEGRA - Code Review Error Report\n\n**Date:** 2026-02-06\n**Reviewed by:** Claude AI\n**Codebase:** INTEGRA v2.1.0\n**Total Python Files:** 526\n**Branch:** main\n**Last Updated:** 2026-02-06 (بعد إصلاح الأخطاء)\n\n---\n\n## Summary\n\n| Severity | Count | Fixed | Skipped | Remaining |\n|----------|-------|-------|---------|-----------|\n| CRITICAL | 4 | 3 | 1 | 0 |\n| HIGH | 4 | 3 | 1 | 0 |\n| MEDIUM | 5 | 5 | 0 | 0 |\n| LOW | 6 | 6 | 0 | 0 |\n| **Total** | **19** | **17** | **2** | **0** |\n\n**Syntax Errors:** 0\n**Broken Imports:** 0\n**Duplicate Definitions:** 0\n\n### Fix Status Legend\n- ✅ = Fixed\n- ⏭️ = Skipped (by user decision)\n\n---\n\n## CRITICAL ERRORS (4)\n\n### BUG-001: Hardcoded Database Password in Source Code ⏭️ مُستبعد\n- **File:** `core/config/database/db_password.py:6`\n- **Type:** Security Vulnerability\n- **Status:** ⏭️ **مُستبعد بقرار المستخدم** - البرنامج للاستخدام الشخصي حالياً ونقل كلمة المرور سيعطّل العمل\n- **Code:**\n```python\nDB_PASSWORD = \"Zatca@Cfo2029\"\n```\n- **Impact:** Password committed to Git and visible to anyone with repository access. This is the most critical security vulnerability in the codebase.\n- **Fix:** Move to `.env` file and read via `os.getenv(\"DB_PASSWORD\", \"\")`. Rotate this password immediately.\n\n---\n\n### BUG-002: SQL Injection in `get_count()` Function ✅ تم الإصلاح\n- **File:** `core/database/queries/scalar_query.py`\n- **Type:** Security Vulnerability\n- **Status:** ✅ **تم الإصلاح** - استخدام `psycopg2.sql.Identifier` لاسم الجدول\n- **Fix Applied:**\n```python\nfrom psycopg2 import sql as psycopg2_sql\nquery = psycopg2_sql.SQL(\"SELECT COUNT(*) FROM {}\").format(\n    psycopg2_sql.Identifier(table_name)\n)\n```\n\n---\n\n### BUG-003: `NameError` - `conn.rollback()` When Connection Fails ✅ تم الإصلاح\n- **Files:** `insert_query.py`, `update_query.py`, `delete_query.py` (6 functions)\n- **Type:** Runtime Error\n- **Status:** ✅ **تم الإصلاح** - `conn = None` قبل `try` + فحص `if conn:` قبل `rollback()`\n\n---\n\n### BUG-004: `AttributeError` - No `None` Check for Database Connection ✅ تم الإصلاح\n- **Files:** All 5 query handler files\n- **Type:** Runtime Error\n- **Status:** ✅ **تم الإصلاح** - إضافة `if conn is None: return` بعد `get_connection()`\n\n---\n\n## HIGH SEVERITY ERRORS (4)\n\n### BUG-005: Cross-Platform Crash - `os.startfile()` (Windows Only) ⏭️ مُستبعد\n- **File:** `ui/components/tables/enterprise/export_manager.py:500`\n- **Type:** Runtime Error on Linux/macOS\n- **Status:** ⏭️ **مُستبعد بقرار المستخدم** - البرنامج يعمل على Windows 10 فقط حالياً\n\n---\n\n### BUG-006: SQL Injection in Audit Manager ✅ تم الإصلاح\n- **File:** `core/database/audit/audit_manager.py`\n- **Type:** Security Vulnerability\n- **Status:** ✅ **تم الإصلاح** - استخدام `psycopg2.sql.Identifier` و `psycopg2.sql.SQL` في `enable_audit()` و `disable_audit()`\n\n---\n\n### BUG-007: SQL Injection in Health Check ✅ تم الإصلاح\n- **File:** `INTEGRA_HEALTH_CHECK.py:302`\n- **Type:** Security Vulnerability\n- **Status:** ✅ **تم الإصلاح** - استخدام `psycopg2.sql.Identifier` بدل f-string\n\n---\n\n### BUG-008: Inconsistent `connect()` Return Types ✅ تم الإصلاح\n- **File:** `core/database/connection/connector.py`\n- **Type:** Logic Error\n- **Status:** ✅ **تم الإصلاح** - `connect()` ترجع `True` دائماً عند النجاح (بدلاً من `_connection` object)\n\n---\n\n## MEDIUM SEVERITY ERRORS (5)\n\n### BUG-009: Password Leak via Environment Variable ✅ تم الإصلاح\n- **File:** `core/backup/backup_manager.py`\n- **Type:** Security Risk\n- **Status:** ✅ **تم الإصلاح** - كلمة المرور تُمرر عبر `env` parameter في `subprocess.run()` بدلاً من `os.environ` العام\n- **Fix Applied:** الدوال `_build_pg_dump_command`, `_build_pg_restore_command`, `_build_psql_command` ترجع `(cmd, env)` tuple\n\n---\n\n### BUG-010: Command Injection via `os.system()` ✅ تم الإصلاح\n- **File:** `create_shortcut.py:14`\n- **Type:** Security Risk\n- **Status:** ✅ **تم الإصلاح** - استبدال `os.system()` بـ `subprocess.run([sys.executable, \"-m\", \"pip\", \"install\", \"Pillow\"])`\n\n---\n\n### BUG-011: Multiple `subprocess.run()` with `shell=True` ✅ تم الإصلاح\n- **Files:** `scanner_discovery.py`, `scan_engine.py`, `bluetooth_manager.py`\n- **Type:** Security Risk\n- **Status:** ✅ **تم الإصلاح** - جميع الاستدعاءات تستخدم `['powershell', '-Command', script]` بدون `shell=True`\n\n---\n\n### BUG-012: Thread Safety - Direct Access to Private `_connection` ✅ تم الإصلاح\n- **Files:** `connector.py`, `connection_checker.py`, `disconnector.py`\n- **Type:** Thread Safety\n- **Status:** ✅ **تم الإصلاح** - إضافة `get_raw_connection()` كدالة عامة واستخدامها بدل الوصول المباشر لـ `_connection`\n\n---\n\n### BUG-013: `get_connection()` Potential Infinite Reconnect Loop ✅ تم الإصلاح\n- **File:** `core/database/connection/connector.py`\n- **Type:** Logic Error\n- **Status:** ✅ **تم الإصلاح** - إضافة `app_logger.warning(\"Database connection unavailable\")` عند فشل الاتصال\n\n---\n\n## LOW SEVERITY ISSUES (6)\n\n### BUG-014: `print()` Instead of Proper Logging ✅ تم الإصلاح\n- **Files:** All 5 query handler files\n- **Type:** Code Quality\n- **Status:** ✅ **تم الإصلاح** - استبدال جميع `print()`",
+      "keywords": [
+        "review",
+        "hardcoded",
+        "errors",
+        "critical",
+        "source",
+        "legend",
+        "password",
+        "bug-001:",
+        "(4)",
+        "code",
+        "-",
+        "report",
+        "in",
+        "status",
+        "fix",
+        "integra",
+        "error",
+        "database",
+        "summary"
+      ],
+      "metadata": {
+        "file_path": "D:\\Projects\\Integra\\claude\\INTEGRA_ERROR_REPORT.md",
+        "file_name": "INTEGRA_ERROR_REPORT.md",
+        "source": "Documentation",
+        "source_id": "docs"
+      },
+      "indexed_at": "2026-02-09T10:05:19.405610"
+    },
+    {
+      "id": "doc_docs_INTEGRA_INFRASTRUCTURE_PLAN.md",
+      "source_type": "document",
+      "title": "INTEGRA v2.1 - خطة تطوير البنية التحتية المتقدمة",
+      "content": "# INTEGRA v2.1 - خطة تطوير البنية التحتية المتقدمة\n**التاريخ:** 2 فبراير 2026\n**الحالة:** مسودة للمراجعة والاعتماد\n\n---\n\n## نظرة عامة\n\nهذه الخطة تغطي **16 محوراً رئيسياً** لتطوير البنية التحتية:\n\n| المحور | الوصف | الأولوية |\n|---|---|---|\n| **A** | البنية التحتية الأساسية (من ERP Research) ✅ | أساسي - يُبنى عليه كل شيء |\n| **B** | الذكاء الاصطناعي المدمج (Ollama AI) ✅ | استراتيجي - يرفع كفاءة العمل |\n| **C** | موديول الإيميل (Outlook Classic Sync) ✅ | تشغيلي - يربط سير العمل اليومي |\n| **D** | تحسينات المكتبات المتاحة (Enhancement Track) ✅ | تحسيني - استغلال الإمكانيات الموجودة |\n| **G** | موديول الإيميل المتقدم (AI-Powered Email) ✅ | متقدم - ذكاء اصطناعي للإيميل |\n| **H** | موديول المهام (Tasks Module) ✅ | استراتيجي - القلب النابض للنظام |\n| **I** | موديول التقويم (Calendar Module) ✅ | استراتيجي - تنظيم الوقت والمواعيد |\n| **J** | نظام الإشعارات الذكي (Smart Notifications) ✅ | أساسي - الرابط بين كل شيء |\n| **K** | منظومة وكلاء AI المتكاملة (AI Orchestration) ✅ | ثوري - العقل المدبر للبرنامج |\n| **L** | مصمم التقارير والنماذج (Report & Form Designer) ✅ | احترافي - تصميم حر للتقارير والنماذج |\n| **M** | الربط مع Power BI Desktop (BI Connector) ✅ | تحليلي - تحليلات متقدمة بدون تراخيص |\n| **N** | المساعد الذكي المتكامل (AI Copilot) ✅ | استراتيجي - العقل المدبر للبرنامج |\n| **O** | الوعي الزمني الفائق (Hyper Time Intelligence) ✅ | أساسي - البُعد الزمني للذكاء |\n| **P** | مدير الملفات الذكي (Smart File Manager) ✅ | استراتيجي - إدارة الملفات بالذكاء الاصطناعي |\n| **Q** | إدارة الأجهزة والطابعات (Device & Printer Manager) ✅ | أساسي - المسح الضوئي والطباعة |\n| **R** | تكامل تطبيقات سطح المكتب (Desktop Apps Integration) ✅ | مكتمل - WhatsApp/Telegram/Teams/Automation |\n\n> **ملاحظة مهمة:** المحور D يعتمد على تحليل ملف `claude/ALL_Libraries.txt` لاستغلال المكتبات المثبتة فعلياً\n\n### 🎯 الرؤية الجديدة: AI-First Workflow Automation\n\n```\n📧 الإيميل ──→ 🔔 الإشعارات ──→ ✅ المهام ──→ 📅 التقويم\n                    ↑                                   │\n                    └────────── 🤖 AI يدير كل شيء ──────┘\n```\n\n**السيناريو النموذجي:**\n1. وصل إيميل من HR بطلب تسوية إجازة\n2. AI يقرأ ويفهم الإيميل تلقائياً\n3. إشعار يظهر في صفحة الإشعارات (أيقونة الجرس)\n4. المستخدم ينشئ مهمة من الإشعار\n5. المهمة تتسجل في التقويم\n6. AI يفتح نموذج التسوية ويملأ البيانات تلقائياً\n7. المستخدم يعتمد ويحفظ\n8. خيار طباعة أو إرسال رد للإيميل الأصلي\n\n---\n\n## المحور A: البنية التحتية الأساسية\n\n> مصدر: ERP Infrastructure Research + أنماط Odoo/ERPNext\n\n### A1. نظام Logging احترافي (Loguru) ✅ **مكتمل**\n- **الحالة:** ✅ تم التنفيذ\n- **المكتبة:** `loguru` (مثبتة ✅)\n- **المطلوب:**\n  - ملفات log يومية مع rotation (10MB) و retention (30 يوم) ✅\n  - مستويات: DEBUG/INFO/WARNING/ERROR/CRITICAL ✅\n  - ملف audit منفصل لتتبع العمليات الحساسة (رواتب، تعديلات موظفين) ✅\n  - JSON structured logging للتحليل ✅\n- **الملفات المنفذة:**\n  - `core/logging/app_logger.py` ✅\n  - `core/logging/audit_logger.py` ✅\n\n### A2. معالجة الأخطاء الشاملة (Global Exception Handler) ✅ **مكتمل**\n- **الحالة:** ✅ تم التنفيذ\n- **المطلوب:**\n  - التقاط كل الأخطاء غير المعالجة في PyQt5 ✅\n  - عرض رسالة خطأ واضحة للمستخدم ✅\n  - تسجيل التفاصيل الكاملة في log ✅\n  - منع البرنامج من الإغلاق المفاجئ ✅\n- **الملفات المنفذة:**\n  - `core/error_handling/exception_hook.py` ✅\n\n### A3. الحفظ التلقائي (Auto-Save + Recovery) ✅ **مكتمل**\n- **الحالة:** ✅ تم التنفيذ (2026-02-08)\n- **المطلوب:**\n  - QTimer كل 60 ثانية لحفظ البيانات غير المحفوظة ✅\n  - ملفات recovery في مجلد مخصص ✅\n  - فحص عند بدء التشغيل لاسترجاع البيانات ✅\n  - إشعار المستخدم بوجود بيانات قابلة للاسترجاع (RecoveryDialog) ✅\n  - إصلاح: ألوان theme-aware بدل hardcoded ✅\n  - إصلاح: bare excepts → specific exceptions + logging ✅\n  - إصلاح: Qt.UserRole بدل magic number 256 ✅\n- **الملفات المنفذة:**\n  - `core/recovery/auto_save.py` ✅\n  - `core/recovery/recovery_manager.py` ✅\n  - `core/recovery/__init__.py` ✅\n\n### A4. Audit Trail بالـ Database (PostgreSQL Triggers) ✅ **مكتمل**\n- **الحالة:** ✅ تم التنفيذ (2026-02-08)\n- **المطلوب:**\n  - جدول `audit.logged_actions` لتسجيل كل تغيير ✅\n  - Trigger على الجداول الحساسة (employees, companies, departments, job_titles, banks, employee_statuses, nationalities) ✅\n  - تسجيل: مين غيّر + إيه اللي اتغيّر + القيم القديمة والجديدة + الوقت ✅\n  - شاشة عرض سجل التدقيق في البرنامج ✅\n- **الملفات المنفذة:**\n  - `core/database/audit/audit_schema.sql` ✅ (DDL لإنشاء الـ schema والجدول والـ indexes)\n  - `core/database/audit/audit_triggers.sql` ✅ (Trigger function + تطبيق على 7 جداول)\n  - `core/database/audit/audit_manager.py` ✅ (إدارة كاملة: setup, enable/disable, query, stats, purge)\n  - `core/database/audit/audit_setup.py` ✅ (تهيئة تلقائية عند بدء التشغيل)\n  - `core/database/audit/__init__.py` ✅ (exports محدّثة)\n  - `modules/mostahaqat/screens/audit_log/audit_log_screen.py` ✅ (شاشة عرض كاملة مع فلاتر وتفاصيل)\n  - `modules/mostahaqat/screens/audit_log/__init__.py` ✅\n\n### A5. معالجة خلفية آمنة (Background Processing) ✅ **مكتمل**\n- **الحالة:** ✅ تم التنفيذ (2026-02-03)\n- **المطلوب:**\n  - QThreadPool + Worker pattern موحد ✅\n  - Connection pool لقاعدة ا",
+      "keywords": [
+        "v2.1",
+        "integra",
+        "a:",
+        "عامة",
+        "الرؤية",
+        "التحتية",
+        "الجديدة:",
+        "تطوير",
+        "نظرة",
+        "البنية",
+        "-",
+        "المتقدمة",
+        "automation",
+        "المحور",
+        "workflow",
+        "ai-first",
+        "🎯",
+        "خطة"
+      ],
+      "metadata": {
+        "file_path": "D:\\Projects\\Integra\\claude\\INTEGRA_INFRASTRUCTURE_PLAN.md",
+        "file_name": "INTEGRA_INFRASTRUCTURE_PLAN.md",
+        "source": "Documentation",
+        "source_id": "docs"
+      },
+      "indexed_at": "2026-02-09T10:05:19.413687"
+    },
+    {
+      "id": "doc_docs_INTEGRA_MASTER_REF.md",
+      "source_type": "document",
+      "title": "INTEGRA v2.1 - Master Reference Document",
+      "content": "# INTEGRA v2.1 - Master Reference Document\n**آخر تحديث:** 2 فبراير 2026\n**المرحلة:** Phase 2 - Enterprise-Grade Development\n\n---\n\n## 1. هوية المشروع\n\n| البند | التفاصيل |\n|---|---|\n| الاسم | INTEGRA (Integrated Management System) |\n| النوع | Desktop ERP Application |\n| الإصدار | v2.1.0 |\n| الحالة | Architecture Complete ✅ → Next: Enterprise-Grade Tables |\n| المستودع | https://github.com/Insightify2029/integra.git |\n| إجمالي الملفات | 206+ Python files |\n\n---\n\n## 2. المستخدم (محمد)\n\n- محاسب تكاليف - خبرة 20 سنة - شركة تكرير زيت نخيل بالسعودية\n- مسؤول: التكاليف + HR + الرواتب + مراجعة رواتب Oracle NetSuite الشهرية\n- صفر خبرة برمجة - يحتاج شرح خطوة بخطوة\n- اللهجة: مصرية | التفكير: استراتيجي تحليلي منطقي\n- جهازين: العمل (Prosaba) + البيت (DESKTOP-HC577P1)\n- المسار الموحد: D:\\Projects\\Integra\n\n---\n\n## 3. التقنيات (Technical Stack)\n\n### الأساسي:\n- **Python 3.11.9** (system-wide, بدون venv)\n- **PyQt5** (Desktop UI Framework)\n- **PostgreSQL 16.11** (localhost:5432, user: postgres, DB: integra)\n- **psycopg2-binary** (DB connector)\n- **Git** (user: m.mahmoud@teknosaba.com)\n\n### المكتبات المثبتة:\n- Core: psycopg2-binary, SQLAlchemy, alembic\n- Data: pandas, numpy\n- File Readers: openpyxl, xlrd, PyPDF2, pdfplumber, python-docx, Pillow, tika\n- Utilities: python-dotenv, loguru, rich, pydantic\n- UI: PyQt5\n\n### حالة الأجهزة:\n- **Prosaba (العمل):** ✅ كل المكتبات + PostgreSQL + Git | ❌ .env مفقود\n- **DESKTOP-HC577P1 (البيت):** ✅ Python/PostgreSQL/Git | ❌ ناقص alembic + tika + .env\n\n---\n\n## 4. البنية المعمارية (Architecture)\n\n### الفلسفة:\n- **SRP** (Single Responsibility Principle): ملف واحد = وظيفة/كلاس واحد\n- **شاشات نظيفة:** الشاشات الرئيسية بدون بيانات - البيانات عبر القوائم\n- **قوائم متقدمة:** Deep menu hierarchy مع keyboard shortcuts\n- **جداول Enterprise-Grade:** فرز + فلترة + بحث + تصدير + اختيار أعمدة\n\n### هيكل المجلدات:\n```\nD:\\Projects\\Integra\\\n├── main.py                          # Entry point (717 bytes)\n├── core/\n│   ├── config/\n│   │   ├── app/                     # APP_NAME, APP_VERSION\n│   │   ├── database/                # DB_HOST, DB_PORT, DB_NAME, DB_USER\n│   │   ├── window/                  # MIN_WIDTH, MIN_HEIGHT\n│   │   └── modules/                 # Module definitions\n│   ├── database/\n│   │   ├── connection/              # Connector, checker, config\n│   │   └── queries/                 # SELECT, INSERT, UPDATE, DELETE, SCALAR\n│   ├── themes/\n│   │   ├── dark/                    # Dark theme (colors, fonts, components)\n│   │   ├── light/                   # Light theme\n│   │   ├── theme_manager.py\n│   │   └── current_theme.py\n│   └── sync/                        # Sync system v2\n│       ├── sync_config.py\n│       ├── sync_runner.py (13KB)\n│       └── sync_worker.py\n├── ui/\n│   ├── windows/\n│   │   ├── base/                    # BaseWindow class\n│   │   └── launcher/                # Main launcher window\n│   ├── components/\n│   │   ├── cards/\n│   │   │   ├── module_card/         # Module cards (adaptive font)\n│   │   │   └── stat_card/           # Statistics cards\n│   │   ├── buttons/\n│   │   ├── inputs/\n│   │   ├── labels/\n│   │   └── tables/\n│   │       └── enterprise/          # Enterprise table components\n│   │           ├── enterprise_table.py (18KB)\n│   │           ├── export_manager.py (16KB)\n│   │           ├── filter_panel.py (10KB)\n│   │           └── column_chooser.py (7KB)\n│   └── dialogs/\n│       ├── message/                 # Info, Warning, Error dialogs\n│       ├── settings/                # Settings dialog\n│       ├── sync_settings/           # Sync settings (18KB)\n│       └── themes/                  # Theme selection dialog\n├── modules/\n│   └── mostahaqat/                  # مستحقات العاملين\n│       ├── window/                  # mostahaqat_window.py (27KB)\n│       ├── toolbar/                 # mostahaqat_toolbar.py\n│       ├── employees/               # Employee list, queries\n│       ├── screens/\n│       │   ├── employees_list/\n│       │   ├── employee_profile/\n│       │   └── edit_employee/       # Edit screen (20KB)\n│       └── stats/                   # stats_cards.py\n├── Tools/\n│   ├── INTEGRA_HEALTH_CHECK.py (35KB)\n│   ├── install_edit_screen.py (32KB)\n│   ├── install_sync_system.py (55KB)\n│   └── health_check reports (.txt)\n└── Updates/\n    └── integra_v2.1/\n        └── database_backup.sql\n```\n\n---\n\n## 5. قاعدة البيانات\n\n### الاتصال:\n```\nHost: localhost | Port: 5432 | DB: integra | User: postgres\nPassword: في ملف .env (غير موجود في Git)\n```\n\n### الجداول الموجودة:\n| الجدول | عدد السجلات |\n|---|---|\n| employees | 180 |\n| departments | 20 |\n| job_titles | 88 |\n| nationalities | 12 |\n| banks | موجود |\n| companies | موجود |\n| employee_statuses | موجود |\n\n---\n\n## 6. الميزات المكتملة\n\n### 6.1 الواجهة الرئيسية (Launcher):\n- شاشة INTEGRA نظيفة مع logo\n- 5 بطاقات modules بخطوط تكيّفية (مستحقات 18pt | تكاليف 22pt | لوجستيات 22pt | عهد 30pt | تأمين 26pt)\n- قائمة hamburger + شريط حالة + دعم Dark/Light themes\n- بدون حدود، أركان مدورة (20px)، كل بطاقة تفتح نافذة مستقلة\n\n### 6.2 موديول المستحقات ",
+      "keywords": [
+        "v2.1",
+        "1.",
+        "المثبتة:",
+        "المشروع",
+        "المكتبات",
+        "(technical",
+        "(محمد)",
+        "-",
+        "هوية",
+        "document",
+        "الأساسي:",
+        "master",
+        "المستخدم",
+        "stack)",
+        "التقنيات",
+        "integra",
+        "حالة",
+        "3.",
+        "reference",
+        "2."
+      ],
+      "metadata": {
+        "file_path": "D:\\Projects\\Integra\\claude\\INTEGRA_MASTER_REF.md",
+        "file_name": "INTEGRA_MASTER_REF.md",
+        "source": "Documentation",
+        "source_id": "docs"
+      },
+      "indexed_at": "2026-02-09T10:05:19.414645"
+    },
+    {
+      "id": "doc_docs_SESSION_LOG.md",
+      "source_type": "document",
+      "title": "INTEGRA - سجل جلسات التطوير",
+      "content": "# INTEGRA - سجل جلسات التطوير\n\n> هذا الملف يوثق ملخص كل جلسة تطوير للرجوع إليه في المحادثات الجديدة\n\n---\n\n## ⚠️ تذكير للـ AI (تعليمات مستديمة)\n\n> **قاعدة ذهبية:** التوثيق الفوري بعد اكتمال كل خطوة!\n>\n> فور اكتمال أي مهمة، يجب:\n> 1. تحديث `INTEGRA_INFRASTRUCTURE_PLAN.md` (حالة المهمة + التاريخ)\n> 2. إضافة ملخص في هذا الملف (SESSION_LOG.md)\n>\n> **هذان الملفان هما المرجع الدائم بين المحادثات!**\n\n---\n\n## الجلسة: 8 فبراير 2026 (5) - تنفيذ المحور G كاملاً (الإيميل المتقدم AI-Powered)\n\n### ملخص الجلسة:\n\n**تم تنفيذ المحور G بالكامل (G1-G6) - آخر محور متبقي في الخطة!**\n\n### ما تم إنجازه:\n\n1. **G1: AI Email Assistant** (`modules/email_ai/email_assistant.py`)\n   - `EmailAssistant` class مع تحليل AI + rule-based fallback\n   - 13 تصنيف ذكي (`EmailClassification` enum)\n   - استخراج مهام (`ExtractedTask`) ومواعيد (`ExtractedMeeting`) ومواعيد نهائية\n   - كشف إيميلات مشبوهة (6 أنماط)\n   - تحليل المشاعر (5 أنواع: إيجابي/محايد/سلبي/عاجل/رسمي)\n   - ملخص يومي (`get_daily_summary`)\n\n2. **G2: Smart Notifications** (`modules/email_ai/smart_notifications.py`)\n   - `EmailNotificationManager` مع 10 أنواع إشعارات\n   - إشعارات فورية للعاجل/المشبوه/المهام/الاجتماعات/الاعتماد/HR\n   - ملخص يومي تلقائي\n   - فحص تراكم غير مقروء + متابعات بدون رد\n   - تكامل مع Toast (D3) ونظام الإشعارات (J)\n\n3. **G3: Email Compose AI** (`modules/email_ai/compose_ai.py`)\n   - `ComposeAI` class مع توليد ردود AI\n   - 7 نبرات رد (`ReplyTone`: رسمي/احترافي/ودي/مختصر/تفصيلي/اعتذاري/شكر)\n   - 10 قوالب جاهزة عربي + إنجليزي (`EMAIL_TEMPLATES`)\n   - تحسين صياغة + ترجمة ذكية + توليد موضوع\n\n4. **G4: Email Search & Analytics** (`modules/email_ai/search_analytics.py`)\n   - `EmailSearchEngine` مع relevance scoring\n   - `EmailAnalytics` مع تقارير شاملة (top senders, time distribution, daily volume)\n   - تتبع محادثات (`ConversationThread`)\n   - إيجاد إيميلات ذات صلة + ملف مرسل (`SenderStats`)\n\n5. **G5: Auto-Actions** (`modules/email_ai/auto_actions.py`)\n   - محرك قواعد كامل (`AutoActionEngine`) مع conditions/operators/actions\n   - 10 أنواع إجراءات + 11 عامل مقارنة + 10 حقول شرط\n   - 3 قواعد افتراضية (أرشفة نشرات، تعليم عاجل، إنشاء مهام)\n   - أرشفة ذكية + فحص متابعات + حفظ/تحميل قواعد JSON\n\n6. **G6: Employee Integration** (`modules/email_ai/employee_integration.py`)\n   - `EmployeeEmailLinker` مع 3 استراتيجيات ربط (بريد/اسم/نطاق)\n   - ملف إيميل شامل (`EmployeeEmailProfile`)\n   - تحليل تفاعلات + اقتراح إجراءات حسب المرسل والتصنيف\n   - قائمة مراسلين لكل موظف\n\n### النتيجة:\n\n| المقياس | القيمة |\n|---------|--------|\n| **الملفات الجديدة** | 7 ملفات Python |\n| **المحاور المكتملة** | 16/16 = **100%** |\n| **المحاور المتبقية** | 0 (باستثناء E,F المستقبلية) |\n\n### الملفات المُنشأة:\n```\nmodules/email_ai/\n├── __init__.py              (exports لكل المكونات)\n├── email_assistant.py       (G1 - ~450 سطر)\n├── smart_notifications.py   (G2 - ~400 سطر)\n├── compose_ai.py            (G3 - ~430 سطر)\n├── search_analytics.py      (G4 - ~500 سطر)\n├── auto_actions.py          (G5 - ~530 سطر)\n└── employee_integration.py  (G6 - ~470 سطر)\n```\n\n### كيفية الاستخدام:\n```python\nfrom modules.email_ai import (\n    get_email_assistant,      # G1: تحليل إيميل\n    get_email_notification_manager,  # G2: إشعارات ذكية\n    get_compose_ai,           # G3: كتابة ذكية\n    get_email_search_engine,  # G4: بحث\n    get_email_analytics,      # G4: تحليلات\n    get_auto_action_engine,   # G5: إجراءات تلقائية\n    get_employee_email_linker,  # G6: ربط بالموظفين\n)\n\n# تحليل إيميل\nanalysis = get_email_assistant().analyze(email)\n\n# بحث\nresults = get_email_search_engine().search(\"طلب إجازة\")\n\n# توليد رد\nreply = get_compose_ai().generate_reply(email, tone=ReplyTone.PROFESSIONAL)\n```\n\n---\n\n## الجلسة: 8 فبراير 2026 (4) - تدقيق شامل وتصحيح التوثيق\n\n### ملخص الجلسة:\n\n**تدقيق شامل لكل ملفات المشروع (519 ملف Python، 92,002 سطر كود) ومقارنتها بخطة التطوير**\n\n### ما تم إنجازه:\n\n1. **تدقيق كل محور (A-R)** بقراءة الكود الفعلي وحساب:\n   - عدد الأسطر، عدد الدوال، عدد الكلاسات\n   - عدد `pass` statements (للكشف عن الهياكل الفارغة)\n   - مستوى التنفيذ الحقيقي\n\n2. **تصحيح 8 أخطاء في التوثيق:**\n   - B1-B5: كانت ⏳ → الصحيح ✅ مكتمل (ollama_client 381 سطر، agents كاملة)\n   - C1-C4: كانت ⏳ → الصحيح ✅ مكتمل (outlook_connector 696 سطر، email UI كاملة)\n   - H1-H6: كانت 🔴 → الصحيح ✅ مكتمل (20 ملف، repository 905 سطر)\n   - I1-I7: تم توثيق التفاصيل (19 ملف، 4 views، sync كامل)\n   - L1-L7: كانت 🔴 → الصحيح ✅ مكتمل (engines + designers + generators)\n   - Q1-Q7: كانت 🔴 → الصحيح ✅ مكتمل (printer/scanner/bluetooth)\n   - A5 pool: كانت ⏳ → الصحيح ✅ مكتمل\n   - D2,D3,D6: أضيف ✅\n\n3. **اكتشاف المحور الوحيد غير المنفذ:**\n   - **G (الإيميل المتقدم AI-Powered)**: G1-G6 لم تنفذ بعد\n   - الأساسيات موجودة (B2 email_agent + C1-C4) لكن التكامل المتقدم غير موجود\n\n4. **إضافة تقرير تدقيق شامل** في نهاية INTEGRA_INFRASTRUCTURE_PLAN.md\n\n### النتيجة النهائية:\n\n| المحاور | العدد | النسبة |\n|---------|-------|--------|\n| ✅ مكتملة | 15 من 16 | **93.75%** |\n| 🔴 غير مكتملة | 1 (G) | 6.25% |\n| مستقبلية | 2 (E, F) | - |\n\n### الملفات المُعدّلة:\n```\nclaude/INTEGRA_INFRASTRUCTURE_PLAN.md  (تصحيح حال",
+      "keywords": [
+        "فبراير",
+        "g",
+        "⚠️",
+        "(تعليمات",
+        "المحور",
+        "2026",
+        "ai",
+        "الجلسة:",
+        "-",
+        "جلسات",
+        "تذكير",
+        "مستديمة)",
+        "integra",
+        "تنفيذ",
+        "سجل",
+        "التطوير",
+        "للـ",
+        "8",
+        "(5)"
+      ],
+      "metadata": {
+        "file_path": "D:\\Projects\\Integra\\claude\\SESSION_LOG.md",
+        "file_name": "SESSION_LOG.md",
+        "source": "Documentation",
+        "source_id": "docs"
+      },
+      "indexed_at": "2026-02-09T10:05:19.417688"
+    },
+    {
+      "id": "doc_docs_مناقشة البنية التحتية للنظام انتجرا.txt",
+      "source_type": "document",
+      "title": "مناقشة البنية التحتية للنظام انتجرا.Txt",
+      "content": "أهلاً بك. لقد استوعبت طلبك تماماً. أنت تبحث عن \"فلسفة بناء النظام\" (System Architecture Philosophy) وليس مجرد ميزات سطحية. أنت تريد أن يبدو البرنامج وكأنه \"كائن حي\" يعمل ذاتياً (Self-Driving Application) مبني بـ Python (PyQt5) وPostgreSQL، بحيث تكون تدخلات المستخدم فيه للإشراف واتخاذ القرار فقط، لا لإدخال البيانات الروتيني.\n\nهذا النوع من التفكير هو ما يميز الأنظمة المليونية (Enterprise ERPs) مثل SAP و Odoo (في نسخها المتقدمة) عن البرامج العادية.\n\nقبل أن أنغمس في هذه الدراسة العميقة وأضع لك \"خارطة الطريق التقنية\" للبنية التحتية، أحتاج إلى توضيح بعض النقاط الجوهرية لضمان أن يكون البحث مفصلاً على مقاس مشروعك بالضبط.\n\nإليك المحاور التي سأقوم بدراستها بناءً على طلبك، تليها استفساراتي:\n\nمحاور الدراسة العميقة التي سأعمل عليها (المسودة الأولية):\nبنية \"المحرك الديناميكي\" (The Dynamic Engine Architecture):\n\nكيف نجعل البرنامج يبني واجهاته (Forms) وتقاريره تلقائياً بناءً على تعريفات قاعدة البيانات (Metadata Driven) دون كتابة كود لكل شاشة.\n\nكيفية بناء نظام (ORM) متقدم يربط PyQt مباشرة بـ PostgreSQL مع طبقة تخزين مؤقت (Caching) لسرعة خيالية.\n\nالأتمتة وتدفق العمل (Workflow & Automation Engine):\n\nدراسة كيفية تضمين \"محرك قواعد\" (Rules Engine) داخل البرنامج. مثال: (إذا زاد الراتب عن X، أرسل إيميل للمدير + عدل بند الضرائب + أنشئ قيد محاسبي) كل هذا يتم تعريفه من قبل المستخدم دون مبرمج.\n\nنظام \"المراقب\" (Watcher): كيف يراقب البرنامج جداول البيانات والتغييرات ليقوم برد فعل تلقائي.\n\nالتكامل الخارجي العميق (Deep Integrations & I/O):\n\nExcel Bi-directional Sync: ليس مجرد استيراد وتصدير، بل \"ربط حي\". إذا عدلت الخلية في Excel، يتعدل السجل في PostgreSQL، والعكس. (استخدام مكتبات مثل xlwings أو pandas مع watchdog).\n\nالبنوك والبريد: قراءة كشوف الحسابات البنكية (PDF/Excel) وتحويلها لقيود محاسبية آلياً (Reconciliation).\n\nالأداء والبنية التحتية الخلفية (Background Workers):\n\nفصل واجهة المستخدم (GUI) عن العمليات الثقيلة تماماً باستخدام QThread و Multiprocessing لضمان أن البرنامج لا يتجمد (Freezing) أبداً مهما كانت ضخامة البيانات.\n\nاستفساراتي لك (قبل البدء بالبحث المفصل):\nلأقوم بهذه الدراسة بدقة \"جراحية\"، أجبني عن التالي:\n\nبيئة العمل (Deployment Environment):\n\nهل قاعدة البيانات (PostgreSQL) ستكون سحابية (Cloud/VPS) والبرنامج يتصل بها عن بعد؟ أم أن السيرفر محلي (Local Network)؟\n\nالسبب: هذا سيغير استراتيجية \"المزامنة\" (Sync) والتعامل مع انقطاع الإنترنت (Offline Mode). هل تريد خاصية \"العمل دون اتصال\" ثم المزامنة لاحقاً؟\n\nنظام التحديثات (Auto-Update Infrastructure):\n\nجزء من \"الاحترافية\" هو كيف يصل التحديث للمستخدم. هل لديك تصور معين؟ أم أبحث لك عن أفضل طريقة لبناء نظام (Patcher) يقوم بتحديث البرنامج وقاعدة البيانات تلقائياً عند صدور نسخة جديدة دون تدخل منك؟\n\nمستوى المرونة (Customizability):\n\nهل تريد أن يكون للمستخدم النهائي (الخبير) قدرة على كتابة \"سكريبتات بسيطة\" (Python scripting inside the app) لأتمتة مهامه الخاصة؟ (مثل برامج CAD وبرامج 3D التي تسمح للمستخدم بعمل Macros).\n\nواجهة المستخدم (UX Philosophy):\n\nهل تفضل التصميم الكلاسيكي الصارم (Data-Dense) مثل الأنظمة المحاسبية القديمة القوية؟ أم التصميم الحديث (Material/Fluent Design)؟ هذا يؤثر على المكتبات المساعدة مع PyQt5.\n\nبانتظار إجاباتك على هذه النقاط (أو أي منها)، وسأبدأ فوراً في إعداد الدراسة المعمارية الكاملة لك.\n\nالخطوة التالية: بمجرد ردك، سأقوم بمسح شامل لأفضل الممارسات البرمجية (Design Patterns) في بايثون التي تخدم \"الأتمتة المفرطة\" وسأقدم لك تقريراً هيكلياً.",
+      "keywords": [],
+      "metadata": {
+        "file_path": "D:\\Projects\\Integra\\claude\\مناقشة البنية التحتية للنظام انتجرا.txt",
+        "file_name": "مناقشة البنية التحتية للنظام انتجرا.txt",
+        "source": "Documentation",
+        "source_id": "docs"
+      },
+      "indexed_at": "2026-02-09T10:05:19.418686"
+    },
+    {
+      "id": "db_table_nationalities",
+      "source_type": "database",
+      "title": "جدول nationalities",
+      "content": "# جدول nationalities\n\n## الأعمدة:\n- **id**: integer (مطلوب)\n- **name_ar**: character varying (اختياري)\n- **name_en**: character varying (اختياري)\n",
+      "keywords": [
+        "nationalities",
+        "جدول",
+        "قاعدة بيانات",
+        "database",
+        "id",
+        "name_ar",
+        "name_en"
+      ],
+      "metadata": {
+        "table_name": "nationalities",
+        "column_count": 3,
+        "source": "database_schema",
+        "source_id": "db_schema"
+      },
+      "indexed_at": "2026-02-09T10:05:19.530608"
+    },
+    {
+      "id": "db_table_banks",
+      "source_type": "database",
+      "title": "جدول banks",
+      "content": "# جدول banks\n\n## الأعمدة:\n- **id**: integer (مطلوب)\n- **name_ar**: character varying (اختياري)\n- **name_en**: character varying (اختياري)\n",
+      "keywords": [
+        "banks",
+        "جدول",
+        "قاعدة بيانات",
+        "database",
+        "id",
+        "name_ar",
+        "name_en"
+      ],
+      "metadata": {
+        "table_name": "banks",
+        "column_count": 3,
+        "source": "database_schema",
+        "source_id": "db_schema"
+      },
+      "indexed_at": "2026-02-09T10:05:19.530608"
+    },
+    {
+      "id": "db_table_employees",
+      "source_type": "database",
+      "title": "جدول employees",
+      "content": "# جدول employees\n\n## الأعمدة:\n- **id**: integer (مطلوب)\n- **employee_code**: character varying (اختياري)\n- **name_en**: character varying (اختياري)\n- **name_ar**: character varying (اختياري)\n- **national_id**: character varying (اختياري)\n- **nationality_id**: integer (اختياري)\n- **hire_date**: date (اختياري)\n- **department_id**: integer (اختياري)\n- **job_title_id**: integer (اختياري)\n- **bank_id**: integer (اختياري)\n- **iban**: character varying (اختياري)\n- **company_id**: integer (اختياري)\n- **status_id**: integer (اختياري)\n- **created_at**: timestamp without time zone (اختياري)\n- **updated_at**: timestamp without time zone (اختياري)\n",
+      "keywords": [
+        "employees",
+        "جدول",
+        "قاعدة بيانات",
+        "database",
+        "id",
+        "employee_code",
+        "name_en",
+        "name_ar",
+        "national_id",
+        "nationality_id",
+        "hire_date",
+        "department_id",
+        "job_title_id",
+        "bank_id",
+        "iban",
+        "company_id",
+        "status_id",
+        "created_at",
+        "updated_at"
+      ],
+      "metadata": {
+        "table_name": "employees",
+        "column_count": 15,
+        "source": "database_schema",
+        "source_id": "db_schema"
+      },
+      "indexed_at": "2026-02-09T10:05:19.530608"
+    },
+    {
+      "id": "db_table_companies",
+      "source_type": "database",
+      "title": "جدول companies",
+      "content": "# جدول companies\n\n## الأعمدة:\n- **id**: integer (مطلوب)\n- **name_ar**: character varying (اختياري)\n- **name_en**: character varying (اختياري)\n- **code**: character varying (اختياري)\n",
+      "keywords": [
+        "companies",
+        "جدول",
+        "قاعدة بيانات",
+        "database",
+        "id",
+        "name_ar",
+        "name_en",
+        "code"
+      ],
+      "metadata": {
+        "table_name": "companies",
+        "column_count": 4,
+        "source": "database_schema",
+        "source_id": "db_schema"
+      },
+      "indexed_at": "2026-02-09T10:05:19.530608"
+    },
+    {
+      "id": "db_table_departments",
+      "source_type": "database",
+      "title": "جدول departments",
+      "content": "# جدول departments\n\n## الأعمدة:\n- **id**: integer (مطلوب)\n- **name_ar**: character varying (اختياري)\n- **name_en**: character varying (اختياري)\n",
+      "keywords": [
+        "departments",
+        "جدول",
+        "قاعدة بيانات",
+        "database",
+        "id",
+        "name_ar",
+        "name_en"
+      ],
+      "metadata": {
+        "table_name": "departments",
+        "column_count": 3,
+        "source": "database_schema",
+        "source_id": "db_schema"
+      },
+      "indexed_at": "2026-02-09T10:05:19.530608"
+    },
+    {
+      "id": "db_table_job_titles",
+      "source_type": "database",
+      "title": "جدول job_titles",
+      "content": "# جدول job_titles\n\n## الأعمدة:\n- **id**: integer (مطلوب)\n- **name_ar**: character varying (اختياري)\n- **name_en**: character varying (اختياري)\n",
+      "keywords": [
+        "job_titles",
+        "جدول",
+        "قاعدة بيانات",
+        "database",
+        "id",
+        "name_ar",
+        "name_en"
+      ],
+      "metadata": {
+        "table_name": "job_titles",
+        "column_count": 3,
+        "source": "database_schema",
+        "source_id": "db_schema"
+      },
+      "indexed_at": "2026-02-09T10:05:19.530608"
+    },
+    {
+      "id": "db_table_employee_statuses",
+      "source_type": "database",
+      "title": "جدول employee_statuses",
+      "content": "# جدول employee_statuses\n\n## الأعمدة:\n- **id**: integer (مطلوب)\n- **name_ar**: character varying (اختياري)\n- **name_en**: character varying (اختياري)\n",
+      "keywords": [
+        "employee_statuses",
+        "جدول",
+        "قاعدة بيانات",
+        "database",
+        "id",
+        "name_ar",
+        "name_en"
+      ],
+      "metadata": {
+        "table_name": "employee_statuses",
+        "column_count": 3,
+        "source": "database_schema",
+        "source_id": "db_schema"
+      },
+      "indexed_at": "2026-02-09T10:05:19.530608"
+    },
+    {
+      "id": "module_mostahaqat",
+      "source_type": "module",
+      "title": "موديول مستحقات العاملين",
+      "content": "# مستحقات العاملين (Mostahaqat)\n\n- **المعرف**: mostahaqat\n- **الحالة**: مفعل\n- **اللون**: #2563eb\n",
+      "keywords": [
+        "mostahaqat",
+        "مستحقات العاملين",
+        "Mostahaqat",
+        "موديول",
+        "module"
+      ],
+      "metadata": {
+        "module_id": "mostahaqat",
+        "color": "#2563eb",
+        "enabled": true,
+        "source": "modules",
+        "source_id": "modules"
+      },
+      "indexed_at": "2026-02-09T10:05:19.531609"
+    },
+    {
+      "id": "module_costing",
+      "source_type": "module",
+      "title": "موديول التكاليف",
+      "content": "# التكاليف (Costing)\n\n- **المعرف**: costing\n- **الحالة**: مفعل\n- **اللون**: #10b981\n",
+      "keywords": [
+        "costing",
+        "التكاليف",
+        "Costing",
+        "موديول",
+        "module"
+      ],
+      "metadata": {
+        "module_id": "costing",
+        "color": "#10b981",
+        "enabled": true,
+        "source": "modules",
+        "source_id": "modules"
+      },
+      "indexed_at": "2026-02-09T10:05:19.531609"
+    },
+    {
+      "id": "module_logistics",
+      "source_type": "module",
+      "title": "موديول اللوجستيات",
+      "content": "# اللوجستيات (Logistics)\n\n- **المعرف**: logistics\n- **الحالة**: مفعل\n- **اللون**: #f59e0b\n",
+      "keywords": [
+        "logistics",
+        "اللوجستيات",
+        "Logistics",
+        "موديول",
+        "module"
+      ],
+      "metadata": {
+        "module_id": "logistics",
+        "color": "#f59e0b",
+        "enabled": true,
+        "source": "modules",
+        "source_id": "modules"
+      },
+      "indexed_at": "2026-02-09T10:05:19.531609"
+    },
+    {
+      "id": "module_custody",
+      "source_type": "module",
+      "title": "موديول العهد",
+      "content": "# العهد (Custody)\n\n- **المعرف**: custody\n- **الحالة**: مفعل\n- **اللون**: #8b5cf6\n",
+      "keywords": [
+        "custody",
+        "العهد",
+        "Custody",
+        "موديول",
+        "module"
+      ],
+      "metadata": {
+        "module_id": "custody",
+        "color": "#8b5cf6",
+        "enabled": true,
+        "source": "modules",
+        "source_id": "modules"
+      },
+      "indexed_at": "2026-02-09T10:05:19.531609"
+    },
+    {
+      "id": "module_insurance",
+      "source_type": "module",
+      "title": "موديول التأمين",
+      "content": "# التأمين (Insurance)\n\n- **المعرف**: insurance\n- **الحالة**: مفعل\n- **اللون**: #ef4444\n",
+      "keywords": [
+        "insurance",
+        "التأمين",
+        "Insurance",
+        "موديول",
+        "module"
+      ],
+      "metadata": {
+        "module_id": "insurance",
+        "color": "#ef4444",
+        "enabled": true,
+        "source": "modules",
+        "source_id": "modules"
+      },
+      "indexed_at": "2026-02-09T10:05:19.531609"
+    },
+    {
+      "id": "module_email",
+      "source_type": "module",
+      "title": "موديول البريد الإلكتروني",
+      "content": "# البريد الإلكتروني (Email)\n\n- **المعرف**: email\n- **الحالة**: مفعل\n- **اللون**: #0078d4\n",
+      "keywords": [
+        "email",
+        "البريد الإلكتروني",
+        "Email",
+        "موديول",
+        "module"
+      ],
+      "metadata": {
+        "module_id": "email",
+        "color": "#0078d4",
+        "enabled": true,
+        "source": "modules",
+        "source_id": "modules"
+      },
+      "indexed_at": "2026-02-09T10:05:19.531609"
+    },
+    {
+      "id": "module_designer",
+      "source_type": "module",
+      "title": "موديول المصمم",
+      "content": "# المصمم (Designer)\n\n- **المعرف**: designer\n- **الحالة**: مفعل\n- **اللون**: #8b5cf6\n",
+      "keywords": [
+        "designer",
+        "المصمم",
+        "Designer",
+        "موديول",
+        "module"
+      ],
+      "metadata": {
+        "module_id": "designer",
+        "color": "#8b5cf6",
+        "enabled": true,
+        "source": "modules",
+        "source_id": "modules"
+      },
+      "indexed_at": "2026-02-09T10:05:19.531609"
+    },
+    {
+      "id": "module_calendar",
+      "source_type": "module",
+      "title": "موديول التقويم",
+      "content": "# التقويم (Calendar)\n\n- **المعرف**: calendar\n- **الحالة**: مفعل\n- **اللون**: #10b981\n",
+      "keywords": [
+        "calendar",
+        "التقويم",
+        "Calendar",
+        "موديول",
+        "module"
+      ],
+      "metadata": {
+        "module_id": "calendar",
+        "color": "#10b981",
+        "enabled": true,
+        "source": "modules",
+        "source_id": "modules"
+      },
+      "indexed_at": "2026-02-09T10:05:19.531609"
+    },
+    {
+      "id": "module_dashboard",
+      "source_type": "module",
+      "title": "موديول لوحة التحكم",
+      "content": "# لوحة التحكم (Dashboard)\n\n- **المعرف**: dashboard\n- **الحالة**: مفعل\n- **اللون**: #f59e0b\n",
+      "keywords": [
+        "dashboard",
+        "لوحة التحكم",
+        "Dashboard",
+        "موديول",
+        "module"
+      ],
+      "metadata": {
+        "module_id": "dashboard",
+        "color": "#f59e0b",
+        "enabled": true,
+        "source": "modules",
+        "source_id": "modules"
+      },
+      "indexed_at": "2026-02-09T10:05:19.531609"
+    },
+    {
+      "id": "module_bi",
+      "source_type": "module",
+      "title": "موديول تحليلات BI",
+      "content": "# تحليلات BI (BI Analytics)\n\n- **المعرف**: bi\n- **الحالة**: مفعل\n- **اللون**: #4ade80\n",
+      "keywords": [
+        "bi",
+        "تحليلات BI",
+        "BI Analytics",
+        "موديول",
+        "module"
+      ],
+      "metadata": {
+        "module_id": "bi",
+        "color": "#4ade80",
+        "enabled": true,
+        "source": "modules",
+        "source_id": "modules"
+      },
+      "indexed_at": "2026-02-09T10:05:19.531609"
+    },
+    {
+      "id": "module_copilot",
+      "source_type": "module",
+      "title": "موديول المساعد الذكي",
+      "content": "# المساعد الذكي (AI Copilot)\n\n- **المعرف**: copilot\n- **الحالة**: مفعل\n- **اللون**: #8b5cf6\n",
+      "keywords": [
+        "copilot",
+        "المساعد الذكي",
+        "AI Copilot",
+        "موديول",
+        "module"
+      ],
+      "metadata": {
+        "module_id": "copilot",
+        "color": "#8b5cf6",
+        "enabled": true,
+        "source": "modules",
+        "source_id": "modules"
+      },
+      "indexed_at": "2026-02-09T10:05:19.531609"
+    },
+    {
+      "id": "module_time_intelligence",
+      "source_type": "module",
+      "title": "موديول الوعي الزمني",
+      "content": "# الوعي الزمني (Time Intelligence)\n\n- **المعرف**: time_intelligence\n- **الحالة**: مفعل\n- **اللون**: #f59e0b\n",
+      "keywords": [
+        "time_intelligence",
+        "الوعي الزمني",
+        "Time Intelligence",
+        "موديول",
+        "module"
+      ],
+      "metadata": {
+        "module_id": "time_intelligence",
+        "color": "#f59e0b",
+        "enabled": true,
+        "source": "modules",
+        "source_id": "modules"
+      },
+      "indexed_at": "2026-02-09T10:05:19.531609"
+    },
+    {
+      "id": "module_file_manager",
+      "source_type": "module",
+      "title": "موديول مدير الملفات",
+      "content": "# مدير الملفات (File Manager)\n\n- **المعرف**: file_manager\n- **الحالة**: مفعل\n- **اللون**: #06b6d4\n",
+      "keywords": [
+        "file_manager",
+        "مدير الملفات",
+        "File Manager",
+        "موديول",
+        "module"
+      ],
+      "metadata": {
+        "module_id": "file_manager",
+        "color": "#06b6d4",
+        "enabled": true,
+        "source": "modules",
+        "source_id": "modules"
+      },
+      "indexed_at": "2026-02-09T10:05:19.531609"
+    },
+    {
+      "id": "module_device_manager",
+      "source_type": "module",
+      "title": "موديول إدارة الأجهزة",
+      "content": "# إدارة الأجهزة (Device Manager)\n\n- **المعرف**: device_manager\n- **الحالة**: مفعل\n- **اللون**: #e11d48\n",
+      "keywords": [
+        "device_manager",
+        "إدارة الأجهزة",
+        "Device Manager",
+        "موديول",
+        "module"
+      ],
+      "metadata": {
+        "module_id": "device_manager",
+        "color": "#e11d48",
+        "enabled": true,
+        "source": "modules",
+        "source_id": "modules"
+      },
+      "indexed_at": "2026-02-09T10:05:19.531609"
+    },
+    {
+      "id": "module_desktop_apps",
+      "source_type": "module",
+      "title": "موديول تطبيقات سطح المكتب",
+      "content": "# تطبيقات سطح المكتب (Desktop Apps)\n\n- **المعرف**: desktop_apps\n- **الحالة**: مفعل\n- **اللون**: #7c3aed\n",
+      "keywords": [
+        "desktop_apps",
+        "تطبيقات سطح المكتب",
+        "Desktop Apps",
+        "موديول",
+        "module"
+      ],
+      "metadata": {
+        "module_id": "desktop_apps",
+        "color": "#7c3aed",
+        "enabled": true,
+        "source": "modules",
+        "source_id": "modules"
+      },
+      "indexed_at": "2026-02-09T10:05:19.531609"
+    },
+    {
+      "id": "help_employees",
+      "source_type": "help",
+      "title": "إدارة الموظفين",
+      "content": "\n# إدارة الموظفين\n\n## الوظائف المتاحة:\n- **عرض الموظفين**: عرض قائمة بجميع الموظفين مع إمكانية البحث والفلترة\n- **إضافة موظف**: إضافة موظف جديد مع كافة البيانات\n- **تعديل موظف**: تعديل بيانات موظف موجود\n- **حذف موظف**: حذف موظف من النظام\n\n## البيانات المطلوبة:\n- الاسم الكامل\n- رقم الهوية\n- الشركة والقسم\n- المسمى الوظيفي\n- الراتب والبدلات\n- تاريخ التعيين\n\n## نصائح:\n- استخدم البحث السريع للوصول للموظف المطلوب\n- يمكنك تصدير البيانات إلى Excel\n- احرص على تحديث البيانات بشكل دوري\n            ",
+      "keywords": [
+        "موظف",
+        "موظفين",
+        "إضافة",
+        "تعديل",
+        "حذف",
+        "employee"
+      ],
+      "metadata": {
+        "help_id": "employees",
+        "source": "help",
+        "source_id": "help"
+      },
+      "indexed_at": "2026-02-09T10:05:19.532609"
+    },
+    {
+      "id": "help_reports",
+      "source_type": "help",
+      "title": "التقارير",
+      "content": "\n# التقارير\n\n## أنواع التقارير:\n- **تقرير الموظفين**: قائمة شاملة بجميع الموظفين\n- **تقرير الرواتب**: ملخص الرواتب والبدلات\n- **تقرير الحضور**: سجل الحضور والانصراف\n- **تقرير الإجازات**: ملخص الإجازات المستخدمة\n\n## التصدير:\n- PDF: للطباعة والأرشفة\n- Excel: للتحليل والتعديل\n- Word: للتقارير الرسمية\n            ",
+      "keywords": [
+        "تقرير",
+        "تقارير",
+        "طباعة",
+        "تصدير",
+        "report"
+      ],
+      "metadata": {
+        "help_id": "reports",
+        "source": "help",
+        "source_id": "help"
+      },
+      "indexed_at": "2026-02-09T10:05:19.532609"
+    },
+    {
+      "id": "help_ai_assistant",
+      "source_type": "help",
+      "title": "المساعد الذكي",
+      "content": "\n# المساعد الذكي\n\n## الإمكانيات:\n- **الأسئلة والأجوبة**: اسأل عن أي شيء في النظام\n- **تحليل البيانات**: تحليل ذكي للبيانات واكتشاف الأنماط\n- **اقتراحات**: اقتراحات لتحسين العمل\n- **تنفيذ المهام**: تنفيذ مهام بأوامر طبيعية\n\n## أمثلة:\n- \"أظهر لي الموظفين في قسم المبيعات\"\n- \"ما هو متوسط الرواتب؟\"\n- \"أضف موظف جديد اسمه أحمد\"\n- \"أرسل تقرير الشهر للمدير\"\n            ",
+      "keywords": [
+        "مساعد",
+        "ذكي",
+        "AI",
+        "سؤال",
+        "تحليل",
+        "copilot"
+      ],
+      "metadata": {
+        "help_id": "ai_assistant",
+        "source": "help",
+        "source_id": "help"
+      },
+      "indexed_at": "2026-02-09T10:05:19.532609"
+    }
+  ]
+}
