@@ -28,6 +28,7 @@ from ...repository import (
 )
 
 from core.logging import app_logger
+from core.themes import get_current_palette, get_font, FONT_SIZE_TITLE, FONT_SIZE_SUBTITLE, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_WEIGHT_BOLD
 
 
 class TaskListScreen(QWidget):
@@ -74,9 +75,11 @@ class TaskListScreen(QWidget):
         header_layout = QHBoxLayout(header)
         header_layout.setContentsMargins(20, 0, 20, 0)
 
+        p = get_current_palette()
+
         # Title
         title = QLabel("📋 المهام")
-        title.setFont(QFont("Cairo", 18, QFont.Bold))
+        title.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
         header_layout.addWidget(title)
 
         header_layout.addStretch()
@@ -87,16 +90,16 @@ class TaskListScreen(QWidget):
         stats_layout.setSpacing(24)
         stats_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.pending_label = self._create_stat_label("قيد الانتظار", "0", "#6c757d")
+        self.pending_label = self._create_stat_label("قيد الانتظار", "0", p['text_muted'])
         stats_layout.addWidget(self.pending_label)
 
-        self.progress_label = self._create_stat_label("قيد التنفيذ", "0", "#007bff")
+        self.progress_label = self._create_stat_label("قيد التنفيذ", "0", p['primary'])
         stats_layout.addWidget(self.progress_label)
 
-        self.completed_label = self._create_stat_label("مكتملة", "0", "#28a745")
+        self.completed_label = self._create_stat_label("مكتملة", "0", p['success'])
         stats_layout.addWidget(self.completed_label)
 
-        self.overdue_label = self._create_stat_label("متأخرة", "0", "#dc3545")
+        self.overdue_label = self._create_stat_label("متأخرة", "0", p['danger'])
         stats_layout.addWidget(self.overdue_label)
 
         header_layout.addWidget(self.stats_frame)
@@ -107,27 +110,27 @@ class TaskListScreen(QWidget):
         self.add_btn = QPushButton("➕ مهمة جديدة")
         self.add_btn.setFixedHeight(40)
         self.add_btn.clicked.connect(self._show_add_dialog)
-        self.add_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #28a745;
-                color: white;
+        self.add_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['success']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 6px;
                 padding: 0 20px;
                 font-size: 14px;
                 font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #218838;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['success']}dd;
+            }}
         """)
         header_layout.addWidget(self.add_btn)
 
-        header.setStyleSheet("""
-            QFrame#taskListHeader {
-                background-color: white;
-                border-bottom: 1px solid #dee2e6;
-            }
+        header.setStyleSheet(f"""
+            QFrame#taskListHeader {{
+                background-color: {p['bg_card']};
+                border-bottom: 1px solid {p['border']};
+            }}
         """)
         main_layout.addWidget(header)
 
@@ -182,10 +185,10 @@ class TaskListScreen(QWidget):
         self.list_layout.setAlignment(Qt.AlignTop)
 
         self.scroll_area.setWidget(self.list_container)
-        self.scroll_area.setStyleSheet("""
-            QScrollArea {
-                background-color: #f5f7fa;
-            }
+        self.scroll_area.setStyleSheet(f"""
+            QScrollArea {{
+                background-color: {p['bg_main']};
+            }}
         """)
 
         main_layout.addWidget(self.scroll_area, 1)
@@ -199,31 +202,31 @@ class TaskListScreen(QWidget):
         empty_layout.setAlignment(Qt.AlignCenter)
 
         empty_icon = QLabel("📋")
-        empty_icon.setFont(QFont("Cairo", 48))
+        empty_icon.setStyleSheet("font-size: 48px;")
         empty_icon.setAlignment(Qt.AlignCenter)
         empty_layout.addWidget(empty_icon)
 
         self.empty_text = QLabel("لا توجد مهام")
-        self.empty_text.setFont(QFont("Cairo", 16))
-        self.empty_text.setStyleSheet("color: #6c757d;")
+        self.empty_text.setFont(get_font(FONT_SIZE_SUBTITLE))
+        self.empty_text.setStyleSheet(f"color: {p['text_muted']};")
         self.empty_text.setAlignment(Qt.AlignCenter)
         empty_layout.addWidget(self.empty_text)
 
         empty_btn = QPushButton("➕ أضف مهمة جديدة")
         empty_btn.setFixedHeight(40)
         empty_btn.clicked.connect(self._show_add_dialog)
-        empty_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #007bff;
-                color: white;
+        empty_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 6px;
                 padding: 0 24px;
                 font-size: 14px;
-            }
-            QPushButton:hover {
-                background-color: #0056b3;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['primary_hover']};
+            }}
         """)
         empty_layout.addWidget(empty_btn, alignment=Qt.AlignCenter)
 
@@ -236,14 +239,15 @@ class TaskListScreen(QWidget):
 
         value_label = QLabel(value)
         value_label.setObjectName("statValue")
-        value_label.setFont(QFont("Cairo", 16, QFont.Bold))
+        value_label.setFont(get_font(FONT_SIZE_SUBTITLE, FONT_WEIGHT_BOLD))
         value_label.setStyleSheet(f"color: {color};")
         value_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(value_label)
 
+        p = get_current_palette()
         title_label = QLabel(title)
-        title_label.setFont(QFont("Cairo", 10))
-        title_label.setStyleSheet("color: #6c757d;")
+        title_label.setFont(get_font(FONT_SIZE_BODY))
+        title_label.setStyleSheet(f"color: {p['text_muted']};")
         title_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(title_label)
 

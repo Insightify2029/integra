@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer
 
 from core.logging import app_logger
+from core.themes import get_current_palette
 
 
 class SuggestionType(Enum):
@@ -54,18 +55,19 @@ class SuggestionCard(QFrame):
 
     def _setup_ui(self):
         """Setup the card UI."""
+        p = get_current_palette()
         # Colors based on type
         colors = {
-            SuggestionType.TIP: ("#dbeafe", "#1e40af", "💡"),
-            SuggestionType.ACTION: ("#dcfce7", "#166534", "⚡"),
-            SuggestionType.WARNING: ("#fef3c7", "#92400e", "⚠️"),
-            SuggestionType.INFO: ("#f3e8ff", "#6b21a8", "ℹ️"),
-            SuggestionType.SHORTCUT: ("#e0e7ff", "#3730a3", "⌨️"),
+            SuggestionType.TIP: (f"{p['info']}20", p['info'], "💡"),
+            SuggestionType.ACTION: (f"{p['success']}20", p['success'], "⚡"),
+            SuggestionType.WARNING: (f"{p['warning']}20", p['warning'], "⚠️"),
+            SuggestionType.INFO: (f"{p['accent']}20", p['accent'], "ℹ️"),
+            SuggestionType.SHORTCUT: (f"{p['primary']}20", p['primary'], "⌨️"),
         }
 
         bg_color, text_color, icon = colors.get(
             self.suggestion.type,
-            ("#f3f4f6", "#374151", "💬")
+            (p['bg_hover'], p['text_primary'], "💬")
         )
 
         self.setStyleSheet(f"""
@@ -194,20 +196,21 @@ class SuggestionPanel(QWidget):
         header_layout = QHBoxLayout(self.header)
         header_layout.setContentsMargins(0, 0, 0, 8)
 
+        p = get_current_palette()
         title = QLabel("💡 اقتراحات")
-        title.setStyleSheet("font-size: 13px; font-weight: bold; color: #374151;")
+        title.setStyleSheet(f"font-size: 13px; font-weight: bold; color: {p['text_primary']};")
 
         clear_btn = QPushButton("مسح الكل")
-        clear_btn.setStyleSheet("""
-            QPushButton {
+        clear_btn.setStyleSheet(f"""
+            QPushButton {{
                 background: transparent;
-                color: #6b7280;
+                color: {p['text_muted']};
                 border: none;
                 font-size: 11px;
-            }
-            QPushButton:hover {
-                color: #374151;
-            }
+            }}
+            QPushButton:hover {{
+                color: {p['text_primary']};
+            }}
         """)
         clear_btn.clicked.connect(self.clear)
 

@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal, QSize
 from PyQt5.QtGui import QFont, QColor, QCursor, QIcon
 
+from core.themes import get_current_palette, get_font, FONT_SIZE_SUBTITLE, FONT_SIZE_SMALL, FONT_WEIGHT_BOLD
 from ..models import CalendarEvent, EventType, EventStatus
 
 
@@ -139,11 +140,10 @@ class EventItem(QFrame):
         """)
         title_layout.addWidget(type_label)
 
+        p = get_current_palette()
         title_label = QLabel(self.event.title)
-        title_font = QFont("Cairo", 11 if not self.compact else 10)
-        title_font.setBold(True)
-        title_label.setFont(title_font)
-        title_label.setStyleSheet("color: #2c3e50;")
+        title_label.setFont(get_font(FONT_SIZE_SMALL, FONT_WEIGHT_BOLD))
+        title_label.setStyleSheet(f"color: {p['text_primary']};")
         title_layout.addWidget(title_label)
         title_layout.addStretch()
 
@@ -155,16 +155,16 @@ class EventItem(QFrame):
 
         if self.show_date:
             date_label = QLabel(self.event.date_formatted)
-            date_label.setStyleSheet("color: #7f8c8d; font-size: 11px;")
+            date_label.setStyleSheet(f"color: {p['text_muted']}; font-size: 11px;")
             time_layout.addWidget(date_label)
 
         time_label = QLabel(self.event.time_formatted)
-        time_label.setStyleSheet("color: #3498db; font-size: 11px;")
+        time_label.setStyleSheet(f"color: {p['primary']}; font-size: 11px;")
         time_layout.addWidget(time_label)
 
         if self.event.duration_formatted and not self.event.is_all_day:
             duration_label = QLabel(f"({self.event.duration_formatted})")
-            duration_label.setStyleSheet("color: #95a5a6; font-size: 10px;")
+            duration_label.setStyleSheet(f"color: {p['text_muted']}; font-size: 10px;")
             time_layout.addWidget(duration_label)
 
         time_layout.addStretch()
@@ -173,13 +173,13 @@ class EventItem(QFrame):
         # الموقع (إن وجد)
         if self.event.location and not self.compact:
             location_label = QLabel(f"📍 {self.event.location}")
-            location_label.setStyleSheet("color: #7f8c8d; font-size: 10px;")
+            location_label.setStyleSheet(f"color: {p['text_muted']}; font-size: 10px;")
             content_layout.addWidget(location_label)
 
         # الوصف (إن وجد)
         if self.event.description and not self.compact:
             desc_label = QLabel(self.event.description[:100] + "..." if len(self.event.description or "") > 100 else self.event.description)
-            desc_label.setStyleSheet("color: #95a5a6; font-size: 10px;")
+            desc_label.setStyleSheet(f"color: {p['text_muted']}; font-size: 10px;")
             desc_label.setWordWrap(True)
             content_layout.addWidget(desc_label)
 
@@ -193,17 +193,17 @@ class EventItem(QFrame):
             # زر القائمة
             menu_btn = QPushButton("⋮")
             menu_btn.setFixedSize(24, 24)
-            menu_btn.setStyleSheet("""
-                QPushButton {
+            menu_btn.setStyleSheet(f"""
+                QPushButton {{
                     background: transparent;
                     border: none;
                     font-size: 16px;
-                    color: #95a5a6;
-                }
-                QPushButton:hover {
-                    background-color: #f0f0f0;
+                    color: {p['text_muted']};
+                }}
+                QPushButton:hover {{
+                    background-color: {p['bg_hover']};
                     border-radius: 4px;
-                }
+                }}
             """)
             menu_btn.clicked.connect(self._show_menu)
             actions_layout.addWidget(menu_btn)
@@ -212,25 +212,26 @@ class EventItem(QFrame):
             layout.addLayout(actions_layout)
 
     def _apply_style(self):
-        base_style = """
-            EventItem {
-                background-color: white;
-                border: 1px solid #e0e0e0;
+        p = get_current_palette()
+        base_style = f"""
+            EventItem {{
+                background-color: {p['bg_card']};
+                border: 1px solid {p['border']};
                 border-radius: 6px;
-            }
-            EventItem:hover {
-                border-color: #3498db;
-                background-color: #f8f9fa;
-            }
+            }}
+            EventItem:hover {{
+                border-color: {p['primary']};
+                background-color: {p['bg_hover']};
+            }}
         """
 
         if self.event.status == EventStatus.CANCELLED:
-            base_style = """
-                EventItem {
-                    background-color: #fee;
-                    border: 1px solid #fcc;
+            base_style = f"""
+                EventItem {{
+                    background-color: {p['danger']}15;
+                    border: 1px solid {p['danger']}40;
                     border-radius: 6px;
-                }
+                }}
             """
 
         self.setStyleSheet(base_style)
@@ -238,21 +239,23 @@ class EventItem(QFrame):
     def _show_menu(self):
         """عرض قائمة الإجراءات"""
         menu = QMenu(self)
-        menu.setStyleSheet("""
-            QMenu {
-                background-color: white;
-                border: 1px solid #e0e0e0;
+        p = get_current_palette()
+        menu.setStyleSheet(f"""
+            QMenu {{
+                background-color: {p['bg_card']};
+                border: 1px solid {p['border']};
                 border-radius: 4px;
                 padding: 4px;
-            }
-            QMenu::item {
+                color: {p['text_primary']};
+            }}
+            QMenu::item {{
                 padding: 6px 20px;
                 border-radius: 4px;
-            }
-            QMenu::item:selected {
-                background-color: #3498db;
-                color: white;
-            }
+            }}
+            QMenu::item:selected {{
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
+            }}
         """)
 
         edit_action = QAction("✏️ تعديل", self)
@@ -325,11 +328,10 @@ class EventCard(QFrame):
         """)
         title_container.addWidget(type_label)
 
+        p = get_current_palette()
         title_label = QLabel(self.event.title)
-        title_font = QFont("Cairo", 14)
-        title_font.setBold(True)
-        title_label.setFont(title_font)
-        title_label.setStyleSheet("color: #2c3e50;")
+        title_label.setFont(get_font(FONT_SIZE_SUBTITLE, FONT_WEIGHT_BOLD))
+        title_label.setStyleSheet(f"color: {p['text_primary']};")
         title_label.setWordWrap(True)
         title_container.addWidget(title_label)
 
@@ -339,18 +341,18 @@ class EventCard(QFrame):
         # زر الإغلاق
         close_btn = QPushButton("✕")
         close_btn.setFixedSize(28, 28)
-        close_btn.setStyleSheet("""
-            QPushButton {
+        close_btn.setStyleSheet(f"""
+            QPushButton {{
                 background: transparent;
                 border: none;
                 font-size: 16px;
-                color: #95a5a6;
-            }
-            QPushButton:hover {
-                background-color: #fee;
-                color: #e74c3c;
+                color: {p['text_muted']};
+            }}
+            QPushButton:hover {{
+                background-color: {p['danger']}20;
+                color: {p['danger']};
                 border-radius: 4px;
-            }
+            }}
         """)
         close_btn.clicked.connect(self.close_requested.emit)
         header_layout.addWidget(close_btn)
@@ -360,7 +362,7 @@ class EventCard(QFrame):
         # فاصل
         separator = QFrame()
         separator.setFrameShape(QFrame.HLine)
-        separator.setStyleSheet("background-color: #e0e0e0;")
+        separator.setStyleSheet(f"background-color: {p['border']};")
         layout.addWidget(separator)
 
         # التفاصيل
@@ -373,19 +375,19 @@ class EventCard(QFrame):
 
         date_container = QVBoxLayout()
         date_label = QLabel("📅 التاريخ")
-        date_label.setStyleSheet("color: #7f8c8d; font-size: 10px;")
+        date_label.setStyleSheet(f"color: {p['text_muted']}; font-size: 10px;")
         date_container.addWidget(date_label)
         date_value = QLabel(self.event.date_formatted)
-        date_value.setStyleSheet("color: #2c3e50; font-size: 12px; font-weight: bold;")
+        date_value.setStyleSheet(f"color: {p['text_primary']}; font-size: 12px; font-weight: bold;")
         date_container.addWidget(date_value)
         datetime_layout.addLayout(date_container)
 
         time_container = QVBoxLayout()
         time_label = QLabel("⏰ الوقت")
-        time_label.setStyleSheet("color: #7f8c8d; font-size: 10px;")
+        time_label.setStyleSheet(f"color: {p['text_muted']}; font-size: 10px;")
         time_container.addWidget(time_label)
         time_value = QLabel(self.event.time_formatted)
-        time_value.setStyleSheet("color: #3498db; font-size: 12px; font-weight: bold;")
+        time_value.setStyleSheet(f"color: {p['primary']}; font-size: 12px; font-weight: bold;")
         time_container.addWidget(time_value)
         datetime_layout.addLayout(time_container)
 
@@ -396,10 +398,10 @@ class EventCard(QFrame):
         if self.event.duration_formatted:
             duration_layout = QHBoxLayout()
             duration_icon = QLabel("⏱️ المدة:")
-            duration_icon.setStyleSheet("color: #7f8c8d; font-size: 11px;")
+            duration_icon.setStyleSheet(f"color: {p['text_muted']}; font-size: 11px;")
             duration_layout.addWidget(duration_icon)
             duration_value = QLabel(self.event.duration_formatted)
-            duration_value.setStyleSheet("color: #2c3e50; font-size: 11px;")
+            duration_value.setStyleSheet(f"color: {p['text_primary']}; font-size: 11px;")
             duration_layout.addWidget(duration_value)
             duration_layout.addStretch()
             details_layout.addLayout(duration_layout)
@@ -408,10 +410,10 @@ class EventCard(QFrame):
         if self.event.location:
             location_layout = QHBoxLayout()
             location_icon = QLabel("📍 الموقع:")
-            location_icon.setStyleSheet("color: #7f8c8d; font-size: 11px;")
+            location_icon.setStyleSheet(f"color: {p['text_muted']}; font-size: 11px;")
             location_layout.addWidget(location_icon)
             location_value = QLabel(self.event.location)
-            location_value.setStyleSheet("color: #2c3e50; font-size: 11px;")
+            location_value.setStyleSheet(f"color: {p['text_primary']}; font-size: 11px;")
             location_value.setWordWrap(True)
             location_layout.addWidget(location_value, 1)
             details_layout.addLayout(location_layout)
@@ -419,10 +421,10 @@ class EventCard(QFrame):
         # الوصف
         if self.event.description:
             desc_label = QLabel("📝 الوصف")
-            desc_label.setStyleSheet("color: #7f8c8d; font-size: 10px;")
+            desc_label.setStyleSheet(f"color: {p['text_muted']}; font-size: 10px;")
             details_layout.addWidget(desc_label)
             desc_value = QLabel(self.event.description)
-            desc_value.setStyleSheet("color: #2c3e50; font-size: 11px; padding: 8px; background-color: #f8f9fa; border-radius: 4px;")
+            desc_value.setStyleSheet(f"color: {p['text_primary']}; font-size: 11px; padding: 8px; background-color: {p['bg_main']}; border-radius: 4px;")
             desc_value.setWordWrap(True)
             details_layout.addWidget(desc_value)
 
@@ -430,10 +432,10 @@ class EventCard(QFrame):
         if self.event.task_title:
             task_layout = QHBoxLayout()
             task_icon = QLabel("✅ المهمة:")
-            task_icon.setStyleSheet("color: #7f8c8d; font-size: 11px;")
+            task_icon.setStyleSheet(f"color: {p['text_muted']}; font-size: 11px;")
             task_layout.addWidget(task_icon)
             task_value = QLabel(self.event.task_title)
-            task_value.setStyleSheet("color: #27ae60; font-size: 11px;")
+            task_value.setStyleSheet(f"color: {p['success']}; font-size: 11px;")
             task_layout.addWidget(task_value, 1)
             details_layout.addLayout(task_layout)
 
@@ -441,10 +443,10 @@ class EventCard(QFrame):
         if self.event.employee_name:
             emp_layout = QHBoxLayout()
             emp_icon = QLabel("👤 الموظف:")
-            emp_icon.setStyleSheet("color: #7f8c8d; font-size: 11px;")
+            emp_icon.setStyleSheet(f"color: {p['text_muted']}; font-size: 11px;")
             emp_layout.addWidget(emp_icon)
             emp_value = QLabel(self.event.employee_name)
-            emp_value.setStyleSheet("color: #2c3e50; font-size: 11px;")
+            emp_value.setStyleSheet(f"color: {p['text_primary']}; font-size: 11px;")
             emp_layout.addWidget(emp_value, 1)
             details_layout.addLayout(emp_layout)
 
@@ -457,35 +459,33 @@ class EventCard(QFrame):
         buttons_layout.setSpacing(8)
 
         edit_btn = QPushButton("✏️ تعديل")
-        edit_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #3498db;
-                color: white;
+        edit_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 4px;
                 padding: 8px 16px;
-                font-family: Cairo;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['primary_hover']};
+            }}
         """)
         edit_btn.clicked.connect(lambda: self.edit_requested.emit(self.event))
         buttons_layout.addWidget(edit_btn)
 
         delete_btn = QPushButton("🗑️ حذف")
-        delete_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #e74c3c;
-                color: white;
+        delete_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['danger']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 4px;
                 padding: 8px 16px;
-                font-family: Cairo;
-            }
-            QPushButton:hover {
-                background-color: #c0392b;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['danger']};
+            }}
         """)
         delete_btn.clicked.connect(lambda: self.delete_requested.emit(self.event))
         buttons_layout.addWidget(delete_btn)
@@ -494,10 +494,11 @@ class EventCard(QFrame):
         layout.addLayout(buttons_layout)
 
     def _apply_style(self):
-        self.setStyleSheet("""
-            EventCard {
-                background-color: white;
-                border: 1px solid #e0e0e0;
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            EventCard {{
+                background-color: {p['bg_card']};
+                border: 1px solid {p['border']};
                 border-radius: 8px;
-            }
+            }}
         """)

@@ -17,6 +17,7 @@ from PyQt5.QtCore import Qt, pyqtSignal, QSize
 from PyQt5.QtGui import QFont, QCursor, QColor
 
 from core.logging import app_logger
+from core.themes import get_current_palette, get_font, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_SIZE_TINY, FONT_WEIGHT_BOLD
 
 
 class NotificationCard(QFrame):
@@ -39,23 +40,24 @@ class NotificationCard(QFrame):
 
     def _setup_ui(self):
         """إعداد الواجهة"""
+        p = get_current_palette()
         self.setCursor(QCursor(Qt.PointingHandCursor))
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         # التنسيق حسب حالة القراءة
-        bg_color = "#f8f9fa" if self.notification.is_read else "#ffffff"
+        bg_color = p['bg_main'] if self.notification.is_read else p['bg_card']
         border_color = self.notification.priority_color
 
         self.setStyleSheet(f"""
             QFrame {{
                 background-color: {bg_color};
-                border: 1px solid #eee;
+                border: 1px solid {p['border']};
                 border-left: 3px solid {border_color};
                 border-radius: 6px;
             }}
             QFrame:hover {{
-                background-color: #f0f7ff;
-                border-color: #3498db;
+                background-color: {p['bg_hover']};
+                border-color: {p['primary']};
             }}
         """)
 
@@ -73,15 +75,15 @@ class NotificationCard(QFrame):
 
         # العنوان
         title_label = QLabel(self.notification.title)
-        title_label.setFont(QFont("Cairo", 10, QFont.Bold if not self.notification.is_read else QFont.Normal))
-        title_label.setStyleSheet(f"color: {'#333' if not self.notification.is_read else '#666'}; border: none;")
+        title_label.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD if not self.notification.is_read else None))
+        title_label.setStyleSheet(f"color: {p['text_primary'] if not self.notification.is_read else p['text_muted']}; border: none;")
         title_label.setWordWrap(True)
         top_row.addWidget(title_label, 1)
 
         # الوقت
         time_label = QLabel(self.notification.time_ago)
-        time_label.setFont(QFont("Cairo", 8))
-        time_label.setStyleSheet("color: #888; border: none;")
+        time_label.setFont(get_font(FONT_SIZE_TINY))
+        time_label.setStyleSheet(f"color: {p['text_muted']}; border: none;")
         top_row.addWidget(time_label)
 
         layout.addLayout(top_row)
@@ -89,8 +91,8 @@ class NotificationCard(QFrame):
         # المحتوى (إذا موجود وليس compact)
         if self.notification.body and not self.compact:
             body_label = QLabel(self._truncate_text(self.notification.body, 150))
-            body_label.setFont(QFont("Cairo", 9))
-            body_label.setStyleSheet("color: #555; border: none;")
+            body_label.setFont(get_font(FONT_SIZE_SMALL))
+            body_label.setStyleSheet(f"color: {p['text_secondary']}; border: none;")
             body_label.setWordWrap(True)
             layout.addWidget(body_label)
 
@@ -127,7 +129,7 @@ class NotificationCard(QFrame):
             }
             emoji = type_emojis.get(self.notification.notification_type.value, "🔔")
             icon_label.setText(emoji)
-            icon_label.setFont(QFont("Segoe UI Emoji", 14))
+            icon_label.setStyleSheet("font-size: 14px; border: none;")
 
         icon_label.setStyleSheet("border: none;")
         return icon_label
@@ -140,34 +142,34 @@ class NotificationCard(QFrame):
 
         for action in self.notification.actions[:3]:  # حد أقصى 3 إجراءات
             btn = QPushButton(action.label)
-            btn.setFont(QFont("Cairo", 9))
+            btn.setFont(get_font(FONT_SIZE_SMALL))
             btn.setCursor(QCursor(Qt.PointingHandCursor))
 
             if action.is_primary:
-                btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #3498db;
-                        color: white;
+                btn.setStyleSheet(f"""
+                    QPushButton {{
+                        background-color: {p['primary']};
+                        color: {p['text_on_primary']};
                         border: none;
                         border-radius: 4px;
                         padding: 4px 12px;
-                    }
-                    QPushButton:hover {
-                        background-color: #2980b9;
-                    }
+                    }}
+                    QPushButton:hover {{
+                        background-color: {p['primary_hover']};
+                    }}
                 """)
             else:
-                btn.setStyleSheet("""
-                    QPushButton {
+                btn.setStyleSheet(f"""
+                    QPushButton {{
                         background-color: transparent;
-                        color: #3498db;
-                        border: 1px solid #3498db;
+                        color: {p['primary']};
+                        border: 1px solid {p['primary']};
                         border-radius: 4px;
                         padding: 4px 12px;
-                    }
-                    QPushButton:hover {
-                        background-color: #ecf0f1;
-                    }
+                    }}
+                    QPushButton:hover {{
+                        background-color: {p['bg_hover']};
+                    }}
                 """)
 
             btn.clicked.connect(lambda checked, a=action: self._on_action_clicked(a.id))
@@ -177,15 +179,16 @@ class NotificationCard(QFrame):
 
     def _create_urgent_badge(self) -> QLabel:
         """إنشاء شارة العاجل"""
+        p = get_current_palette()
         badge = QLabel("عاجل")
-        badge.setFont(QFont("Cairo", 8, QFont.Bold))
-        badge.setStyleSheet("""
-            QLabel {
-                background-color: #e74c3c;
-                color: white;
+        badge.setFont(get_font(FONT_SIZE_TINY, FONT_WEIGHT_BOLD))
+        badge.setStyleSheet(f"""
+            QLabel {{
+                background-color: {p['danger']};
+                color: {p['text_on_primary']};
                 border-radius: 3px;
                 padding: 2px 6px;
-            }
+            }}
         """)
         badge.setFixedWidth(40)
         badge.setAlignment(Qt.AlignCenter)

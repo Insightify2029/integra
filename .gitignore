@@ -25,6 +25,9 @@ SYNC.bat
 *.tmp
 *.log
 
+# Theme preferences (user-specific)
+theme_settings.json
+
 # Logging (A1)
 logs/
 

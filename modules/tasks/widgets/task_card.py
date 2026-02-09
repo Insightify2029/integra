@@ -15,6 +15,7 @@ from PyQt5.QtCore import Qt, pyqtSignal, QSize
 from PyQt5.QtGui import QFont, QCursor
 
 from ..models import Task, TaskStatus, TaskPriority
+from core.themes import get_current_palette, get_font, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_SIZE_TINY, FONT_WEIGHT_BOLD
 
 
 class TaskCard(QFrame):
@@ -65,17 +66,19 @@ class TaskCard(QFrame):
         title_layout = QVBoxLayout()
         title_layout.setSpacing(2)
 
+        p = get_current_palette()
+
         self.title_label = QLabel(self.task.title)
-        self.title_label.setFont(QFont("Cairo", 11, QFont.Bold))
+        self.title_label.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
         self.title_label.setWordWrap(True)
         self.title_label.setMaximumHeight(44)
         title_layout.addWidget(self.title_label)
 
         if self.task.category_ar:
             self.category_label = QLabel(self.task.category_ar)
-            self.category_label.setFont(QFont("Cairo", 9))
+            self.category_label.setFont(get_font(FONT_SIZE_TINY))
             self.category_label.setStyleSheet(
-                f"color: {self.task.category_color or '#6c757d'};"
+                f"color: {self.task.category_color or p['text_muted']};"
             )
             title_layout.addWidget(self.category_label)
 
@@ -98,9 +101,9 @@ class TaskCard(QFrame):
         # Due date
         if self.task.due_date:
             due_text = self.task.due_date_formatted
-            due_color = "#dc3545" if self.task.is_overdue else "#6c757d"
+            due_color = p['danger'] if self.task.is_overdue else p['text_muted']
             self.due_label = QLabel(f"📅 {due_text}")
-            self.due_label.setFont(QFont("Cairo", 9))
+            self.due_label.setFont(get_font(FONT_SIZE_TINY))
             self.due_label.setStyleSheet(f"color: {due_color};")
             info_layout.addWidget(self.due_label)
 
@@ -108,22 +111,22 @@ class TaskCard(QFrame):
         if self.task.checklist_count > 0:
             progress_text = f"✓ {self.task.checklist_completed}/{self.task.checklist_count}"
             self.progress_label = QLabel(progress_text)
-            self.progress_label.setFont(QFont("Cairo", 9))
-            self.progress_label.setStyleSheet("color: #6c757d;")
+            self.progress_label.setFont(get_font(FONT_SIZE_TINY))
+            self.progress_label.setStyleSheet(f"color: {p['text_muted']};")
             info_layout.addWidget(self.progress_label)
 
         # Attachments count
         if self.task.attachments_count > 0:
             self.attachments_label = QLabel(f"📎 {self.task.attachments_count}")
-            self.attachments_label.setFont(QFont("Cairo", 9))
-            self.attachments_label.setStyleSheet("color: #6c757d;")
+            self.attachments_label.setFont(get_font(FONT_SIZE_TINY))
+            self.attachments_label.setStyleSheet(f"color: {p['text_muted']};")
             info_layout.addWidget(self.attachments_label)
 
         # Comments count
         if self.task.comments_count > 0:
             self.comments_label = QLabel(f"💬 {self.task.comments_count}")
-            self.comments_label.setFont(QFont("Cairo", 9))
-            self.comments_label.setStyleSheet("color: #6c757d;")
+            self.comments_label.setFont(get_font(FONT_SIZE_TINY))
+            self.comments_label.setStyleSheet(f"color: {p['text_muted']};")
             info_layout.addWidget(self.comments_label)
 
         # Recurring indicator
@@ -136,7 +139,7 @@ class TaskCard(QFrame):
 
         # Priority label
         self.priority_label = QLabel(self.task.priority_label)
-        self.priority_label.setFont(QFont("Cairo", 9))
+        self.priority_label.setFont(get_font(FONT_SIZE_TINY))
         self.priority_label.setStyleSheet(
             f"color: {self.task.priority.color}; font-weight: bold;"
         )
@@ -152,30 +155,31 @@ class TaskCard(QFrame):
             self.progress_bar.setFixedHeight(4)
             self.progress_bar.setTextVisible(False)
             self.progress_bar.setValue(int(self.task.checklist_progress))
-            self.progress_bar.setStyleSheet("""
-                QProgressBar {
-                    background-color: #e9ecef;
+            self.progress_bar.setStyleSheet(f"""
+                QProgressBar {{
+                    background-color: {p['border']};
                     border-radius: 2px;
-                }
-                QProgressBar::chunk {
-                    background-color: #28a745;
+                }}
+                QProgressBar::chunk {{
+                    background-color: {p['success']};
                     border-radius: 2px;
-                }
+                }}
             """)
             main_layout.addWidget(self.progress_bar)
 
     def _apply_style(self):
         """تطبيق التنسيق"""
-        base_bg = "#ffffff"
-        border_color = "#e9ecef"
+        p = get_current_palette()
+        base_bg = p['bg_card']
+        border_color = p['border']
 
         # تنسيق مختلف للمهام المتأخرة
         if self.task.is_overdue:
-            border_color = "#dc3545"
-            base_bg = "#fff5f5"
+            border_color = p['danger']
+            base_bg = f"{p['danger']}08"
         elif self.task.status == TaskStatus.COMPLETED:
-            base_bg = "#f8fff8"
-            border_color = "#28a745"
+            base_bg = f"{p['success']}08"
+            border_color = p['success']
 
         self.setStyleSheet(f"""
             QFrame#taskCard {{
@@ -184,8 +188,8 @@ class TaskCard(QFrame):
                 border-radius: 8px;
             }}
             QFrame#taskCard:hover {{
-                border-color: #007bff;
-                background-color: #f8f9fa;
+                border-color: {p['primary']};
+                background-color: {p['bg_hover']};
             }}
         """)
 
@@ -339,9 +343,11 @@ class CompactTaskCard(QFrame):
         )
         layout.addWidget(indicator)
 
+        p = get_current_palette()
+
         # Title
         self.title_label = QLabel(self.task.title)
-        self.title_label.setFont(QFont("Cairo", 10))
+        self.title_label.setFont(get_font(FONT_SIZE_BODY))
         self.title_label.setWordWrap(True)
         layout.addWidget(self.title_label, 1)
 
@@ -358,16 +364,16 @@ class CompactTaskCard(QFrame):
             layout.addWidget(due_label)
 
         # Style
-        border_color = "#dc3545" if self.task.is_overdue else "#e9ecef"
+        border_color = p['danger'] if self.task.is_overdue else p['border']
         self.setStyleSheet(f"""
             QFrame#compactTaskCard {{
-                background-color: white;
+                background-color: {p['bg_card']};
                 border: 1px solid {border_color};
                 border-radius: 6px;
             }}
             QFrame#compactTaskCard:hover {{
-                background-color: #f8f9fa;
-                border-color: #007bff;
+                background-color: {p['bg_hover']};
+                border-color: {p['primary']};
             }}
         """)
 

@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal, QDateTime
 from PyQt5.QtGui import QFont
 
+from core.themes import get_current_palette, get_font, FONT_SIZE_SUBTITLE, FONT_WEIGHT_BOLD
 from ..models import (
     CalendarEvent, EventType, EventStatus,
     Reminder, ReminderType, RecurrencePattern, RecurrenceType
@@ -40,12 +41,13 @@ class QuickEventInput(QFrame):
 
     def _setup_ui(self):
         self.setFrameStyle(QFrame.StyledPanel | QFrame.Plain)
-        self.setStyleSheet("""
-            QuickEventInput {
-                background-color: white;
-                border: 1px solid #e0e0e0;
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            QuickEventInput {{
+                background-color: {p['bg_card']};
+                border: 1px solid {p['border']};
                 border-radius: 8px;
-            }
+            }}
         """)
 
         layout = QHBoxLayout(self)
@@ -55,13 +57,14 @@ class QuickEventInput(QFrame):
         # حقل العنوان
         self.title_input = QLineEdit()
         self.title_input.setPlaceholderText("أضف حدث جديد...")
-        self.title_input.setStyleSheet("""
-            QLineEdit {
+        self.title_input.setStyleSheet(f"""
+            QLineEdit {{
                 border: none;
-                font-family: Cairo;
                 font-size: 13px;
                 padding: 4px;
-            }
+                background-color: {p['bg_card']};
+                color: {p['text_primary']};
+            }}
         """)
         self.title_input.returnPressed.connect(self._create_quick_event)
         layout.addWidget(self.title_input, 1)
@@ -69,18 +72,18 @@ class QuickEventInput(QFrame):
         # زر الإضافة
         add_btn = QPushButton("+")
         add_btn.setFixedSize(32, 32)
-        add_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #27ae60;
-                color: white;
+        add_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['success']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 4px;
                 font-size: 18px;
                 font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #219a52;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['success']};
+            }}
         """)
         add_btn.clicked.connect(self._create_quick_event)
         layout.addWidget(add_btn)
@@ -130,10 +133,11 @@ class EventFormDialog(QDialog):
     def _setup_ui(self):
         self.setWindowTitle("تعديل حدث" if self.is_edit_mode else "حدث جديد")
         self.setMinimumWidth(500)
-        self.setStyleSheet("""
-            QDialog {
-                background-color: #f8f9fa;
-            }
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            QDialog {{
+                background-color: {p['bg_main']};
+            }}
         """)
 
         layout = QVBoxLayout(self)
@@ -142,20 +146,18 @@ class EventFormDialog(QDialog):
 
         # رأس النافذة
         header = QFrame()
-        header.setStyleSheet("""
-            QFrame {
-                background-color: white;
-                border-bottom: 1px solid #e0e0e0;
-            }
+        header.setStyleSheet(f"""
+            QFrame {{
+                background-color: {p['bg_card']};
+                border-bottom: 1px solid {p['border']};
+            }}
         """)
         header_layout = QHBoxLayout(header)
         header_layout.setContentsMargins(16, 16, 16, 16)
 
         title_label = QLabel("تعديل حدث" if self.is_edit_mode else "إضافة حدث جديد")
-        title_font = QFont("Cairo", 14)
-        title_font.setBold(True)
-        title_label.setFont(title_font)
-        title_label.setStyleSheet("color: #2c3e50;")
+        title_label.setFont(get_font(FONT_SIZE_SUBTITLE, FONT_WEIGHT_BOLD))
+        title_label.setStyleSheet(f"color: {p['text_primary']};")
         header_layout.addWidget(title_label)
         header_layout.addStretch()
 
@@ -222,18 +224,18 @@ class EventFormDialog(QDialog):
         self.description_input = QTextEdit()
         self.description_input.setPlaceholderText("أدخل وصف الحدث (اختياري)")
         self.description_input.setMaximumHeight(100)
-        self.description_input.setStyleSheet("""
-            QTextEdit {
-                border: 1px solid #ddd;
+        self.description_input.setStyleSheet(f"""
+            QTextEdit {{
+                border: 1px solid {p['border']};
                 border-radius: 4px;
                 padding: 8px;
-                font-family: Cairo;
                 font-size: 12px;
-                background-color: white;
-            }
-            QTextEdit:focus {
-                border-color: #3498db;
-            }
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+            }}
+            QTextEdit:focus {{
+                border-color: {p['primary']};
+            }}
         """)
         form_layout.addRow("الوصف", self.description_input)
 
@@ -298,11 +300,11 @@ class EventFormDialog(QDialog):
 
         # أزرار الإجراءات
         buttons_frame = QFrame()
-        buttons_frame.setStyleSheet("""
-            QFrame {
-                background-color: white;
-                border-top: 1px solid #e0e0e0;
-            }
+        buttons_frame.setStyleSheet(f"""
+            QFrame {{
+                background-color: {p['bg_card']};
+                border-top: 1px solid {p['border']};
+            }}
         """)
         buttons_layout = QHBoxLayout(buttons_frame)
         buttons_layout.setContentsMargins(16, 12, 16, 12)
@@ -311,37 +313,35 @@ class EventFormDialog(QDialog):
         buttons_layout.addStretch()
 
         cancel_btn = QPushButton("إلغاء")
-        cancel_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #f0f0f0;
-                color: #666;
+        cancel_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['bg_hover']};
+                color: {p['text_secondary']};
                 border: none;
                 border-radius: 4px;
                 padding: 8px 24px;
-                font-family: Cairo;
                 font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #e0e0e0;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['border']};
+            }}
         """)
         cancel_btn.clicked.connect(self.reject)
         buttons_layout.addWidget(cancel_btn)
 
         save_btn = QPushButton("حفظ" if self.is_edit_mode else "إضافة")
-        save_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #3498db;
-                color: white;
+        save_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 4px;
                 padding: 8px 24px;
-                font-family: Cairo;
                 font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['primary_hover']};
+            }}
         """)
         save_btn.clicked.connect(self._save)
         buttons_layout.addWidget(save_btn)
@@ -349,18 +349,19 @@ class EventFormDialog(QDialog):
         layout.addWidget(buttons_frame)
 
     def _input_style(self) -> str:
-        return """
-            QLineEdit, QComboBox, QDateTimeEdit {
-                border: 1px solid #ddd;
+        p = get_current_palette()
+        return f"""
+            QLineEdit, QComboBox, QDateTimeEdit {{
+                border: 1px solid {p['border']};
                 border-radius: 4px;
                 padding: 8px;
-                font-family: Cairo;
                 font-size: 12px;
-                background-color: white;
-            }
-            QLineEdit:focus, QComboBox:focus, QDateTimeEdit:focus {
-                border-color: #3498db;
-            }
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+            }}
+            QLineEdit:focus, QComboBox:focus, QDateTimeEdit:focus {{
+                border-color: {p['primary']};
+            }}
         """
 
     def _load_data(self):

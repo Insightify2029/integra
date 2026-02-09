@@ -40,20 +40,19 @@ def _close_streams():
 atexit.register(_close_streams)
 
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import QFont
 
 
 def main():
     """Application entry point with optimized startup."""
     app = QApplication(sys.argv)
 
-    # Set default font immediately (fast)
-    font = QFont("Cairo", 11)
-    app.setFont(font)
-
     app.setApplicationName("INTEGRA")
     app.setApplicationVersion("4.0.0")
     app.setOrganizationName("INTEGRA")
+
+    # ── Apply centralized theme+style (all widgets inherit automatically) ──
+    from core.themes import apply_theme_to_app
+    apply_theme_to_app(app)
 
     # ── Step 1: Show splash screen INSTANTLY ──
     from ui.windows.splash import IntegraSplashScreen

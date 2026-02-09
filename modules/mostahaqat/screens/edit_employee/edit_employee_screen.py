@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal, QDate
 from PyQt5.QtGui import QFont
 
-from core.themes import get_current_theme
+from core.themes import get_current_palette, get_font, FONT_SIZE_TITLE, FONT_SIZE_SUBTITLE, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_WEIGHT_BOLD
 from core.database.queries import select_all, update
 from ui.components.notifications import toast_success, toast_error, toast_warning
 
@@ -47,13 +47,13 @@ class EditEmployeeScreen(QWidget):
         
         self._back_btn = QPushButton("\u2192 \u0631\u062c\u0648\u0639")
         self._back_btn.setCursor(Qt.PointingHandCursor)
-        self._back_btn.setFont(QFont("Cairo", 12))
+        self._back_btn.setFont(get_font(FONT_SIZE_BODY))
         self._back_btn.setObjectName("backButton")
         self._back_btn.clicked.connect(self._on_cancel)
         header.addWidget(self._back_btn)
         
         self._title_label = QLabel("\U0001f4dd \u062a\u0639\u062f\u064a\u0644 \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0645\u0648\u0638\u0641")
-        self._title_label.setFont(QFont("Cairo", 20, QFont.Bold))
+        self._title_label.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
         self._title_label.setAlignment(Qt.AlignCenter)
         self._title_label.setObjectName("screenTitle")
         header.addWidget(self._title_label, 1)
@@ -131,7 +131,7 @@ class EditEmployeeScreen(QWidget):
         
         self._cancel_btn = QPushButton("\u274c \u0625\u0644\u063a\u0627\u0621")
         self._cancel_btn.setCursor(Qt.PointingHandCursor)
-        self._cancel_btn.setFont(QFont("Cairo", 13))
+        self._cancel_btn.setFont(get_font(FONT_SIZE_BODY))
         self._cancel_btn.setMinimumHeight(50)
         self._cancel_btn.setMinimumWidth(160)
         self._cancel_btn.setProperty("buttonColor", "danger")
@@ -140,7 +140,7 @@ class EditEmployeeScreen(QWidget):
         
         self._save_btn = QPushButton("\u2705 \u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644\u0627\u062a")
         self._save_btn.setCursor(Qt.PointingHandCursor)
-        self._save_btn.setFont(QFont("Cairo", 13, QFont.Bold))
+        self._save_btn.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
         self._save_btn.setMinimumHeight(50)
         self._save_btn.setMinimumWidth(200)
         self._save_btn.setProperty("buttonColor", "success")
@@ -163,7 +163,7 @@ class EditEmployeeScreen(QWidget):
         layout.setSpacing(15)
         
         title_label = QLabel(title)
-        title_label.setFont(QFont("Cairo", 14, QFont.Bold))
+        title_label.setFont(get_font(FONT_SIZE_SUBTITLE, FONT_WEIGHT_BOLD))
         title_label.setObjectName("cardTitle")
         layout.addWidget(title_label)
         
@@ -176,12 +176,12 @@ class EditEmployeeScreen(QWidget):
     
     def _add_input(self, grid, label, row, col, readonly=False):
         lbl = QLabel(f"{label}:")
-        lbl.setFont(QFont("Cairo", 11))
+        lbl.setFont(get_font(FONT_SIZE_SMALL))
         lbl.setObjectName("fieldLabel")
         lbl.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         
         inp = QLineEdit()
-        inp.setFont(QFont("Cairo", 12))
+        inp.setFont(get_font(FONT_SIZE_BODY))
         inp.setMinimumHeight(40)
         inp.setObjectName("fieldInput")
         inp.setPlaceholderText(f"\u0623\u062f\u062e\u0644 {label}")
@@ -197,12 +197,12 @@ class EditEmployeeScreen(QWidget):
     
     def _add_combo(self, grid, label, row, col):
         lbl = QLabel(f"{label}:")
-        lbl.setFont(QFont("Cairo", 11))
+        lbl.setFont(get_font(FONT_SIZE_SMALL))
         lbl.setObjectName("fieldLabel")
         lbl.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         
         combo = QComboBox()
-        combo.setFont(QFont("Cairo", 12))
+        combo.setFont(get_font(FONT_SIZE_BODY))
         combo.setMinimumHeight(40)
         combo.setObjectName("fieldCombo")
         
@@ -213,12 +213,12 @@ class EditEmployeeScreen(QWidget):
     
     def _add_date(self, grid, label, row, col):
         lbl = QLabel(f"{label}:")
-        lbl.setFont(QFont("Cairo", 11))
+        lbl.setFont(get_font(FONT_SIZE_SMALL))
         lbl.setObjectName("fieldLabel")
         lbl.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         
         date_edit = QDateEdit()
-        date_edit.setFont(QFont("Cairo", 12))
+        date_edit.setFont(get_font(FONT_SIZE_BODY))
         date_edit.setMinimumHeight(40)
         date_edit.setObjectName("fieldDate")
         date_edit.setCalendarPopup(True)
@@ -361,57 +361,32 @@ class EditEmployeeScreen(QWidget):
         self.cancelled.emit()
     
     def _apply_theme(self):
-        theme = get_current_theme()
-        
-        if theme == 'dark':
-            self.setStyleSheet("""
-                QWidget { background-color: #0f172a; }
-                QLabel { color: #f1f5f9; background: transparent; }
-                QLabel#fieldLabel { color: #94a3b8; }
-                QLabel#screenTitle { color: #38bdf8; }
-                QLabel#cardTitle { color: #06b6d4; }
-                QFrame#editCard { background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; }
-                QFrame#cardSeparator { background-color: #334155; }
-                QFrame#buttonsFrame { background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; }
-                QLineEdit, QLineEdit#fieldInput { background-color: #0f172a; color: #f1f5f9; border: 2px solid #334155; border-radius: 8px; padding: 8px 12px; font-size: 13px; }
-                QLineEdit:focus { border-color: #06b6d4; }
-                QLineEdit#fieldInputReadonly { background-color: #1e293b; color: #64748b; border: 2px solid #1e293b; }
-                QComboBox { background-color: #0f172a; color: #f1f5f9; border: 2px solid #334155; border-radius: 8px; padding: 8px 12px; font-size: 13px; }
-                QComboBox:focus { border-color: #06b6d4; }
-                QComboBox::drop-down { border: none; width: 30px; }
-                QComboBox QAbstractItemView { background-color: #1e293b; color: #f1f5f9; border: 1px solid #334155; selection-background-color: #06b6d4; }
-                QDateEdit { background-color: #0f172a; color: #f1f5f9; border: 2px solid #334155; border-radius: 8px; padding: 8px 12px; font-size: 13px; }
-                QDateEdit:focus { border-color: #06b6d4; }
-                QPushButton { background-color: #334155; color: #f1f5f9; border: none; border-radius: 8px; padding: 12px 24px; font-weight: bold; }
-                QPushButton:hover { background-color: #475569; }
-                QPushButton#backButton { background-color: transparent; color: #94a3b8; border: 1px solid #334155; }
-                QPushButton#backButton:hover { background-color: #1e293b; color: #f1f5f9; }
-                QPushButton[buttonColor="success"] { background-color: #10b981; }
-                QPushButton[buttonColor="success"]:hover { background-color: #059669; }
-                QPushButton[buttonColor="danger"] { background-color: #ef4444; }
-                QPushButton[buttonColor="danger"]:hover { background-color: #dc2626; }
-                QScrollArea { background: transparent; border: none; }
-            """)
-        else:
-            self.setStyleSheet("""
-                QWidget { background-color: #f8fafc; }
-                QLabel { color: #1e293b; background: transparent; }
-                QLabel#fieldLabel { color: #64748b; }
-                QLabel#screenTitle { color: #0891b2; }
-                QLabel#cardTitle { color: #0891b2; }
-                QFrame#editCard { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; }
-                QFrame#cardSeparator { background-color: #e2e8f0; }
-                QFrame#buttonsFrame { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; }
-                QLineEdit { background-color: #ffffff; color: #1e293b; border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; }
-                QLineEdit:focus { border-color: #06b6d4; }
-                QLineEdit#fieldInputReadonly { background-color: #f1f5f9; color: #64748b; }
-                QComboBox { background-color: #ffffff; color: #1e293b; border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; }
-                QComboBox:focus { border-color: #06b6d4; }
-                QDateEdit { background-color: #ffffff; color: #1e293b; border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; }
-                QPushButton { background-color: #e2e8f0; color: #1e293b; border: none; border-radius: 8px; padding: 12px 24px; font-weight: bold; }
-                QPushButton:hover { background-color: #cbd5e1; }
-                QPushButton#backButton { background-color: transparent; color: #64748b; border: 1px solid #e2e8f0; }
-                QPushButton[buttonColor="success"] { background-color: #10b981; color: #ffffff; }
-                QPushButton[buttonColor="danger"] { background-color: #ef4444; color: #ffffff; }
-                QScrollArea { background: transparent; border: none; }
-            """)
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            QWidget {{ background-color: {p['bg_main']}; }}
+            QLabel {{ color: {p['text_primary']}; background: transparent; }}
+            QLabel#fieldLabel {{ color: {p['text_secondary']}; }}
+            QLabel#screenTitle {{ color: {p['accent']}; }}
+            QLabel#cardTitle {{ color: {p['accent']}; }}
+            QFrame#editCard {{ background-color: {p['bg_card']}; border: 1px solid {p['border']}; border-radius: 12px; }}
+            QFrame#cardSeparator {{ background-color: {p['border']}; }}
+            QFrame#buttonsFrame {{ background-color: {p['bg_card']}; border: 1px solid {p['border']}; border-radius: 12px; }}
+            QLineEdit, QLineEdit#fieldInput {{ background-color: {p['bg_input']}; color: {p['text_primary']}; border: 2px solid {p['border']}; border-radius: 8px; padding: 8px 12px; font-size: 13px; }}
+            QLineEdit:focus {{ border-color: {p['border_focus']}; }}
+            QLineEdit#fieldInputReadonly {{ background-color: {p['bg_card']}; color: {p['text_muted']}; border: 2px solid {p['bg_card']}; }}
+            QComboBox {{ background-color: {p['bg_input']}; color: {p['text_primary']}; border: 2px solid {p['border']}; border-radius: 8px; padding: 8px 12px; font-size: 13px; }}
+            QComboBox:focus {{ border-color: {p['border_focus']}; }}
+            QComboBox::drop-down {{ border: none; width: 30px; }}
+            QComboBox QAbstractItemView {{ background-color: {p['bg_card']}; color: {p['text_primary']}; border: 1px solid {p['border']}; selection-background-color: {p['selection_bg']}; }}
+            QDateEdit {{ background-color: {p['bg_input']}; color: {p['text_primary']}; border: 2px solid {p['border']}; border-radius: 8px; padding: 8px 12px; font-size: 13px; }}
+            QDateEdit:focus {{ border-color: {p['border_focus']}; }}
+            QPushButton {{ background-color: {p['bg_card']}; color: {p['text_primary']}; border: none; border-radius: 8px; padding: 12px 24px; font-weight: bold; }}
+            QPushButton:hover {{ background-color: {p['bg_hover']}; }}
+            QPushButton#backButton {{ background-color: transparent; color: {p['text_secondary']}; border: 1px solid {p['border']}; }}
+            QPushButton#backButton:hover {{ background-color: {p['bg_card']}; color: {p['text_primary']}; }}
+            QPushButton[buttonColor="success"] {{ background-color: {p['success']}; color: {p['text_on_primary']}; }}
+            QPushButton[buttonColor="success"]:hover {{ background-color: {p['success']}; }}
+            QPushButton[buttonColor="danger"] {{ background-color: {p['danger']}; color: {p['text_on_primary']}; }}
+            QPushButton[buttonColor="danger"]:hover {{ background-color: {p['danger']}; }}
+            QScrollArea {{ background: transparent; border: none; }}
+        """)

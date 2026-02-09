@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 
+from core.themes import get_current_palette, get_font, FONT_SIZE_TITLE, FONT_WEIGHT_BOLD
 from ..models import CalendarView
 
 
@@ -53,11 +54,12 @@ class CalendarHeader(QFrame):
 
     def _setup_ui(self):
         self.setFrameStyle(QFrame.NoFrame)
-        self.setStyleSheet("""
-            CalendarHeader {
-                background-color: white;
-                border-bottom: 1px solid #e0e0e0;
-            }
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            CalendarHeader {{
+                background-color: {p['bg_card']};
+                border-bottom: 1px solid {p['border']};
+            }}
         """)
 
         layout = QHBoxLayout(self)
@@ -68,37 +70,30 @@ class CalendarHeader(QFrame):
         nav_layout = QHBoxLayout()
         nav_layout.setSpacing(4)
 
-        # زر السابق
-        self.prev_btn = QPushButton("◀")
-        self.prev_btn.setFixedSize(32, 32)
-        self.prev_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #f0f0f0;
+        nav_btn_style = f"""
+            QPushButton {{
+                background-color: {p['bg_hover']};
                 border: none;
                 border-radius: 4px;
                 font-size: 14px;
-            }
-            QPushButton:hover {
-                background-color: #e0e0e0;
-            }
-        """)
+                color: {p['text_primary']};
+            }}
+            QPushButton:hover {{
+                background-color: {p['border']};
+            }}
+        """
+
+        # زر السابق
+        self.prev_btn = QPushButton("◀")
+        self.prev_btn.setFixedSize(32, 32)
+        self.prev_btn.setStyleSheet(nav_btn_style)
         self.prev_btn.clicked.connect(self.previous_clicked.emit)
         nav_layout.addWidget(self.prev_btn)
 
         # زر التالي
         self.next_btn = QPushButton("▶")
         self.next_btn.setFixedSize(32, 32)
-        self.next_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #f0f0f0;
-                border: none;
-                border-radius: 4px;
-                font-size: 14px;
-            }
-            QPushButton:hover {
-                background-color: #e0e0e0;
-            }
-        """)
+        self.next_btn.setStyleSheet(nav_btn_style)
         self.next_btn.clicked.connect(self.next_clicked.emit)
         nav_layout.addWidget(self.next_btn)
 
@@ -106,29 +101,26 @@ class CalendarHeader(QFrame):
 
         # عرض الشهر والسنة
         self.date_label = QLabel()
-        date_font = QFont("Cairo", 16)
-        date_font.setBold(True)
-        self.date_label.setFont(date_font)
-        self.date_label.setStyleSheet("color: #2c3e50;")
+        self.date_label.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
+        self.date_label.setStyleSheet(f"color: {p['text_primary']};")
         layout.addWidget(self.date_label)
 
         layout.addStretch()
 
         # زر اليوم
         self.today_btn = QPushButton("اليوم")
-        self.today_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #3498db;
-                color: white;
+        self.today_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 4px;
                 padding: 6px 16px;
-                font-family: Cairo;
                 font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['primary_hover']};
+            }}
         """)
         self.today_btn.clicked.connect(self.today_clicked.emit)
         layout.addWidget(self.today_btn)
@@ -226,11 +218,12 @@ class CalendarToolbar(QFrame):
 
     def _setup_ui(self):
         self.setFrameStyle(QFrame.NoFrame)
-        self.setStyleSheet("""
-            CalendarToolbar {
-                background-color: #f8f9fa;
-                border-bottom: 1px solid #e0e0e0;
-            }
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            CalendarToolbar {{
+                background-color: {p['bg_main']};
+                border-bottom: 1px solid {p['border']};
+            }}
         """)
 
         layout = QHBoxLayout(self)
@@ -251,30 +244,42 @@ class CalendarToolbar(QFrame):
             btn = QPushButton(label)
             btn.setCheckable(True)
             btn.setChecked(view_type == self.current_view)
-            btn.setStyleSheet("""
-                QPushButton {
-                    background-color: white;
-                    color: #666;
-                    border: 1px solid #ddd;
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {p['bg_card']};
+                    color: {p['text_secondary']};
+                    border: 1px solid {p['border']};
                     border-radius: 4px;
                     padding: 6px 12px;
-                    font-family: Cairo;
                     font-size: 11px;
-                }
-                QPushButton:checked {
-                    background-color: #3498db;
-                    color: white;
-                    border-color: #3498db;
-                }
-                QPushButton:hover:!checked {
-                    background-color: #f0f0f0;
-                }
+                }}
+                QPushButton:checked {{
+                    background-color: {p['primary']};
+                    color: {p['text_on_primary']};
+                    border-color: {p['primary']};
+                }}
+                QPushButton:hover:!checked {{
+                    background-color: {p['bg_hover']};
+                }}
             """)
             btn.clicked.connect(lambda checked, v=view_type: self._on_view_selected(v))
             view_group.addButton(btn)
             layout.addWidget(btn)
 
         layout.addStretch()
+
+        icon_btn_style = f"""
+            QPushButton {{
+                background-color: {p['bg_card']};
+                border: 1px solid {p['border']};
+                border-radius: 4px;
+                font-size: 14px;
+                color: {p['text_primary']};
+            }}
+            QPushButton:hover {{
+                background-color: {p['bg_hover']};
+            }}
+        """
 
         # فلتر التصنيف
         self.category_combo = QComboBox()
@@ -285,22 +290,22 @@ class CalendarToolbar(QFrame):
         self.category_combo.addItem("🟡 تذكير", "reminder")
         self.category_combo.addItem("🔴 إجازة", "holiday")
         self.category_combo.addItem("🟤 شخصي", "personal")
-        self.category_combo.setStyleSheet("""
-            QComboBox {
-                background-color: white;
-                border: 1px solid #ddd;
+        self.category_combo.setStyleSheet(f"""
+            QComboBox {{
+                background-color: {p['bg_card']};
+                color: {p['text_primary']};
+                border: 1px solid {p['border']};
                 border-radius: 4px;
                 padding: 6px 12px;
-                font-family: Cairo;
                 font-size: 11px;
                 min-width: 120px;
-            }
-            QComboBox:hover {
-                border-color: #3498db;
-            }
-            QComboBox::drop-down {
+            }}
+            QComboBox:hover {{
+                border-color: {p['primary']};
+            }}
+            QComboBox::drop-down {{
                 border: none;
-            }
+            }}
         """)
         self.category_combo.currentIndexChanged.connect(self._on_category_changed)
         layout.addWidget(self.category_combo)
@@ -309,17 +314,7 @@ class CalendarToolbar(QFrame):
         refresh_btn = QPushButton("🔄")
         refresh_btn.setToolTip("تحديث")
         refresh_btn.setFixedSize(32, 32)
-        refresh_btn.setStyleSheet("""
-            QPushButton {
-                background-color: white;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                font-size: 14px;
-            }
-            QPushButton:hover {
-                background-color: #f0f0f0;
-            }
-        """)
+        refresh_btn.setStyleSheet(icon_btn_style)
         refresh_btn.clicked.connect(self.refresh_clicked.emit)
         layout.addWidget(refresh_btn)
 
@@ -327,35 +322,24 @@ class CalendarToolbar(QFrame):
         settings_btn = QPushButton("⚙️")
         settings_btn.setToolTip("الإعدادات")
         settings_btn.setFixedSize(32, 32)
-        settings_btn.setStyleSheet("""
-            QPushButton {
-                background-color: white;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                font-size: 14px;
-            }
-            QPushButton:hover {
-                background-color: #f0f0f0;
-            }
-        """)
+        settings_btn.setStyleSheet(icon_btn_style)
         settings_btn.clicked.connect(self.settings_clicked.emit)
         layout.addWidget(settings_btn)
 
         # زر إضافة حدث
         add_btn = QPushButton("+ حدث جديد")
-        add_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #27ae60;
-                color: white;
+        add_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['success']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 4px;
                 padding: 6px 16px;
-                font-family: Cairo;
                 font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #219a52;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['success']};
+            }}
         """)
         add_btn.clicked.connect(self.add_event_clicked.emit)
         layout.addWidget(add_btn)

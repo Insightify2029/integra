@@ -7,6 +7,7 @@ Statistics cards for the module.
 from PyQt5.QtWidgets import QWidget, QHBoxLayout
 
 from ui.components.cards import StatCard
+from core.themes import get_current_palette
 
 from modules.mostahaqat.employees import (
     get_employees_count,
@@ -37,13 +38,14 @@ class StatsCardsWidget(QWidget):
         departments = get_departments_count()
         jobs = get_jobs_count()
         
-        # Create cards
+        # Create cards with palette colors
+        p = get_current_palette()
         cards_data = [
-            ("👥", total, "إجمالي الموظفين", "#2563eb"),
-            ("✅", active, "الموظفين النشطين", "#10b981"),
-            ("🌍", nationalities, "الجنسيات", "#f59e0b"),
-            ("🏢", departments, "الأقسام", "#8b5cf6"),
-            ("💼", jobs, "الوظائف", "#ef4444"),
+            ("👥", total, "إجمالي الموظفين", p['primary']),
+            ("✅", active, "الموظفين النشطين", p['success']),
+            ("🌍", nationalities, "الجنسيات", p['warning']),
+            ("🏢", departments, "الأقسام", p['accent']),
+            ("💼", jobs, "الوظائف", p['danger']),
         ]
         
         for icon, value, label, color in cards_data:

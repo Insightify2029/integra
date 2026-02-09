@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 
+from core.themes import get_current_palette, get_font, FONT_SIZE_SMALL, FONT_WEIGHT_BOLD
 from .calendar_header import MONTH_NAMES_AR, DAY_NAMES_SHORT_AR
 
 
@@ -41,18 +42,32 @@ class MiniCalendar(QFrame):
 
     def _setup_ui(self):
         self.setFrameStyle(QFrame.StyledPanel | QFrame.Plain)
-        self.setStyleSheet("""
-            MiniCalendar {
-                background-color: white;
-                border: 1px solid #e0e0e0;
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            MiniCalendar {{
+                background-color: {p['bg_card']};
+                border: 1px solid {p['border']};
                 border-radius: 8px;
-            }
+            }}
         """)
         self.setFixedWidth(240)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(8, 8, 8, 8)
         layout.setSpacing(4)
+
+        nav_btn_style = f"""
+            QPushButton {{
+                background-color: transparent;
+                border: none;
+                font-size: 12px;
+                color: {p['text_secondary']};
+            }}
+            QPushButton:hover {{
+                background-color: {p['bg_hover']};
+                border-radius: 4px;
+            }}
+        """
 
         # رأس التقويم
         header_layout = QHBoxLayout()
@@ -61,45 +76,21 @@ class MiniCalendar(QFrame):
         # زر الشهر السابق
         prev_btn = QPushButton("◀")
         prev_btn.setFixedSize(24, 24)
-        prev_btn.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                border: none;
-                font-size: 12px;
-                color: #666;
-            }
-            QPushButton:hover {
-                background-color: #f0f0f0;
-                border-radius: 4px;
-            }
-        """)
+        prev_btn.setStyleSheet(nav_btn_style)
         prev_btn.clicked.connect(self._go_previous_month)
         header_layout.addWidget(prev_btn)
 
         # عرض الشهر والسنة
         self.month_label = QLabel()
-        month_font = QFont("Cairo", 11)
-        month_font.setBold(True)
-        self.month_label.setFont(month_font)
+        self.month_label.setFont(get_font(FONT_SIZE_SMALL, FONT_WEIGHT_BOLD))
         self.month_label.setAlignment(Qt.AlignCenter)
-        self.month_label.setStyleSheet("color: #2c3e50;")
+        self.month_label.setStyleSheet(f"color: {p['text_primary']};")
         header_layout.addWidget(self.month_label, 1)
 
         # زر الشهر التالي
         next_btn = QPushButton("▶")
         next_btn.setFixedSize(24, 24)
-        next_btn.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                border: none;
-                font-size: 12px;
-                color: #666;
-            }
-            QPushButton:hover {
-                background-color: #f0f0f0;
-                border-radius: 4px;
-            }
-        """)
+        next_btn.setStyleSheet(nav_btn_style)
         next_btn.clicked.connect(self._go_next_month)
         header_layout.addWidget(next_btn)
 
@@ -111,7 +102,7 @@ class MiniCalendar(QFrame):
         for day_name in DAY_NAMES_SHORT_AR:
             day_label = QLabel(day_name)
             day_label.setAlignment(Qt.AlignCenter)
-            day_label.setStyleSheet("color: #7f8c8d; font-size: 9px; padding: 4px 0;")
+            day_label.setStyleSheet(f"color: {p['text_muted']}; font-size: 9px; padding: 4px 0;")
             day_label.setFixedWidth(30)
             days_layout.addWidget(day_label)
         layout.addLayout(days_layout)
@@ -123,18 +114,17 @@ class MiniCalendar(QFrame):
 
         # زر اليوم
         today_btn = QPushButton("اليوم")
-        today_btn.setStyleSheet("""
-            QPushButton {
+        today_btn.setStyleSheet(f"""
+            QPushButton {{
                 background-color: transparent;
-                color: #3498db;
+                color: {p['primary']};
                 border: none;
-                font-family: Cairo;
                 font-size: 10px;
                 padding: 4px;
-            }
-            QPushButton:hover {
+            }}
+            QPushButton:hover {{
                 text-decoration: underline;
-            }
+            }}
         """)
         today_btn.clicked.connect(self._go_today)
         layout.addWidget(today_btn, alignment=Qt.AlignCenter)
@@ -218,90 +208,76 @@ class MiniCalendar(QFrame):
         """إنشاء زر يوم"""
         btn = QPushButton(str(day))
         btn.setFixedSize(30, 30)
+        p = get_current_palette()
 
+        base = f"border: none; border-radius: 15px; font-size: 11px;"
         # تحديد التنسيق
         if is_selected:
-            style = """
-                QPushButton {
-                    background-color: #3498db;
-                    color: white;
-                    border: none;
-                    border-radius: 15px;
-                    font-family: Cairo;
-                    font-size: 11px;
+            style = f"""
+                QPushButton {{
+                    background-color: {p['primary']};
+                    color: {p['text_on_primary']};
+                    {base}
                     font-weight: bold;
-                }
+                }}
             """
         elif is_today:
-            style = """
-                QPushButton {
-                    background-color: #eef7ff;
-                    color: #3498db;
-                    border: 2px solid #3498db;
+            style = f"""
+                QPushButton {{
+                    background-color: {p['primary_light']};
+                    color: {p['primary']};
+                    border: 2px solid {p['primary']};
                     border-radius: 15px;
-                    font-family: Cairo;
                     font-size: 11px;
                     font-weight: bold;
-                }
-                QPushButton:hover {
-                    background-color: #d4edff;
-                }
+                }}
+                QPushButton:hover {{
+                    background-color: {p['bg_hover']};
+                }}
             """
         elif is_other_month:
-            style = """
-                QPushButton {
+            style = f"""
+                QPushButton {{
                     background-color: transparent;
-                    color: #bdc3c7;
-                    border: none;
-                    border-radius: 15px;
-                    font-family: Cairo;
-                    font-size: 11px;
-                }
-                QPushButton:hover {
-                    background-color: #f0f0f0;
-                }
+                    color: {p['disabled_text']};
+                    {base}
+                }}
+                QPushButton:hover {{
+                    background-color: {p['bg_hover']};
+                }}
             """
         elif is_highlighted:
-            style = """
-                QPushButton {
-                    background-color: #fff3cd;
-                    color: #856404;
-                    border: none;
-                    border-radius: 15px;
-                    font-family: Cairo;
-                    font-size: 11px;
-                }
-                QPushButton:hover {
-                    background-color: #ffeeba;
-                }
+            style = f"""
+                QPushButton {{
+                    background-color: {p['warning']}30;
+                    color: {p['warning']};
+                    {base}
+                }}
+                QPushButton:hover {{
+                    background-color: {p['warning']}50;
+                }}
             """
         elif is_weekend:
-            style = """
-                QPushButton {
+            style = f"""
+                QPushButton {{
                     background-color: transparent;
-                    color: #e74c3c;
-                    border: none;
-                    border-radius: 15px;
-                    font-family: Cairo;
-                    font-size: 11px;
-                }
-                QPushButton:hover {
-                    background-color: #fee;
-                }
+                    color: {p['danger']};
+                    {base}
+                }}
+                QPushButton:hover {{
+                    background-color: {p['danger']}15;
+                }}
             """
         else:
-            style = """
-                QPushButton {
+            style = f"""
+                QPushButton {{
                     background-color: transparent;
-                    color: #2c3e50;
-                    border: none;
-                    border-radius: 15px;
-                    font-family: Cairo;
-                    font-size: 11px;
-                }
-                QPushButton:hover {
-                    background-color: #f0f0f0;
-                }
+                    color: {p['text_primary']};
+                    {base}
+                }}
+                QPushButton:hover {{
+                    background-color: {p['bg_hover']};
+                }}
             """
 
         btn.setStyleSheet(style)

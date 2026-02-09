@@ -27,6 +27,8 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QDate, pyqtSignal
 from PyQt5.QtGui import QFont, QColor, QPalette
 
+from core.themes import get_font, FONT_SIZE_TITLE, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_SIZE_TINY, FONT_WEIGHT_BOLD
+
 from core.database.audit.audit_manager import get_audit_manager
 from core.threading import run_in_background
 from core.logging import app_logger
@@ -86,7 +88,7 @@ class StatCard(QFrame):
         vl.setSpacing(2)
 
         self._value_label = QLabel(value)
-        self._value_label.setFont(QFont("Cairo", 18, QFont.Bold))
+        self._value_label.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
         self._value_label.setAlignment(Qt.AlignCenter)
         self._value_label.setObjectName("statValue")
         if accent_action:
@@ -95,7 +97,7 @@ class StatCard(QFrame):
         vl.addWidget(self._value_label)
 
         name_lbl = QLabel(label)
-        name_lbl.setFont(QFont("Cairo", 10))
+        name_lbl.setFont(get_font(FONT_SIZE_SMALL))
         name_lbl.setAlignment(Qt.AlignCenter)
         name_lbl.setObjectName("statLabel")
         vl.addWidget(name_lbl)
@@ -163,7 +165,7 @@ class AuditLogScreen(QWidget):
 
         # Back button
         back_btn = QPushButton("رجوع")
-        back_btn.setFont(QFont("Cairo", 11))
+        back_btn.setFont(get_font(FONT_SIZE_SMALL))
         back_btn.setCursor(Qt.PointingHandCursor)
         back_btn.setFixedWidth(100)
         back_btn.clicked.connect(self.back_clicked.emit)
@@ -173,7 +175,7 @@ class AuditLogScreen(QWidget):
 
         # Title
         title = QLabel("سجل التدقيق  |  Audit Trail")
-        title.setFont(QFont("Cairo", 16, QFont.Bold))
+        title.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
         title.setAlignment(Qt.AlignCenter)
         hl.addWidget(title)
 
@@ -181,7 +183,7 @@ class AuditLogScreen(QWidget):
 
         # Refresh button
         self._btn_refresh = QPushButton("تحديث")
-        self._btn_refresh.setFont(QFont("Cairo", 11))
+        self._btn_refresh.setFont(get_font(FONT_SIZE_SMALL))
         self._btn_refresh.setCursor(Qt.PointingHandCursor)
         self._btn_refresh.setFixedWidth(100)
         self._btn_refresh.clicked.connect(self._load_data)
@@ -221,7 +223,7 @@ class AuditLogScreen(QWidget):
         hl.setContentsMargins(5, 5, 5, 5)
         hl.setSpacing(10)
 
-        cairo = QFont("Cairo", 10)
+        cairo = get_font(FONT_SIZE_SMALL)
 
         # Table filter
         lbl_table = QLabel("الجدول:")
@@ -276,7 +278,7 @@ class AuditLogScreen(QWidget):
 
         # Search button
         self._btn_search = QPushButton("بحث")
-        self._btn_search.setFont(QFont("Cairo", 11, QFont.Bold))
+        self._btn_search.setFont(get_font(FONT_SIZE_SMALL, FONT_WEIGHT_BOLD))
         self._btn_search.setCursor(Qt.PointingHandCursor)
         self._btn_search.setFixedWidth(90)
         self._btn_search.clicked.connect(self._on_search)
@@ -295,7 +297,7 @@ class AuditLogScreen(QWidget):
     def _build_table(self) -> QTableWidget:
         """Build the main data table."""
         table = QTableWidget()
-        table.setFont(QFont("Cairo", 10))
+        table.setFont(get_font(FONT_SIZE_SMALL))
 
         headers = [
             "#",
@@ -311,7 +313,7 @@ class AuditLogScreen(QWidget):
 
         # Header styling
         header = table.horizontalHeader()
-        header.setFont(QFont("Cairo", 10, QFont.Bold))
+        header.setFont(get_font(FONT_SIZE_SMALL, FONT_WEIGHT_BOLD))
         header.setDefaultAlignment(Qt.AlignCenter)
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
@@ -342,7 +344,7 @@ class AuditLogScreen(QWidget):
         hl = QHBoxLayout(bar)
         hl.setContentsMargins(0, 5, 0, 0)
 
-        cairo = QFont("Cairo", 10)
+        cairo = get_font(FONT_SIZE_SMALL)
 
         self._lbl_page_info = QLabel("")
         self._lbl_page_info.setFont(cairo)
@@ -489,7 +491,7 @@ class AuditLogScreen(QWidget):
             action_item = QTableWidgetItem(action_label)
             action_item.setTextAlignment(Qt.AlignCenter)
             action_item.setForeground(_get_action_color(action, palette))
-            action_item.setFont(QFont("Cairo", 10, QFont.Bold))
+            action_item.setFont(get_font(FONT_SIZE_SMALL, FONT_WEIGHT_BOLD))
             self._table.setItem(row_idx, 3, action_item)
 
             # Record ID
@@ -618,8 +620,8 @@ class AuditDetailDialog(QDialog):
         layout.setContentsMargins(15, 15, 15, 15)
         layout.setSpacing(12)
 
-        cairo = QFont("Cairo", 10)
-        cairo_bold = QFont("Cairo", 11, QFont.Bold)
+        cairo = get_font(FONT_SIZE_SMALL)
+        cairo_bold = get_font(FONT_SIZE_SMALL, FONT_WEIGHT_BOLD)
 
         # Meta info
         meta_frame = QFrame()
@@ -688,7 +690,7 @@ class AuditDetailDialog(QDialog):
 
         # Close button
         close_btn = QPushButton("إغلاق")
-        close_btn.setFont(QFont("Cairo", 11))
+        close_btn.setFont(get_font(FONT_SIZE_SMALL))
         close_btn.setCursor(Qt.PointingHandCursor)
         close_btn.setFixedWidth(100)
         close_btn.clicked.connect(self.close)
@@ -710,7 +712,7 @@ class AuditDetailDialog(QDialog):
         vl.setSpacing(5)
 
         lbl = QLabel(title)
-        lbl.setFont(QFont("Cairo", 11, QFont.Bold))
+        lbl.setFont(get_font(FONT_SIZE_SMALL, FONT_WEIGHT_BOLD))
         lbl.setAlignment(Qt.AlignCenter)
         vl.addWidget(lbl)
 

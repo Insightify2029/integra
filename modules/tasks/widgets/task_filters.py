@@ -15,6 +15,7 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 
 from ..models import TaskStatus, TaskPriority, TaskCategory
+from core.themes import get_current_palette, get_font, FONT_SIZE_BODY
 
 
 class TaskFilters(QFrame):
@@ -35,6 +36,7 @@ class TaskFilters(QFrame):
 
     def _setup_ui(self):
         """إعداد واجهة المستخدم"""
+        p = get_current_palette()
         self.setObjectName("taskFilters")
         self.setFixedHeight(60)
 
@@ -48,17 +50,17 @@ class TaskFilters(QFrame):
         self.search_input.setFixedWidth(250)
         self.search_input.setFixedHeight(36)
         self.search_input.textChanged.connect(self._on_search_changed)
-        self.search_input.setStyleSheet("""
-            QLineEdit {
-                border: 1px solid #dee2e6;
+        self.search_input.setStyleSheet(f"""
+            QLineEdit {{
+                border: 1px solid {p['border']};
                 border-radius: 6px;
                 padding: 0 12px;
                 font-size: 13px;
-                background-color: white;
-            }
-            QLineEdit:focus {
-                border-color: #007bff;
-            }
+                background-color: {p['bg_card']};
+            }}
+            QLineEdit:focus {{
+                border-color: {p['border_focus']};
+            }}
         """)
         layout.addWidget(self.search_input)
 
@@ -67,7 +69,7 @@ class TaskFilters(QFrame):
 
         # Status filter
         status_label = QLabel("الحالة:")
-        status_label.setFont(QFont("Cairo", 10))
+        status_label.setFont(get_font(FONT_SIZE_BODY))
         layout.addWidget(status_label)
 
         self.status_combo = QComboBox()
@@ -82,7 +84,7 @@ class TaskFilters(QFrame):
 
         # Priority filter
         priority_label = QLabel("الأولوية:")
-        priority_label.setFont(QFont("Cairo", 10))
+        priority_label.setFont(get_font(FONT_SIZE_BODY))
         layout.addWidget(priority_label)
 
         self.priority_combo = QComboBox()
@@ -97,7 +99,7 @@ class TaskFilters(QFrame):
 
         # Category filter
         category_label = QLabel("التصنيف:")
-        category_label.setFont(QFont("Cairo", 10))
+        category_label.setFont(get_font(FONT_SIZE_BODY))
         layout.addWidget(category_label)
 
         self.category_combo = QComboBox()
@@ -142,82 +144,85 @@ class TaskFilters(QFrame):
         self.reset_btn.setToolTip("إعادة تعيين الفلاتر")
         self.reset_btn.setFixedSize(36, 36)
         self.reset_btn.clicked.connect(self.reset_filters)
-        self.reset_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #f8f9fa;
-                border: 1px solid #dee2e6;
+        self.reset_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['bg_main']};
+                border: 1px solid {p['border']};
                 border-radius: 6px;
                 font-size: 16px;
-            }
-            QPushButton:hover {
-                background-color: #e9ecef;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['bg_hover']};
+            }}
         """)
         layout.addWidget(self.reset_btn)
 
         # Frame style
-        self.setStyleSheet("""
-            QFrame#taskFilters {
-                background-color: #f8f9fa;
-                border-bottom: 1px solid #dee2e6;
-            }
+        self.setStyleSheet(f"""
+            QFrame#taskFilters {{
+                background-color: {p['bg_main']};
+                border-bottom: 1px solid {p['border']};
+            }}
         """)
 
     def _create_separator(self) -> QFrame:
         """إنشاء فاصل"""
+        p = get_current_palette()
         sep = QFrame()
         sep.setFrameShape(QFrame.VLine)
-        sep.setStyleSheet("background-color: #dee2e6;")
+        sep.setStyleSheet(f"background-color: {p['border']};")
         sep.setFixedWidth(1)
         return sep
 
     def _style_combo(self, combo: QComboBox):
         """تنسيق ComboBox"""
-        combo.setStyleSheet("""
-            QComboBox {
-                border: 1px solid #dee2e6;
+        p = get_current_palette()
+        combo.setStyleSheet(f"""
+            QComboBox {{
+                border: 1px solid {p['border']};
                 border-radius: 6px;
                 padding: 0 10px;
-                background-color: white;
+                background-color: {p['bg_card']};
                 font-size: 12px;
-            }
-            QComboBox:hover {
-                border-color: #007bff;
-            }
-            QComboBox::drop-down {
+            }}
+            QComboBox:hover {{
+                border-color: {p['border_focus']};
+            }}
+            QComboBox::drop-down {{
                 border: none;
                 width: 24px;
-            }
-            QComboBox::down-arrow {
+            }}
+            QComboBox::down-arrow {{
                 image: none;
                 border-left: 4px solid transparent;
                 border-right: 4px solid transparent;
-                border-top: 6px solid #6c757d;
+                border-top: 6px solid {p['text_muted']};
                 margin-right: 8px;
-            }
-            QComboBox QAbstractItemView {
-                border: 1px solid #dee2e6;
-                background-color: white;
-                selection-background-color: #007bff;
-            }
+            }}
+            QComboBox QAbstractItemView {{
+                border: 1px solid {p['border']};
+                background-color: {p['bg_card']};
+                selection-background-color: {p['primary']};
+            }}
         """)
 
     def _style_view_buttons(self):
         """تنسيق أزرار العرض"""
-        style = """
-            QToolButton {
-                background-color: white;
-                border: 1px solid #dee2e6;
+        p = get_current_palette()
+        style = f"""
+            QToolButton {{
+                background-color: {p['bg_card']};
+                border: 1px solid {p['border']};
                 border-radius: 6px;
                 font-size: 16px;
-            }
-            QToolButton:hover {
-                background-color: #e9ecef;
-            }
-            QToolButton:checked {
-                background-color: #007bff;
-                border-color: #007bff;
-            }
+            }}
+            QToolButton:hover {{
+                background-color: {p['bg_hover']};
+            }}
+            QToolButton:checked {{
+                background-color: {p['primary']};
+                border-color: {p['primary']};
+            }}
         """
         self.list_btn.setStyleSheet(style)
         self.board_btn.setStyleSheet(style)
@@ -319,32 +324,33 @@ class QuickFilters(QWidget):
 
     def _update_styles(self):
         """تحديث تنسيق الأزرار"""
+        p = get_current_palette()
         for fid, btn in self.buttons.items():
             if btn.isChecked():
-                btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #007bff;
-                        color: white;
+                btn.setStyleSheet(f"""
+                    QPushButton {{
+                        background-color: {p['primary']};
+                        color: {p['text_on_primary']};
                         border: none;
                         border-radius: 4px;
                         padding: 0 16px;
                         font-weight: bold;
                         font-size: 12px;
-                    }
+                    }}
                 """)
             else:
-                btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #f8f9fa;
-                        color: #495057;
-                        border: 1px solid #dee2e6;
+                btn.setStyleSheet(f"""
+                    QPushButton {{
+                        background-color: {p['bg_main']};
+                        color: {p['text_secondary']};
+                        border: 1px solid {p['border']};
                         border-radius: 4px;
                         padding: 0 16px;
                         font-size: 12px;
-                    }
-                    QPushButton:hover {
-                        background-color: #e9ecef;
-                    }
+                    }}
+                    QPushButton:hover {{
+                        background-color: {p['bg_hover']};
+                    }}
                 """)
 
     def get_current_filter(self) -> str:

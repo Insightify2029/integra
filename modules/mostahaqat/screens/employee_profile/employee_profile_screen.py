@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 
-from core.themes import get_current_theme
+from core.themes import get_current_palette, get_font, FONT_SIZE_TITLE, FONT_SIZE_SUBTITLE, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_WEIGHT_BOLD
 
 
 class InfoCard(QFrame):
@@ -38,7 +38,7 @@ class InfoCard(QFrame):
         
         # Title
         title_label = QLabel(self._title)
-        title_label.setFont(QFont("Cairo", 14, QFont.Bold))
+        title_label.setFont(get_font(FONT_SIZE_SUBTITLE, FONT_WEIGHT_BOLD))
         title_label.setObjectName("cardTitle")
         layout.addWidget(title_label)
         
@@ -59,13 +59,13 @@ class InfoCard(QFrame):
         """Add a field to the card."""
         # Label
         lbl = QLabel(f"{label}:")
-        lbl.setFont(QFont("Cairo", 11))
+        lbl.setFont(get_font(FONT_SIZE_SMALL))
         lbl.setObjectName("fieldLabel")
         lbl.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         
         # Value
         val = QLabel(str(value) if value else "-")
-        val.setFont(QFont("Cairo", 12, QFont.Bold))
+        val.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
         val.setObjectName("fieldValue")
         val.setTextInteractionFlags(Qt.TextSelectableByMouse)
         
@@ -89,7 +89,7 @@ class ActionButton(QPushButton):
         super().__init__(f"{icon} {text}" if icon else text, parent)
         self._color = color
         self.setCursor(Qt.PointingHandCursor)
-        self.setFont(QFont("Cairo", 12))
+        self.setFont(get_font(FONT_SIZE_BODY))
         self.setMinimumHeight(45)
         self.setProperty("buttonColor", color)
 
@@ -138,12 +138,12 @@ class EmployeeProfileScreen(QWidget):
         
         self._back_btn = QPushButton("→ رجوع")
         self._back_btn.setCursor(Qt.PointingHandCursor)
-        self._back_btn.setFont(QFont("Cairo", 12))
+        self._back_btn.setFont(get_font(FONT_SIZE_BODY))
         self._back_btn.clicked.connect(self.back_clicked.emit)
         header.addWidget(self._back_btn)
         
         self._title_label = QLabel("ملف الموظف")
-        self._title_label.setFont(QFont("Cairo", 20, QFont.Bold))
+        self._title_label.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
         self._title_label.setAlignment(Qt.AlignCenter)
         header.addWidget(self._title_label, 1)
         
@@ -236,178 +236,27 @@ class EmployeeProfileScreen(QWidget):
         layout.addWidget(scroll)
     
     def _apply_theme(self):
-        """Apply current theme."""
-        theme = get_current_theme()
-        
-        if theme == 'dark':
-            self.setStyleSheet("""
-                QWidget {
-                    background-color: #0f172a;
-                }
-                
-                QLabel {
-                    color: #f1f5f9;
-                    background: transparent;
-                }
-                
-                QLabel#fieldLabel {
-                    color: #94a3b8;
-                }
-                
-                QLabel#fieldValue {
-                    color: #f1f5f9;
-                }
-                
-                QLabel#cardTitle {
-                    color: #06b6d4;
-                }
-                
-                QFrame#infoCard {
-                    background-color: #1e293b;
-                    border: 1px solid #334155;
-                    border-radius: 12px;
-                }
-                
-                QFrame#cardSeparator {
-                    background-color: #334155;
-                }
-                
-                QFrame#actionsFrame {
-                    background-color: #1e293b;
-                    border: 1px solid #334155;
-                    border-radius: 12px;
-                }
-                
-                QPushButton {
-                    background-color: #334155;
-                    color: #f1f5f9;
-                    border: none;
-                    border-radius: 8px;
-                    padding: 12px 24px;
-                    font-weight: bold;
-                }
-                
-                QPushButton:hover {
-                    background-color: #475569;
-                }
-                
-                QPushButton[buttonColor="primary"] {
-                    background-color: #2563eb;
-                }
-                QPushButton[buttonColor="primary"]:hover {
-                    background-color: #1d4ed8;
-                }
-                
-                QPushButton[buttonColor="success"] {
-                    background-color: #10b981;
-                }
-                QPushButton[buttonColor="success"]:hover {
-                    background-color: #059669;
-                }
-                
-                QPushButton[buttonColor="info"] {
-                    background-color: #06b6d4;
-                }
-                QPushButton[buttonColor="info"]:hover {
-                    background-color: #0891b2;
-                }
-                
-                QPushButton[buttonColor="warning"] {
-                    background-color: #f59e0b;
-                }
-                QPushButton[buttonColor="warning"]:hover {
-                    background-color: #d97706;
-                }
-                
-                QPushButton[buttonColor="danger"] {
-                    background-color: #ef4444;
-                }
-                QPushButton[buttonColor="danger"]:hover {
-                    background-color: #dc2626;
-                }
-                
-                QScrollArea {
-                    background: transparent;
-                    border: none;
-                }
-            """)
-        else:
-            self.setStyleSheet("""
-                QWidget {
-                    background-color: #f8fafc;
-                }
-                
-                QLabel {
-                    color: #1e293b;
-                    background: transparent;
-                }
-                
-                QLabel#fieldLabel {
-                    color: #64748b;
-                }
-                
-                QLabel#fieldValue {
-                    color: #1e293b;
-                }
-                
-                QLabel#cardTitle {
-                    color: #0891b2;
-                }
-                
-                QFrame#infoCard {
-                    background-color: #ffffff;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 12px;
-                }
-                
-                QFrame#cardSeparator {
-                    background-color: #e2e8f0;
-                }
-                
-                QFrame#actionsFrame {
-                    background-color: #ffffff;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 12px;
-                }
-                
-                QPushButton {
-                    background-color: #e2e8f0;
-                    color: #1e293b;
-                    border: none;
-                    border-radius: 8px;
-                    padding: 12px 24px;
-                    font-weight: bold;
-                }
-                
-                QPushButton:hover {
-                    background-color: #cbd5e1;
-                }
-                
-                QPushButton[buttonColor="primary"] {
-                    background-color: #2563eb;
-                    color: #ffffff;
-                }
-                
-                QPushButton[buttonColor="success"] {
-                    background-color: #10b981;
-                    color: #ffffff;
-                }
-                
-                QPushButton[buttonColor="info"] {
-                    background-color: #06b6d4;
-                    color: #ffffff;
-                }
-                
-                QPushButton[buttonColor="warning"] {
-                    background-color: #f59e0b;
-                    color: #ffffff;
-                }
-                
-                QPushButton[buttonColor="danger"] {
-                    background-color: #ef4444;
-                    color: #ffffff;
-                }
-            """)
+        """Apply current theme using palette."""
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            QWidget {{ background-color: {p['bg_main']}; }}
+            QLabel {{ color: {p['text_primary']}; background: transparent; }}
+            QLabel#fieldLabel {{ color: {p['text_secondary']}; }}
+            QLabel#fieldValue {{ color: {p['text_primary']}; }}
+            QLabel#cardTitle {{ color: {p['accent']}; }}
+            QFrame#infoCard {{ background-color: {p['bg_card']}; border: 1px solid {p['border']}; border-radius: 12px; }}
+            QFrame#cardSeparator {{ background-color: {p['border']}; }}
+            QFrame#actionsFrame {{ background-color: {p['bg_card']}; border: 1px solid {p['border']}; border-radius: 12px; }}
+            QPushButton {{ background-color: {p['bg_card']}; color: {p['text_primary']}; border: none; border-radius: 8px; padding: 12px 24px; font-weight: bold; }}
+            QPushButton:hover {{ background-color: {p['bg_hover']}; }}
+            QPushButton[buttonColor="primary"] {{ background-color: {p['primary']}; color: {p['text_on_primary']}; }}
+            QPushButton[buttonColor="primary"]:hover {{ background-color: {p['primary_hover']}; }}
+            QPushButton[buttonColor="success"] {{ background-color: {p['success']}; color: {p['text_on_primary']}; }}
+            QPushButton[buttonColor="info"] {{ background-color: {p['info']}; color: {p['text_on_primary']}; }}
+            QPushButton[buttonColor="warning"] {{ background-color: {p['warning']}; color: {p['text_on_primary']}; }}
+            QPushButton[buttonColor="danger"] {{ background-color: {p['danger']}; color: {p['text_on_primary']}; }}
+            QScrollArea {{ background: transparent; border: none; }}
+        """)
     
     # ═══════════════════════════════════════════════════════════════
     # Public API

@@ -22,6 +22,7 @@ from ...repository import (
 )
 
 from core.logging import app_logger
+from core.themes import get_current_palette, get_font, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_SIZE_TINY, FONT_SIZE_SUBTITLE, FONT_WEIGHT_BOLD
 
 
 class DraggableTaskCard(QFrame):
@@ -64,9 +65,11 @@ class DraggableTaskCard(QFrame):
         """)
         header.addWidget(priority_dot)
 
+        p = get_current_palette()
+
         # Title
         self.title_label = QLabel(self.task.title)
-        self.title_label.setFont(QFont("Cairo", 10))
+        self.title_label.setFont(get_font(FONT_SIZE_BODY))
         self.title_label.setWordWrap(True)
         self.title_label.setMaximumHeight(40)
         header.addWidget(self.title_label, 1)
@@ -80,9 +83,9 @@ class DraggableTaskCard(QFrame):
         if self.task.due_date:
             due_icon = "🔴" if self.task.is_overdue else "📅"
             due_label = QLabel(f"{due_icon} {self.task.due_date_formatted}")
-            due_label.setFont(QFont("Cairo", 8))
+            due_label.setFont(get_font(FONT_SIZE_TINY))
             due_label.setStyleSheet(
-                f"color: {'#dc3545' if self.task.is_overdue else '#6c757d'};"
+                f"color: {p['danger'] if self.task.is_overdue else p['text_muted']};"
             )
             info_layout.addWidget(due_label)
 
@@ -90,23 +93,23 @@ class DraggableTaskCard(QFrame):
 
         if self.task.checklist_count > 0:
             check_label = QLabel(f"✓{self.task.checklist_completed}/{self.task.checklist_count}")
-            check_label.setFont(QFont("Cairo", 8))
-            check_label.setStyleSheet("color: #6c757d;")
+            check_label.setFont(get_font(FONT_SIZE_TINY))
+            check_label.setStyleSheet(f"color: {p['text_muted']};")
             info_layout.addWidget(check_label)
 
         layout.addLayout(info_layout)
 
         # Style
-        border_color = "#dc3545" if self.task.is_overdue else "#e9ecef"
+        border_color = p['danger'] if self.task.is_overdue else p['border']
         self.setStyleSheet(f"""
             QFrame#draggableTaskCard {{
-                background-color: white;
+                background-color: {p['bg_card']};
                 border: 1px solid {border_color};
                 border-radius: 6px;
             }}
             QFrame#draggableTaskCard:hover {{
-                border-color: #007bff;
-                background-color: #f8f9fa;
+                border-color: {p['primary']};
+                background-color: {p['bg_hover']};
             }}
         """)
 
@@ -206,16 +209,17 @@ class KanbanColumn(QFrame):
 
         # Title
         title = QLabel(self.status.label_ar)
-        title.setFont(QFont("Cairo", 12, QFont.Bold))
+        title.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
         header_layout.addWidget(title)
 
         header_layout.addStretch()
 
         # Count badge
+        p = get_current_palette()
         self.count_label = QLabel("0")
         self.count_label.setFixedSize(24, 24)
         self.count_label.setAlignment(Qt.AlignCenter)
-        self.count_label.setFont(QFont("Cairo", 10, QFont.Bold))
+        self.count_label.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
         self.count_label.setStyleSheet(f"""
             background-color: {self.status.color}20;
             color: {self.status.color};
@@ -227,17 +231,17 @@ class KanbanColumn(QFrame):
         add_btn = QPushButton("+")
         add_btn.setFixedSize(24, 24)
         add_btn.clicked.connect(lambda: self.add_task_requested.emit(self.status.value))
-        add_btn.setStyleSheet("""
-            QPushButton {
+        add_btn.setStyleSheet(f"""
+            QPushButton {{
                 background-color: transparent;
-                border: 1px solid #dee2e6;
+                border: 1px solid {p['border']};
                 border-radius: 4px;
                 font-size: 16px;
-                color: #6c757d;
-            }
-            QPushButton:hover {
-                background-color: #e9ecef;
-            }
+                color: {p['text_muted']};
+            }}
+            QPushButton:hover {{
+                background-color: {p['bg_hover']};
+            }}
         """)
         header_layout.addWidget(add_btn)
 
@@ -266,13 +270,21 @@ class KanbanColumn(QFrame):
         layout.addWidget(scroll, 1)
 
         # Style
-        self.setStyleSheet("""
-            QFrame#kanbanColumn {
-                background-color: #f8f9fa;
+        self._normal_style = f"""
+            QFrame#kanbanColumn {{
+                background-color: {p['bg_main']};
                 border-radius: 8px;
-                border: 1px solid #e9ecef;
-            }
-        """)
+                border: 1px solid {p['border']};
+            }}
+        """
+        self._drag_style = f"""
+            QFrame#kanbanColumn {{
+                background-color: {p['primary_light']};
+                border-radius: 8px;
+                border: 2px dashed {p['primary']};
+            }}
+        """
+        self.setStyleSheet(self._normal_style)
 
     def set_tasks(self, tasks: List[Task]):
         """تعيين المهام"""
@@ -302,33 +314,15 @@ class KanbanColumn(QFrame):
     def dragEnterEvent(self, event):
         if event.mimeData().hasText():
             event.acceptProposedAction()
-            self.setStyleSheet("""
-                QFrame#kanbanColumn {
-                    background-color: #e3f2fd;
-                    border-radius: 8px;
-                    border: 2px dashed #007bff;
-                }
-            """)
+            self.setStyleSheet(self._drag_style)
 
     def dragLeaveEvent(self, event):
-        self.setStyleSheet("""
-            QFrame#kanbanColumn {
-                background-color: #f8f9fa;
-                border-radius: 8px;
-                border: 1px solid #e9ecef;
-            }
-        """)
+        self.setStyleSheet(self._normal_style)
 
     def dropEvent(self, event):
         task_id = int(event.mimeData().text())
         self.task_dropped.emit(task_id, self.status.value)
-        self.setStyleSheet("""
-            QFrame#kanbanColumn {
-                background-color: #f8f9fa;
-                border-radius: 8px;
-                border: 1px solid #e9ecef;
-            }
-        """)
+        self.setStyleSheet(self._normal_style)
         event.acceptProposedAction()
 
 
@@ -363,8 +357,10 @@ class KanbanBoard(QWidget):
         header_layout = QHBoxLayout(header)
         header_layout.setContentsMargins(20, 0, 20, 0)
 
+        p = get_current_palette()
+
         title = QLabel("📊 لوحة المهام")
-        title.setFont(QFont("Cairo", 16, QFont.Bold))
+        title.setFont(get_font(FONT_SIZE_SUBTITLE, FONT_WEIGHT_BOLD))
         header_layout.addWidget(title)
 
         header_layout.addStretch()
@@ -373,25 +369,25 @@ class KanbanBoard(QWidget):
         refresh_btn = QPushButton("🔄 تحديث")
         refresh_btn.setFixedHeight(36)
         refresh_btn.clicked.connect(self.load_tasks)
-        refresh_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #f8f9fa;
-                border: 1px solid #dee2e6;
+        refresh_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['bg_main']};
+                border: 1px solid {p['border']};
                 border-radius: 6px;
                 padding: 0 16px;
                 font-size: 13px;
-            }
-            QPushButton:hover {
-                background-color: #e9ecef;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['bg_hover']};
+            }}
         """)
         header_layout.addWidget(refresh_btn)
 
-        header.setStyleSheet("""
-            QFrame {
-                background-color: white;
-                border-bottom: 1px solid #dee2e6;
-            }
+        header.setStyleSheet(f"""
+            QFrame {{
+                background-color: {p['bg_card']};
+                border-bottom: 1px solid {p['border']};
+            }}
         """)
         layout.addWidget(header)
 
@@ -400,7 +396,7 @@ class KanbanBoard(QWidget):
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.NoFrame)
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setStyleSheet("background-color: #f5f7fa;")
+        scroll.setStyleSheet(f"background-color: {p['bg_main']};")
 
         board_container = QWidget()
         board_layout = QHBoxLayout(board_container)

@@ -6,24 +6,28 @@ The English name in the module card.
 
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
 
-from core.themes.dark.fonts import FONT_FAMILY_ENGLISH, FONT_SIZE_LARGE
+from core.themes import (
+    get_current_palette, get_font,
+    FONT_SIZE_LARGE, FONT_FAMILY_ENGLISH
+)
 
 
 def create_card_title_english(text: str):
     """
     Create the English title label.
-    
+
     Args:
         text: English text
-    
+
     Returns:
         QLabel: The title label
     """
+    palette = get_current_palette()
+
     title = QLabel(text)
-    title.setFont(QFont(FONT_FAMILY_ENGLISH, FONT_SIZE_LARGE))
+    title.setFont(get_font(FONT_SIZE_LARGE, family=FONT_FAMILY_ENGLISH))
     title.setAlignment(Qt.AlignCenter)
-    title.setStyleSheet("color: #64748b; background: transparent;")
-    
+    title.setStyleSheet(f"color: {palette['text_muted']}; background: transparent;")
+
     return title

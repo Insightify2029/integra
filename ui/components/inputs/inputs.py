@@ -1,139 +1,53 @@
 """
 Input Components
 ================
-Styled input widgets.
+Styled input widgets. Styling handled by centralized theme system.
+Standard QLineEdit and QComboBox styling comes from app-level QSS.
+Only override for genuinely custom shapes (e.g. rounded search input).
 """
 
 from PyQt5.QtWidgets import QLineEdit, QComboBox
-from PyQt5.QtGui import QFont
 
-from core.themes import get_current_theme
+from core.themes import get_current_palette
 
 
 class TextInput(QLineEdit):
-    """Styled text input."""
-    
+    """Styled text input. Uses app-level QSS for base styling."""
+
     def __init__(self, placeholder: str = "", parent=None):
         super().__init__(parent)
         self.setPlaceholderText(placeholder)
-        self._setup()
-    
-    def _setup(self):
-        theme = get_current_theme()
-        self.setFont(QFont("Cairo", 13))
-        
-        if theme == 'dark':
-            self.setStyleSheet("""
-                QLineEdit {
-                    background-color: #1e293b;
-                    color: #f1f5f9;
-                    border: 1px solid #334155;
-                    border-radius: 6px;
-                    padding: 10px;
-                }
-                QLineEdit:focus {
-                    border: 2px solid #2563eb;
-                }
-            """)
-        else:
-            self.setStyleSheet("""
-                QLineEdit {
-                    background-color: #ffffff;
-                    color: #1e293b;
-                    border: 1px solid #cbd5e1;
-                    border-radius: 6px;
-                    padding: 10px;
-                }
-                QLineEdit:focus {
-                    border: 2px solid #2563eb;
-                }
-            """)
+        # App-level QSS handles QLineEdit styling
 
 
 class SearchInput(QLineEdit):
-    """Search input with icon."""
-    
-    def __init__(self, placeholder: str = "🔍 بحث...", parent=None):
+    """Search input with rounded corners (custom override)."""
+
+    def __init__(self, placeholder: str = "\U0001f50d \u0628\u062d\u062b...", parent=None):
         super().__init__(parent)
         self.setPlaceholderText(placeholder)
         self._setup()
-    
+
     def _setup(self):
-        theme = get_current_theme()
-        self.setFont(QFont("Cairo", 13))
-        
-        if theme == 'dark':
-            self.setStyleSheet("""
-                QLineEdit {
-                    background-color: #1e293b;
-                    color: #f1f5f9;
-                    border: 1px solid #334155;
-                    border-radius: 20px;
-                    padding: 10px 20px;
-                }
-                QLineEdit:focus {
-                    border: 2px solid #2563eb;
-                }
-            """)
-        else:
-            self.setStyleSheet("""
-                QLineEdit {
-                    background-color: #ffffff;
-                    color: #1e293b;
-                    border: 1px solid #cbd5e1;
-                    border-radius: 20px;
-                    padding: 10px 20px;
-                }
-                QLineEdit:focus {
-                    border: 2px solid #2563eb;
-                }
-            """)
+        palette = get_current_palette()
+        # Override only the border-radius for the rounded search style
+        self.setStyleSheet(f"""
+            QLineEdit {{
+                background-color: {palette['bg_input']};
+                color: {palette['text_primary']};
+                border: 1px solid {palette['border']};
+                border-radius: 20px;
+                padding: 10px 20px;
+            }}
+            QLineEdit:focus {{
+                border: 2px solid {palette['border_focus']};
+            }}
+        """)
 
 
 class StyledComboBox(QComboBox):
-    """Styled combo box."""
-    
+    """Styled combo box. Uses app-level QSS for base styling."""
+
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._setup()
-    
-    def _setup(self):
-        theme = get_current_theme()
-        self.setFont(QFont("Cairo", 13))
-        
-        if theme == 'dark':
-            self.setStyleSheet("""
-                QComboBox {
-                    background-color: #1e293b;
-                    color: #f1f5f9;
-                    border: 1px solid #334155;
-                    border-radius: 6px;
-                    padding: 10px;
-                }
-                QComboBox::drop-down {
-                    border: none;
-                }
-                QComboBox QAbstractItemView {
-                    background-color: #1e293b;
-                    color: #f1f5f9;
-                    selection-background-color: #2563eb;
-                }
-            """)
-        else:
-            self.setStyleSheet("""
-                QComboBox {
-                    background-color: #ffffff;
-                    color: #1e293b;
-                    border: 1px solid #cbd5e1;
-                    border-radius: 6px;
-                    padding: 10px;
-                }
-                QComboBox::drop-down {
-                    border: none;
-                }
-                QComboBox QAbstractItemView {
-                    background-color: #ffffff;
-                    color: #1e293b;
-                    selection-background-color: #2563eb;
-                }
-            """)
+        # App-level QSS handles QComboBox styling

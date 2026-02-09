@@ -17,11 +17,11 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import (
     Qt, QThread, pyqtSignal, QTimer, QSize
 )
-from PyQt5.QtGui import QFont, QColor, QPalette, QIcon
+from PyQt5.QtGui import QColor, QPalette, QIcon
 
 from core.ai import get_ai_service, is_ollama_available
 from core.logging import app_logger
-from core.themes import get_current_theme
+from core.themes import get_current_palette
 
 try:
     from core.utils import Icons, icon
@@ -88,8 +88,7 @@ class MessageBubble(QFrame):
 
     def _setup_ui(self):
         """Setup the message bubble UI."""
-        theme = get_current_theme()
-        is_dark = theme == 'dark'
+        palette = get_current_palette()
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(10, 8, 10, 8)
@@ -98,8 +97,7 @@ class MessageBubble(QFrame):
         # Time label
         time_str = self.message.timestamp.strftime("%H:%M")
         time_label = QLabel(time_str)
-        time_color = "#64748b" if is_dark else "#888"
-        time_label.setStyleSheet(f"color: {time_color}; font-size: 10px;")
+        time_label.setStyleSheet(f"color: {palette['text_muted']}; font-size: 10px;")
 
         # Content label
         self.content_label = QLabel(self.message.content)
@@ -110,27 +108,25 @@ class MessageBubble(QFrame):
 
         # Style based on role
         if self.message.role == MessageRole.USER:
-            self.setStyleSheet("""
-                MessageBubble {
-                    background-color: #2563eb;
-                    border-radius: 12px;
-                    border-bottom-right-radius: 4px;
-                }
-            """)
-            self.content_label.setStyleSheet("color: white; font-size: 13px;")
-            time_label.setStyleSheet("color: rgba(255,255,255,0.7); font-size: 10px;")
-            layout.setAlignment(Qt.AlignRight)
-        else:
-            bg = "#334155" if is_dark else "#f0f0f0"
-            text_color = "#f1f5f9" if is_dark else "#333"
             self.setStyleSheet(f"""
                 MessageBubble {{
-                    background-color: {bg};
+                    background-color: {palette['primary']};
+                    border-radius: 12px;
+                    border-bottom-right-radius: 4px;
+                }}
+            """)
+            self.content_label.setStyleSheet(f"color: {palette['text_on_primary']}; font-size: 13px;")
+            time_label.setStyleSheet(f"color: rgba(255,255,255,0.7); font-size: 10px;")
+            layout.setAlignment(Qt.AlignRight)
+        else:
+            self.setStyleSheet(f"""
+                MessageBubble {{
+                    background-color: {palette['bg_card']};
                     border-radius: 12px;
                     border-bottom-left-radius: 4px;
                 }}
             """)
-            self.content_label.setStyleSheet(f"color: {text_color}; font-size: 13px;")
+            self.content_label.setStyleSheet(f"color: {palette['text_primary']}; font-size: 13px;")
 
         layout.addWidget(self.content_label)
         layout.addWidget(time_label)
@@ -173,7 +169,7 @@ class AIChatPanel(QWidget):
 
     def _setup_ui(self):
         """Setup the chat panel UI."""
-        self._is_dark = get_current_theme() == 'dark'
+        self._palette = get_current_palette()
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -187,11 +183,10 @@ class AIChatPanel(QWidget):
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        chat_bg = "#0f172a" if self._is_dark else "white"
         self.scroll_area.setStyleSheet(f"""
             QScrollArea {{
                 border: none;
-                background-color: {chat_bg};
+                background-color: {self._palette['bg_main']};
             }}
         """)
 
@@ -211,20 +206,20 @@ class AIChatPanel(QWidget):
 
         # Status bar
         self.status_label = QLabel("")
-        status_color = "#94a3b8" if self._is_dark else "#888"
-        status_bg = "#1e293b" if self._is_dark else "transparent"
-        self.status_label.setStyleSheet(f"color: {status_color}; font-size: 11px; padding: 4px; background-color: {status_bg};")
+        self.status_label.setStyleSheet(
+            f"color: {self._palette['text_secondary']}; font-size: 11px;"
+            f" padding: 4px; background-color: {self._palette['bg_card']};"
+        )
         main_layout.addWidget(self.status_label)
 
     def _create_header(self) -> QWidget:
         """Create the header widget."""
+        p = self._palette
         header = QFrame()
-        hdr_bg = "#1e293b" if self._is_dark else "#f8f8f8"
-        hdr_border = "#334155" if self._is_dark else "#ddd"
         header.setStyleSheet(f"""
             QFrame {{
-                background-color: {hdr_bg};
-                border-bottom: 1px solid {hdr_border};
+                background-color: {p['bg_card']};
+                border-bottom: 1px solid {p['border']};
             }}
         """)
 
@@ -236,32 +231,26 @@ class AIChatPanel(QWidget):
         icon_label.setStyleSheet("font-size: 20px;")
 
         # Title
-        title_color = "#f1f5f9" if self._is_dark else "#333"
         title = QLabel("المساعد الذكي")
-        title.setStyleSheet(f"font-size: 14px; font-weight: bold; color: {title_color};")
+        title.setStyleSheet(f"font-size: 14px; font-weight: bold; color: {p['text_primary']};")
 
         # Model info
-        model_color = "#94a3b8" if self._is_dark else "#888"
         self.model_label = QLabel("")
-        self.model_label.setStyleSheet(f"font-size: 11px; color: {model_color};")
+        self.model_label.setStyleSheet(f"font-size: 11px; color: {p['text_secondary']};")
 
         # Clear button
-        btn_bg = "#334155" if self._is_dark else "none"
-        btn_border = "#475569" if self._is_dark else "#ddd"
-        btn_color = "#f1f5f9" if self._is_dark else "#666"
-        btn_hover = "#475569" if self._is_dark else "#f0f0f0"
         clear_btn = QPushButton("مسح")
         clear_btn.setFixedWidth(60)
         clear_btn.setStyleSheet(f"""
             QPushButton {{
-                background: {btn_bg};
-                border: 1px solid {btn_border};
+                background: {p['bg_hover']};
+                border: 1px solid {p['border_light']};
                 border-radius: 4px;
                 padding: 4px 8px;
-                color: {btn_color};
+                color: {p['text_primary']};
             }}
             QPushButton:hover {{
-                background-color: {btn_hover};
+                background-color: {p['bg_tooltip']};
             }}
         """)
         clear_btn.clicked.connect(self.clear_chat)
@@ -276,13 +265,12 @@ class AIChatPanel(QWidget):
 
     def _create_input_area(self) -> QWidget:
         """Create the input area widget."""
+        p = self._palette
         input_frame = QFrame()
-        frame_bg = "#1e293b" if self._is_dark else "#f8f8f8"
-        frame_border = "#334155" if self._is_dark else "#ddd"
         input_frame.setStyleSheet(f"""
             QFrame {{
-                background-color: {frame_bg};
-                border-top: 1px solid {frame_border};
+                background-color: {p['bg_card']};
+                border-top: 1px solid {p['border']};
             }}
         """)
 
@@ -300,25 +288,22 @@ class AIChatPanel(QWidget):
             ("اقتراحات", "اقترح تحسينات لإدارة الموظفين"),
         ]
 
-        qa_bg = "#334155" if self._is_dark else "#e8e8e8"
-        qa_color = "#f1f5f9" if self._is_dark else "#444"
-        qa_hover = "#475569" if self._is_dark else "#d8d8d8"
         for text, prompt in quick_actions:
             btn = QPushButton(text)
             btn.setStyleSheet(f"""
                 QPushButton {{
-                    background-color: {qa_bg};
+                    background-color: {p['bg_hover']};
                     border: none;
                     border-radius: 12px;
                     padding: 6px 12px;
                     font-size: 11px;
-                    color: {qa_color};
+                    color: {p['text_primary']};
                 }}
                 QPushButton:hover {{
-                    background-color: {qa_hover};
+                    background-color: {p['bg_tooltip']};
                 }}
             """)
-            btn.clicked.connect(lambda checked, p=prompt: self.send_message(p))
+            btn.clicked.connect(lambda checked, pr=prompt: self.send_message(pr))
             actions_layout.addWidget(btn)
 
         actions_layout.addStretch()
@@ -328,32 +313,28 @@ class AIChatPanel(QWidget):
         input_layout = QHBoxLayout()
         input_layout.setSpacing(8)
 
-        input_bg = "#0f172a" if self._is_dark else "white"
-        input_border = "#475569" if self._is_dark else "#ddd"
-        input_color = "#f1f5f9" if self._is_dark else "#333"
         self.input_field = QLineEdit()
         self.input_field.setPlaceholderText("اكتب رسالتك هنا...")
         self.input_field.setStyleSheet(f"""
             QLineEdit {{
-                border: 1px solid {input_border};
+                border: 1px solid {p['border_light']};
                 border-radius: 20px;
                 padding: 10px 16px;
                 font-size: 13px;
-                background-color: {input_bg};
-                color: {input_color};
+                background-color: {p['bg_main']};
+                color: {p['text_primary']};
             }}
             QLineEdit:focus {{
-                border-color: #2563eb;
+                border-color: {p['primary']};
             }}
         """)
         self.input_field.returnPressed.connect(self._on_send_clicked)
 
-        disabled_bg = "#475569" if self._is_dark else "#ccc"
         self.send_btn = QPushButton("إرسال")
         self.send_btn.setStyleSheet(f"""
             QPushButton {{
-                background-color: #2563eb;
-                color: white;
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 20px;
                 padding: 10px 20px;
@@ -361,10 +342,11 @@ class AIChatPanel(QWidget):
                 font-weight: bold;
             }}
             QPushButton:hover {{
-                background-color: #3b82f6;
+                background-color: {p['primary_hover']};
             }}
             QPushButton:disabled {{
-                background-color: {disabled_bg};
+                background-color: {p['disabled_bg']};
+                color: {p['disabled_text']};
             }}
         """)
         self.send_btn.clicked.connect(self._on_send_clicked)
@@ -391,12 +373,15 @@ class AIChatPanel(QWidget):
 
     def _set_status(self, text: str, error: bool = False):
         """Set status text."""
+        p = self._palette
         if error:
-            color = "#ef4444"
+            color = p['danger']
         else:
-            color = "#94a3b8" if self._is_dark else "#888"
-        bg = "#1e293b" if self._is_dark else "transparent"
-        self.status_label.setStyleSheet(f"color: {color}; font-size: 11px; padding: 4px; background-color: {bg};")
+            color = p['text_secondary']
+        self.status_label.setStyleSheet(
+            f"color: {color}; font-size: 11px; padding: 4px;"
+            f" background-color: {p['bg_card']};"
+        )
         self.status_label.setText(text)
 
     def _scroll_to_bottom(self):

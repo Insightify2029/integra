@@ -16,7 +16,7 @@ from PyQt5.QtGui import QIcon
 
 from core.ai import is_ollama_available, get_ai_service
 from core.logging import app_logger
-from core.themes import get_current_theme
+from core.themes import get_current_palette
 
 try:
     from core.utils import Icons, icon
@@ -77,13 +77,11 @@ class AIToolbar(QFrame):
 
     def _setup_ui(self):
         """Setup toolbar UI."""
-        self._is_dark = get_current_theme() == 'dark'
-        tb_bg = "#1e293b" if self._is_dark else "#f0f5ff"
-        tb_border = "#334155" if self._is_dark else "#c5d5ff"
+        self._palette = get_current_palette()
         self.setStyleSheet(f"""
             AIToolbar {{
-                background-color: {tb_bg};
-                border: 1px solid {tb_border};
+                background-color: {self._palette['bg_card']};
+                border: 1px solid {self._palette['border']};
                 border-radius: 8px;
             }}
         """)
@@ -106,8 +104,7 @@ class AIToolbar(QFrame):
         # Separator
         sep = QFrame()
         sep.setFrameShape(QFrame.VLine)
-        sep_color = "#475569" if self._is_dark else "#c5d5ff"
-        sep.setStyleSheet(f"background-color: {sep_color};")
+        sep.setStyleSheet(f"background-color: {self._palette['border_light']};")
         layout.addWidget(sep)
 
         # Action buttons
@@ -149,46 +146,41 @@ class AIToolbar(QFrame):
 
     def _get_button_style(self, primary: bool = False) -> str:
         """Get button stylesheet (theme-aware)."""
-        is_dark = getattr(self, '_is_dark', False)
+        p = getattr(self, '_palette', get_current_palette())
         if primary:
-            disabled = "#475569" if is_dark else "#ccc"
             return f"""
                 QPushButton {{
-                    background-color: #2563eb;
-                    color: white;
+                    background-color: {p['primary']};
+                    color: {p['text_on_primary']};
                     border: none;
                     border-radius: 4px;
                     padding: 6px 12px;
                     font-size: 12px;
                 }}
                 QPushButton:hover {{
-                    background-color: #3b82f6;
+                    background-color: {p['primary_hover']};
                 }}
                 QPushButton:disabled {{
-                    background-color: {disabled};
+                    background-color: {p['disabled_bg']};
+                    color: {p['disabled_text']};
                 }}
             """
         else:
-            border = "#475569" if is_dark else "#c5d5ff"
-            color = "#93c5fd" if is_dark else "#0066cc"
-            hover = "#334155" if is_dark else "#e0ebff"
-            disabled_color = "#64748b" if is_dark else "#999"
-            disabled_border = "#334155" if is_dark else "#ddd"
             return f"""
                 QPushButton, QToolButton {{
                     background-color: transparent;
-                    border: 1px solid {border};
+                    border: 1px solid {p['border_light']};
                     border-radius: 4px;
                     padding: 6px 10px;
                     font-size: 12px;
-                    color: {color};
+                    color: {p['info']};
                 }}
                 QPushButton:hover, QToolButton:hover {{
-                    background-color: {hover};
+                    background-color: {p['bg_hover']};
                 }}
                 QPushButton:disabled, QToolButton:disabled {{
-                    color: {disabled_color};
-                    border-color: {disabled_border};
+                    color: {p['disabled_text']};
+                    border-color: {p['border']};
                 }}
             """
 
@@ -197,11 +189,12 @@ class AIToolbar(QFrame):
         if not hasattr(self, 'status_dot'):
             return
 
+        p = getattr(self, '_palette', get_current_palette())
         if is_ollama_available():
-            self.status_dot.setStyleSheet("color: #22c55e; font-size: 10px;")
+            self.status_dot.setStyleSheet(f"color: {p['success']}; font-size: 10px;")
             self.status_dot.setToolTip("الذكاء الاصطناعي متاح")
         else:
-            self.status_dot.setStyleSheet("color: #ef4444; font-size: 10px;")
+            self.status_dot.setStyleSheet(f"color: {p['danger']}; font-size: 10px;")
             self.status_dot.setToolTip("الذكاء الاصطناعي غير متاح")
 
     def _on_action_clicked(self, action_id: str):
@@ -254,18 +247,19 @@ class AIStatusWidget(QWidget):
 
     def _update_status(self):
         """Update status display."""
+        p = get_current_palette()
         if is_ollama_available():
             self.status_label.setText("AI")
-            self.status_label.setStyleSheet("""
-                color: #22c55e;
+            self.status_label.setStyleSheet(f"""
+                color: {p['success']};
                 font-size: 11px;
                 font-weight: bold;
             """)
             self.setToolTip("الذكاء الاصطناعي متاح - انقر للمحادثة")
         else:
             self.status_label.setText("AI")
-            self.status_label.setStyleSheet("""
-                color: #999;
+            self.status_label.setStyleSheet(f"""
+                color: {p['text_muted']};
                 font-size: 11px;
             """)
             self.setToolTip("الذكاء الاصطناعي غير متاح")

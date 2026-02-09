@@ -17,6 +17,7 @@ from PyQt5.QtCore import Qt, pyqtSignal, QTimer, QPoint, QSize
 from PyQt5.QtGui import QFont, QCursor
 
 from core.logging import app_logger
+from core.themes import get_current_palette, get_font, FONT_SIZE_SMALL, FONT_WEIGHT_BOLD
 
 
 class NotificationBadge(QLabel):
@@ -31,21 +32,22 @@ class NotificationBadge(QLabel):
         """إعداد الواجهة"""
         self.setFixedSize(20, 20)
         self.setAlignment(Qt.AlignCenter)
-        self.setFont(QFont("Cairo", 9, QFont.Bold))
+        self.setFont(get_font(FONT_SIZE_SMALL, FONT_WEIGHT_BOLD))
         self._update_style()
         self.hide()
 
     def _update_style(self):
         """تحديث التنسيق"""
-        self.setStyleSheet("""
-            QLabel {
-                background-color: #e74c3c;
-                color: white;
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            QLabel {{
+                background-color: {p['danger']};
+                color: {p['text_on_primary']};
                 border-radius: 10px;
                 padding: 2px;
                 min-width: 16px;
                 min-height: 16px;
-            }
+            }}
         """)
 
     def set_count(self, count: int):

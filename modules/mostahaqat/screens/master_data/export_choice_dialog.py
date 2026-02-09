@@ -21,7 +21,7 @@ from PyQt5.QtGui import QFont
 
 from ui.components.tables.enterprise import ExportManager
 from ui.dialogs.message import show_warning
-from core.themes import get_current_theme
+from core.themes import get_current_palette, get_font, FONT_SIZE_TITLE, FONT_SIZE_BODY, FONT_WEIGHT_BOLD
 
 
 class ExportChoiceDialog(QDialog):
@@ -60,7 +60,7 @@ class ExportChoiceDialog(QDialog):
 
         # Header
         header = QLabel(f"📤 تصدير {self._title}")
-        header.setFont(QFont("Cairo", 16, QFont.Bold))
+        header.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
         header.setAlignment(Qt.AlignCenter)
         header.setObjectName("exportHeader")
         layout.addWidget(header)
@@ -79,7 +79,7 @@ class ExportChoiceDialog(QDialog):
         choice_layout.setSpacing(15)
 
         info = QLabel("اختر نطاق التصدير:")
-        info.setFont(QFont("Cairo", 12))
+        info.setFont(get_font(FONT_SIZE_BODY))
         info.setObjectName("choiceLabel")
         choice_layout.addWidget(info)
 
@@ -89,7 +89,7 @@ class ExportChoiceDialog(QDialog):
         self._all_radio = QRadioButton(
             f"📊 كل البيانات ({len(self._all_data)} سجل)"
         )
-        self._all_radio.setFont(QFont("Cairo", 12))
+        self._all_radio.setFont(get_font(FONT_SIZE_BODY))
         self._all_radio.setChecked(True)
         self._group.addButton(self._all_radio)
         choice_layout.addWidget(self._all_radio)
@@ -99,7 +99,7 @@ class ExportChoiceDialog(QDialog):
         self._selected_radio = QRadioButton(
             f"✅ المحدد فقط ({selected_count} سجل)"
         )
-        self._selected_radio.setFont(QFont("Cairo", 12))
+        self._selected_radio.setFont(get_font(FONT_SIZE_BODY))
         self._selected_radio.setEnabled(selected_count > 0)
         self._group.addButton(self._selected_radio)
         choice_layout.addWidget(self._selected_radio)
@@ -111,14 +111,14 @@ class ExportChoiceDialog(QDialog):
         buttons_layout.addStretch()
 
         cancel_btn = QPushButton("❌ إلغاء")
-        cancel_btn.setFont(QFont("Cairo", 12))
+        cancel_btn.setFont(get_font(FONT_SIZE_BODY))
         cancel_btn.setMinimumHeight(44)
         cancel_btn.setCursor(Qt.PointingHandCursor)
         cancel_btn.clicked.connect(self.reject)
         buttons_layout.addWidget(cancel_btn)
 
         export_btn = QPushButton("📤 متابعة التصدير")
-        export_btn.setFont(QFont("Cairo", 12, QFont.Bold))
+        export_btn.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
         export_btn.setMinimumHeight(44)
         export_btn.setCursor(Qt.PointingHandCursor)
         export_btn.setProperty("buttonColor", "success")
@@ -145,88 +145,45 @@ class ExportChoiceDialog(QDialog):
         self.accept()
 
     def _apply_theme(self):
-        """Apply current theme."""
-        theme = get_current_theme()
+        """Apply current theme using palette."""
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            QDialog {{ background-color: {p['bg_dialog']}; }}
 
-        if theme == 'dark':
-            self.setStyleSheet("""
-                QDialog { background-color: #1e293b; }
+            QLabel {{ color: {p['text_primary']}; background: transparent; }}
+            QLabel#exportHeader {{ color: {p['accent']}; }}
+            QLabel#choiceLabel {{ color: {p['text_secondary']}; }}
 
-                QLabel { color: #f1f5f9; background: transparent; }
-                QLabel#exportHeader { color: #38bdf8; }
-                QLabel#choiceLabel { color: #94a3b8; }
+            QFrame#exportSep {{ background-color: {p['border']}; }}
+            QFrame#choiceFrame {{
+                background-color: {p['bg_main']};
+                border: 1px solid {p['border']};
+                border-radius: 12px;
+            }}
 
-                QFrame#exportSep { background-color: #334155; }
-                QFrame#choiceFrame {
-                    background-color: #0f172a;
-                    border: 1px solid #334155;
-                    border-radius: 12px;
-                }
+            QRadioButton {{
+                color: {p['text_primary']};
+                spacing: 10px;
+                padding: 10px;
+            }}
+            QRadioButton:disabled {{ color: {p['disabled_text']}; }}
+            QRadioButton::indicator {{
+                width: 18px; height: 18px;
+                border-radius: 9px;
+                border: 2px solid {p['border_light']};
+                background-color: {p['bg_main']};
+            }}
+            QRadioButton::indicator:checked {{
+                background-color: {p['primary']};
+                border-color: {p['primary']};
+            }}
 
-                QRadioButton {
-                    color: #f1f5f9;
-                    spacing: 10px;
-                    padding: 10px;
-                }
-                QRadioButton:disabled { color: #475569; }
-                QRadioButton::indicator {
-                    width: 18px; height: 18px;
-                    border-radius: 9px;
-                    border: 2px solid #475569;
-                    background-color: #0f172a;
-                }
-                QRadioButton::indicator:checked {
-                    background-color: #2563eb;
-                    border-color: #2563eb;
-                }
-
-                QPushButton {
-                    background-color: #334155; color: #f1f5f9;
-                    border: none; border-radius: 8px;
-                    padding: 10px 20px; font-weight: bold;
-                }
-                QPushButton:hover { background-color: #475569; }
-                QPushButton[buttonColor="success"] { background-color: #10b981; }
-                QPushButton[buttonColor="success"]:hover { background-color: #059669; }
-            """)
-        else:
-            self.setStyleSheet("""
-                QDialog { background-color: #ffffff; }
-
-                QLabel { color: #1e293b; background: transparent; }
-                QLabel#exportHeader { color: #0891b2; }
-                QLabel#choiceLabel { color: #64748b; }
-
-                QFrame#exportSep { background-color: #e2e8f0; }
-                QFrame#choiceFrame {
-                    background-color: #f8fafc;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 12px;
-                }
-
-                QRadioButton {
-                    color: #1e293b;
-                    spacing: 10px;
-                    padding: 10px;
-                }
-                QRadioButton:disabled { color: #94a3b8; }
-                QRadioButton::indicator {
-                    width: 18px; height: 18px;
-                    border-radius: 9px;
-                    border: 2px solid #cbd5e1;
-                    background-color: #ffffff;
-                }
-                QRadioButton::indicator:checked {
-                    background-color: #2563eb;
-                    border-color: #2563eb;
-                }
-
-                QPushButton {
-                    background-color: #e2e8f0; color: #1e293b;
-                    border: none; border-radius: 8px;
-                    padding: 10px 20px; font-weight: bold;
-                }
-                QPushButton:hover { background-color: #cbd5e1; }
-                QPushButton[buttonColor="success"] { background-color: #10b981; color: #ffffff; }
-                QPushButton[buttonColor="success"]:hover { background-color: #059669; }
-            """)
+            QPushButton {{
+                background-color: {p['bg_card']}; color: {p['text_primary']};
+                border: none; border-radius: 8px;
+                padding: 10px 20px; font-weight: bold;
+            }}
+            QPushButton:hover {{ background-color: {p['bg_hover']}; }}
+            QPushButton[buttonColor="success"] {{ background-color: {p['success']}; color: {p['text_on_primary']}; }}
+            QPushButton[buttonColor="success"]:hover {{ background-color: {p['success']}; }}
+        """)
