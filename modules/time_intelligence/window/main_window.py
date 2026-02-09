@@ -14,6 +14,7 @@ from PyQt5.QtCore import Qt, QTimer
 
 from ui.windows.base import BaseWindow
 from core.logging import app_logger
+from core.themes import get_current_palette
 
 
 class TimeIntelligenceWindow(BaseWindow):
@@ -43,6 +44,9 @@ class TimeIntelligenceWindow(BaseWindow):
 
     def _setup_ui(self):
         """Setup the window UI."""
+        self._p = get_current_palette()
+        p = self._p
+
         central = QWidget()
         self.setCentralWidget(central)
 
@@ -53,12 +57,11 @@ class TimeIntelligenceWindow(BaseWindow):
         # Title
         title = QLabel("الوعي الزمني الفائق")
         title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet("""
+        title.setStyleSheet(f"""
             font-size: 24px;
             font-weight: bold;
-            color: #f59e0b;
+            color: {p['accent']};
             padding: 10px;
-            font-family: 'Cairo', sans-serif;
         """)
         main_layout.addWidget(title)
 
@@ -92,8 +95,10 @@ class TimeIntelligenceWindow(BaseWindow):
 
         self.content_layout.addStretch()
 
-    def _create_section(self, title: str, color: str = "#f59e0b") -> QGroupBox:
+    def _create_section(self, title: str, color: str = "") -> QGroupBox:
         """Create a styled section group box."""
+        if not color:
+            color = self._p['accent']
         group = QGroupBox(title)
         group.setStyleSheet(f"""
             QGroupBox {{
@@ -104,7 +109,6 @@ class TimeIntelligenceWindow(BaseWindow):
                 border-radius: 10px;
                 margin-top: 10px;
                 padding-top: 20px;
-                font-family: 'Cairo', sans-serif;
             }}
             QGroupBox::title {{
                 subcontrol-origin: margin;
@@ -117,18 +121,19 @@ class TimeIntelligenceWindow(BaseWindow):
 
     def _create_info_label(self, key: str, value: str) -> QWidget:
         """Create a key-value info widget."""
+        p = self._p
         widget = QWidget()
         layout = QHBoxLayout(widget)
         layout.setContentsMargins(5, 2, 5, 2)
 
         key_label = QLabel(f"{key}:")
-        key_label.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo', sans-serif;")
+        key_label.setStyleSheet(f"font-size: 13px; color: {p['text_muted']};")
         key_label.setFixedWidth(180)
         key_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
 
         value_label = QLabel(str(value))
         value_label.setObjectName(f"value_{key.replace(' ', '_')}")
-        value_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #e5e7eb; font-family: 'Cairo', sans-serif;")
+        value_label.setStyleSheet(f"font-size: 14px; font-weight: bold; color: {p['text_primary']};")
         value_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
 
         layout.addWidget(value_label)
@@ -146,31 +151,31 @@ class TimeIntelligenceWindow(BaseWindow):
 
         # Gregorian date
         self.lbl_gregorian = QLabel("---")
-        self.lbl_gregorian.setStyleSheet("font-size: 18px; font-weight: bold; color: #e5e7eb; font-family: 'Cairo';")
+        self.lbl_gregorian.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {self._p['text_primary']};")
         self.lbl_gregorian.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.lbl_gregorian, 0, 0, 1, 2)
 
         # Hijri date
         self.lbl_hijri = QLabel("---")
-        self.lbl_hijri.setStyleSheet("font-size: 16px; color: #f59e0b; font-family: 'Cairo';")
+        self.lbl_hijri.setStyleSheet(f"font-size: 16px; color: {self._p['accent']};")
         self.lbl_hijri.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.lbl_hijri, 1, 0, 1, 2)
 
         # Time
         self.lbl_time = QLabel("--:--")
-        self.lbl_time.setStyleSheet("font-size: 28px; font-weight: bold; color: #60a5fa; font-family: 'Cairo';")
+        self.lbl_time.setStyleSheet(f"font-size: 28px; font-weight: bold; color: {self._p['info']};")
         self.lbl_time.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.lbl_time, 2, 0, 1, 2)
 
         # Day info
         self.lbl_day_info = QLabel("---")
-        self.lbl_day_info.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo';")
+        self.lbl_day_info.setStyleSheet(f"font-size: 13px; color: {self._p['text_muted']};")
         self.lbl_day_info.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.lbl_day_info, 3, 0, 1, 2)
 
     def _create_work_section(self):
         """Create the work calendar section."""
-        group = self._create_section("حالة العمل", "#10b981")
+        group = self._create_section("حالة العمل", self._p['success'])
         layout = QVBoxLayout()
         layout.setSpacing(5)
         group.setLayout(layout)
@@ -181,75 +186,75 @@ class TimeIntelligenceWindow(BaseWindow):
         layout.addWidget(self.lbl_work_status)
 
         self.lbl_work_hours = QLabel("---")
-        self.lbl_work_hours.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo';")
+        self.lbl_work_hours.setStyleSheet(f"font-size: 13px; color: {self._p['text_muted']};")
         self.lbl_work_hours.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.lbl_work_hours)
 
         self.lbl_next_working = QLabel("---")
-        self.lbl_next_working.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo';")
+        self.lbl_next_working.setStyleSheet(f"font-size: 13px; color: {self._p['text_muted']};")
         self.lbl_next_working.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.lbl_next_working)
 
     def _create_events_section(self):
         """Create the upcoming events section."""
-        group = self._create_section("الأحداث القادمة", "#8b5cf6")
+        group = self._create_section("الأحداث القادمة", self._p['primary'])
         self.events_layout = QVBoxLayout()
         self.events_layout.setSpacing(5)
         group.setLayout(self.events_layout)
 
         self.lbl_no_events = QLabel("جاري التحميل...")
-        self.lbl_no_events.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo';")
+        self.lbl_no_events.setStyleSheet(f"font-size: 13px; color: {self._p['text_muted']};")
         self.lbl_no_events.setAlignment(Qt.AlignCenter)
         self.events_layout.addWidget(self.lbl_no_events)
 
     def _create_analytics_section(self):
         """Create the analytics section."""
-        group = self._create_section("الفترة الحالية", "#3b82f6")
+        group = self._create_section("الفترة الحالية", self._p['info'])
         layout = QGridLayout()
         layout.setSpacing(8)
         group.setLayout(layout)
 
         self.lbl_quarter = QLabel("---")
-        self.lbl_quarter.setStyleSheet("font-size: 14px; color: #e5e7eb; font-family: 'Cairo';")
+        self.lbl_quarter.setStyleSheet(f"font-size: 14px; color: {self._p['text_primary']};")
         self.lbl_quarter.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.lbl_quarter, 0, 0)
 
         self.lbl_fiscal = QLabel("---")
-        self.lbl_fiscal.setStyleSheet("font-size: 14px; color: #e5e7eb; font-family: 'Cairo';")
+        self.lbl_fiscal.setStyleSheet(f"font-size: 14px; color: {self._p['text_primary']};")
         self.lbl_fiscal.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.lbl_fiscal, 0, 1)
 
         self.lbl_week = QLabel("---")
-        self.lbl_week.setStyleSheet("font-size: 14px; color: #e5e7eb; font-family: 'Cairo';")
+        self.lbl_week.setStyleSheet(f"font-size: 14px; color: {self._p['text_primary']};")
         self.lbl_week.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.lbl_week, 1, 0)
 
         self.lbl_working_days = QLabel("---")
-        self.lbl_working_days.setStyleSheet("font-size: 14px; color: #e5e7eb; font-family: 'Cairo';")
+        self.lbl_working_days.setStyleSheet(f"font-size: 14px; color: {self._p['text_primary']};")
         self.lbl_working_days.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.lbl_working_days, 1, 1)
 
     def _create_productivity_section(self):
         """Create the productivity section."""
-        group = self._create_section("الإنتاجية", "#ef4444")
+        group = self._create_section("الإنتاجية", self._p['danger'])
         layout = QVBoxLayout()
         layout.setSpacing(5)
         group.setLayout(layout)
 
         self.lbl_productivity = QLabel("سيبدأ التعلم مع استخدامك للبرنامج")
-        self.lbl_productivity.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo';")
+        self.lbl_productivity.setStyleSheet(f"font-size: 13px; color: {self._p['text_muted']};")
         self.lbl_productivity.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.lbl_productivity)
 
     def _create_settings_section(self):
         """Create settings section."""
-        group = self._create_section("الإعدادات", "#6b7280")
+        group = self._create_section("الإعدادات", self._p['text_muted'])
         layout = QHBoxLayout()
         layout.setSpacing(10)
         group.setLayout(layout)
 
         lbl = QLabel("الدولة:")
-        lbl.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo';")
+        lbl.setStyleSheet(f"font-size: 13px; color: {self._p['text_muted']};")
         layout.addWidget(lbl)
 
         self.country_combo = QComboBox()
@@ -261,20 +266,20 @@ class TimeIntelligenceWindow(BaseWindow):
         layout.addWidget(self.country_combo)
 
         refresh_btn = QPushButton("تحديث")
-        refresh_btn.setStyleSheet("""
-            QPushButton {
+        p = self._p
+        refresh_btn.setStyleSheet(f"""
+            QPushButton {{
                 font-size: 13px;
-                font-family: 'Cairo';
                 padding: 5px 15px;
-                background-color: #f59e0b;
-                color: #1f2937;
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 5px;
                 font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #d97706;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['primary_hover']};
+            }}
         """)
         refresh_btn.clicked.connect(self._load_data)
         layout.addWidget(refresh_btn)
@@ -313,22 +318,23 @@ class TimeIntelligenceWindow(BaseWindow):
             calendar = get_working_calendar(country_code)
             work_ctx = calendar.get_context()
 
+            p = self._p
             if work_ctx["is_work_time"]:
                 self.lbl_work_status.setText("يوم عمل - داخل ساعات العمل")
                 self.lbl_work_status.setStyleSheet(
-                    "font-size: 16px; font-weight: bold; color: #10b981; font-family: 'Cairo';"
+                    f"font-size: 16px; font-weight: bold; color: {p['success']};"
                 )
             elif work_ctx["is_working_day"]:
                 self.lbl_work_status.setText("يوم عمل - خارج ساعات العمل")
                 self.lbl_work_status.setStyleSheet(
-                    "font-size: 16px; font-weight: bold; color: #f59e0b; font-family: 'Cairo';"
+                    f"font-size: 16px; font-weight: bold; color: {p['warning']};"
                 )
             else:
                 status = work_ctx["today_status"]
                 reason = status.get("reason", "إجازة")
                 self.lbl_work_status.setText(f"إجازة: {reason}")
                 self.lbl_work_status.setStyleSheet(
-                    "font-size: 16px; font-weight: bold; color: #ef4444; font-family: 'Cairo';"
+                    f"font-size: 16px; font-weight: bold; color: {p['danger']};"
                 )
 
             self.lbl_work_hours.setText(
@@ -370,12 +376,12 @@ class TimeIntelligenceWindow(BaseWindow):
                     days = event.get("days_away", 0)
                     days_text = "اليوم" if days == 0 else f"بعد {days} يوم"
                     event_lbl = QLabel(f"  {event.get('name', '')} - {days_text}")
-                    event_lbl.setStyleSheet("font-size: 13px; color: #c4b5fd; font-family: 'Cairo';")
+                    event_lbl.setStyleSheet(f"font-size: 13px; color: {self._p['primary_light']};")
                     event_lbl.setAlignment(Qt.AlignRight)
                     self.events_layout.addWidget(event_lbl)
             else:
                 no_events = QLabel("لا توجد أحداث قريبة")
-                no_events.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo';")
+                no_events.setStyleSheet(f"font-size: 13px; color: {self._p['text_muted']};")
                 no_events.setAlignment(Qt.AlignCenter)
                 self.events_layout.addWidget(no_events)
 
