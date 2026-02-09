@@ -51,6 +51,7 @@ except ImportError:
     FLUENT_AVAILABLE = False
 
 from core.logging import app_logger
+from core.themes import get_current_palette
 
 
 if not FLUENT_AVAILABLE:
@@ -278,13 +279,14 @@ class FluentCard(QFrame if not FLUENT_AVAILABLE else CardWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
         if not FLUENT_AVAILABLE:
+            palette = get_current_palette()
             self.setFrameShape(QFrame.StyledPanel)
-            self.setStyleSheet("""
-                FluentCard {
-                    background: white;
+            self.setStyleSheet(f"""
+                FluentCard {{
+                    background: {palette['bg_card']};
                     border-radius: 8px;
-                    border: 1px solid #e5e7eb;
-                }
+                    border: 1px solid {palette['border']};
+                }}
             """)
 
 
@@ -312,18 +314,21 @@ class FluentBadge(QLabel):
         badge = FluentBadge("New", color="success")
     """
 
-    COLORS = {
-        'primary': ('#2563eb', '#ffffff'),
-        'success': ('#10b981', '#ffffff'),
-        'danger': ('#ef4444', '#ffffff'),
-        'warning': ('#f59e0b', '#000000'),
-        'info': ('#3b82f6', '#ffffff'),
-    }
-
     def __init__(self, text: str, color: str = 'primary',
                  parent: Optional[QWidget] = None):
         super().__init__(text, parent)
-        bg, fg = self.COLORS.get(color, self.COLORS['primary'])
+        palette = get_current_palette()
+
+        # Map color names to palette keys
+        _color_map = {
+            'primary': (palette['primary'], palette['text_on_primary']),
+            'success': (palette['success'], palette['text_on_primary']),
+            'danger': (palette['danger'], palette['text_on_primary']),
+            'warning': (palette['warning'], '#000000'),
+            'info': (palette['info'], palette['text_on_primary']),
+        }
+
+        bg, fg = _color_map.get(color, _color_map['primary'])
         self.setStyleSheet(f"""
             FluentBadge {{
                 background: {bg};

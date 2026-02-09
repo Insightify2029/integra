@@ -20,6 +20,7 @@ from PyQt5.QtCore import Qt, pyqtSignal, QTimer
 from PyQt5.QtGui import QFont, QCursor
 
 from core.logging import app_logger
+from core.themes import get_current_palette, get_font, FONT_SIZE_TITLE, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_SIZE_SUBTITLE, FONT_WEIGHT_BOLD
 
 
 class NotificationCenterScreen(QWidget):
@@ -99,46 +100,48 @@ class NotificationCenterScreen(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
 
         # العنوان
+        p = get_current_palette()
+
         title = QLabel("🔔 مركز الإشعارات")
-        title.setFont(QFont("Cairo", 18, QFont.Bold))
-        title.setStyleSheet("color: #333;")
+        title.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
+        title.setStyleSheet(f"color: {p['text_primary']};")
         layout.addWidget(title)
 
         layout.addStretch()
 
         # أزرار الإجراءات
         mark_all_btn = QPushButton("تحديد الكل كمقروء")
-        mark_all_btn.setFont(QFont("Cairo", 10))
+        mark_all_btn.setFont(get_font(FONT_SIZE_BODY))
         mark_all_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        mark_all_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #3498db;
-                color: white;
+        mark_all_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 6px;
                 padding: 8px 16px;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['primary_hover']};
+            }}
         """)
         mark_all_btn.clicked.connect(self._mark_all_read)
         layout.addWidget(mark_all_btn)
 
         settings_btn = QPushButton("⚙️ الإعدادات")
-        settings_btn.setFont(QFont("Cairo", 10))
+        settings_btn.setFont(get_font(FONT_SIZE_BODY))
         settings_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        settings_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #ecf0f1;
-                color: #333;
+        settings_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['bg_hover']};
+                color: {p['text_primary']};
                 border: none;
                 border-radius: 6px;
                 padding: 8px 16px;
-            }
-            QPushButton:hover {
-                background-color: #bdc3c7;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['border']};
+            }}
         """)
         settings_btn.clicked.connect(self._open_settings)
         layout.addWidget(settings_btn)
@@ -147,13 +150,14 @@ class NotificationCenterScreen(QWidget):
 
     def _create_filters(self) -> QWidget:
         """إنشاء شريط الفلاتر"""
+        p = get_current_palette()
         filters = QFrame()
-        filters.setStyleSheet("""
-            QFrame {
-                background-color: #f8f9fa;
+        filters.setStyleSheet(f"""
+            QFrame {{
+                background-color: {p['bg_main']};
                 border-radius: 8px;
                 padding: 8px;
-            }
+            }}
         """)
 
         layout = QHBoxLayout(filters)
@@ -163,18 +167,18 @@ class NotificationCenterScreen(QWidget):
         # البحث
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("🔍 بحث في الإشعارات...")
-        self.search_input.setFont(QFont("Cairo", 10))
-        self.search_input.setStyleSheet("""
-            QLineEdit {
-                background-color: white;
-                border: 1px solid #ddd;
+        self.search_input.setFont(get_font(FONT_SIZE_BODY))
+        self.search_input.setStyleSheet(f"""
+            QLineEdit {{
+                background-color: {p['bg_card']};
+                border: 1px solid {p['border']};
                 border-radius: 6px;
                 padding: 8px 12px;
                 min-width: 200px;
-            }
-            QLineEdit:focus {
-                border-color: #3498db;
-            }
+            }}
+            QLineEdit:focus {{
+                border-color: {p['border_focus']};
+            }}
         """)
         self.search_input.textChanged.connect(self._on_search_changed)
         layout.addWidget(self.search_input)
@@ -183,11 +187,11 @@ class NotificationCenterScreen(QWidget):
 
         # فلتر النوع
         type_label = QLabel("النوع:")
-        type_label.setFont(QFont("Cairo", 10))
+        type_label.setFont(get_font(FONT_SIZE_BODY))
         layout.addWidget(type_label)
 
         self.type_combo = QComboBox()
-        self.type_combo.setFont(QFont("Cairo", 10))
+        self.type_combo.setFont(get_font(FONT_SIZE_BODY))
         self.type_combo.addItem("الكل", None)
         self.type_combo.addItem("📧 إيميل", "email")
         self.type_combo.addItem("✅ مهام", "task")
@@ -195,45 +199,45 @@ class NotificationCenterScreen(QWidget):
         self.type_combo.addItem("⚙️ نظام", "system")
         self.type_combo.addItem("🤖 AI", "ai")
         self.type_combo.addItem("⚠️ تنبيه", "alert")
-        self.type_combo.setStyleSheet("""
-            QComboBox {
-                background-color: white;
-                border: 1px solid #ddd;
+        self.type_combo.setStyleSheet(f"""
+            QComboBox {{
+                background-color: {p['bg_card']};
+                border: 1px solid {p['border']};
                 border-radius: 6px;
                 padding: 6px 12px;
                 min-width: 100px;
-            }
+            }}
         """)
         self.type_combo.currentIndexChanged.connect(self._on_type_changed)
         layout.addWidget(self.type_combo)
 
         # فلتر الأولوية
         priority_label = QLabel("الأولوية:")
-        priority_label.setFont(QFont("Cairo", 10))
+        priority_label.setFont(get_font(FONT_SIZE_BODY))
         layout.addWidget(priority_label)
 
         self.priority_combo = QComboBox()
-        self.priority_combo.setFont(QFont("Cairo", 10))
+        self.priority_combo.setFont(get_font(FONT_SIZE_BODY))
         self.priority_combo.addItem("الكل", None)
         self.priority_combo.addItem("🔴 عاجل", "urgent")
         self.priority_combo.addItem("🟠 مهم", "high")
         self.priority_combo.addItem("🔵 عادي", "normal")
         self.priority_combo.addItem("⚪ منخفض", "low")
-        self.priority_combo.setStyleSheet("""
-            QComboBox {
-                background-color: white;
-                border: 1px solid #ddd;
+        self.priority_combo.setStyleSheet(f"""
+            QComboBox {{
+                background-color: {p['bg_card']};
+                border: 1px solid {p['border']};
                 border-radius: 6px;
                 padding: 6px 12px;
                 min-width: 100px;
-            }
+            }}
         """)
         self.priority_combo.currentIndexChanged.connect(self._on_priority_changed)
         layout.addWidget(self.priority_combo)
 
         # فلتر حالة القراءة
         self.unread_only = QCheckBox("غير المقروءة فقط")
-        self.unread_only.setFont(QFont("Cairo", 10))
+        self.unread_only.setFont(get_font(FONT_SIZE_BODY))
         self.unread_only.stateChanged.connect(self._on_unread_changed)
         layout.addWidget(self.unread_only)
 
@@ -245,14 +249,15 @@ class NotificationCenterScreen(QWidget):
         layout = QHBoxLayout(stats)
         layout.setContentsMargins(0, 0, 0, 0)
 
+        p = get_current_palette()
         self.total_label = QLabel("إجمالي: 0")
-        self.total_label.setFont(QFont("Cairo", 10))
-        self.total_label.setStyleSheet("color: #666;")
+        self.total_label.setFont(get_font(FONT_SIZE_BODY))
+        self.total_label.setStyleSheet(f"color: {p['text_muted']};")
         layout.addWidget(self.total_label)
 
         self.unread_label = QLabel("غير مقروء: 0")
-        self.unread_label.setFont(QFont("Cairo", 10))
-        self.unread_label.setStyleSheet("color: #e74c3c;")
+        self.unread_label.setFont(get_font(FONT_SIZE_BODY))
+        self.unread_label.setStyleSheet(f"color: {p['danger']};")
         layout.addWidget(self.unread_label)
 
         layout.addStretch()
@@ -265,20 +270,21 @@ class NotificationCenterScreen(QWidget):
         layout = QVBoxLayout(empty)
         layout.setAlignment(Qt.AlignCenter)
 
+        p = get_current_palette()
         icon_label = QLabel("🔔")
-        icon_label.setFont(QFont("Segoe UI Emoji", 48))
+        icon_label.setStyleSheet("font-size: 48px;")
         icon_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(icon_label)
 
         text_label = QLabel("لا توجد إشعارات")
-        text_label.setFont(QFont("Cairo", 14))
-        text_label.setStyleSheet("color: #888;")
+        text_label.setFont(get_font(FONT_SIZE_SUBTITLE))
+        text_label.setStyleSheet(f"color: {p['text_muted']};")
         text_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(text_label)
 
         hint_label = QLabel("ستظهر الإشعارات الجديدة هنا")
-        hint_label.setFont(QFont("Cairo", 10))
-        hint_label.setStyleSheet("color: #aaa;")
+        hint_label.setFont(get_font(FONT_SIZE_BODY))
+        hint_label.setStyleSheet(f"color: {p['disabled_text']};")
         hint_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(hint_label)
 
@@ -372,9 +378,10 @@ class NotificationCenterScreen(QWidget):
         # عرض المجموعات
         for group_name, group_notifications in groups.items():
             # عنوان المجموعة
+            p = get_current_palette()
             group_header = QLabel(group_name)
-            group_header.setFont(QFont("Cairo", 11, QFont.Bold))
-            group_header.setStyleSheet("color: #666; padding: 8px 0;")
+            group_header.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
+            group_header.setStyleSheet(f"color: {p['text_muted']}; padding: 8px 0;")
             self.notifications_layout.insertWidget(
                 self.notifications_layout.count() - 1,
                 group_header

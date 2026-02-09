@@ -20,9 +20,11 @@ from PyQt5.QtWidgets import (
     QMessageBox
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QSize
-from PyQt5.QtGui import QFont
-
-from core.themes import get_current_theme
+from core.themes import (
+    get_current_palette,
+    get_font, FONT_SIZE_SMALL, FONT_SIZE_BODY, FONT_SIZE_SUBTITLE,
+    FONT_SIZE_TITLE, FONT_WEIGHT_BOLD, FONT_FAMILY_ARABIC,
+)
 from core.sync import get_sync_manager, load_sync_config
 from core.utils.icons import icon
 
@@ -73,16 +75,16 @@ class SyncSettingsDialog(QDialog):
 
         # === العنوان ===
         title = QLabel("إعدادات المزامنة")
-        title.setFont(QFont("Cairo", 18, QFont.Bold))
+        title.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
         title.setAlignment(Qt.AlignCenter)
         title.setObjectName("dialogTitle")
         layout.addWidget(title)
 
         # ══════════════════════════════════════════
-        # 📊 قاعدة البيانات
+        # قاعدة البيانات
         # ══════════════════════════════════════════
         db_group = QGroupBox("  قاعدة البيانات")
-        db_group.setFont(QFont("Cairo", 12, QFont.Bold))
+        db_group.setFont(get_font(FONT_SIZE_SUBTITLE - 3, FONT_WEIGHT_BOLD))
         db_group.setObjectName("optionsGroup")
         db_layout = QVBoxLayout(db_group)
         db_layout.setSpacing(12)
@@ -92,20 +94,20 @@ class SyncSettingsDialog(QDialog):
         self._chk_startup = QCheckBox(
             "مزامنة عند فتح البرنامج"
         )
-        self._chk_startup.setFont(QFont("Cairo", 11))
+        self._chk_startup.setFont(get_font(FONT_SIZE_SMALL))
         db_layout.addWidget(self._chk_startup)
 
         # مزامنة دورية
         auto_row = QHBoxLayout()
         self._chk_auto = QCheckBox("مزامنة دورية كل:")
-        self._chk_auto.setFont(QFont("Cairo", 11))
+        self._chk_auto.setFont(get_font(FONT_SIZE_SMALL))
         auto_row.addWidget(self._chk_auto)
 
         self._spin_interval = QSpinBox()
         self._spin_interval.setRange(1, 24)
         self._spin_interval.setValue(2)
         self._spin_interval.setSuffix(" ساعة")
-        self._spin_interval.setFont(QFont("Cairo", 11))
+        self._spin_interval.setFont(get_font(FONT_SIZE_SMALL))
         self._spin_interval.setMinimumHeight(35)
         self._spin_interval.setMinimumWidth(110)
         self._spin_interval.setObjectName("intervalSpin")
@@ -117,7 +119,7 @@ class SyncSettingsDialog(QDialog):
         self._db_sync_btn = QPushButton("مزامنة الآن")
         self._db_sync_btn.setIcon(icon('fa5s.sync-alt', color='#ffffff'))
         self._db_sync_btn.setIconSize(QSize(16, 16))
-        self._db_sync_btn.setFont(QFont("Cairo", 12, QFont.Bold))
+        self._db_sync_btn.setFont(get_font(FONT_SIZE_SUBTITLE - 3, FONT_WEIGHT_BOLD))
         self._db_sync_btn.setMinimumHeight(40)
         self._db_sync_btn.setCursor(Qt.PointingHandCursor)
         self._db_sync_btn.setObjectName("syncNowBtn")
@@ -127,10 +129,10 @@ class SyncSettingsDialog(QDialog):
         layout.addWidget(db_group)
 
         # ══════════════════════════════════════════
-        # 📂 النسخ الاحتياطية
+        # النسخ الاحتياطية
         # ══════════════════════════════════════════
         backup_group = QGroupBox("  النسخ الاحتياطية")
-        backup_group.setFont(QFont("Cairo", 12, QFont.Bold))
+        backup_group.setFont(get_font(FONT_SIZE_SUBTITLE - 3, FONT_WEIGHT_BOLD))
         backup_group.setObjectName("optionsGroup")
         backup_layout = QVBoxLayout(backup_group)
         backup_layout.setSpacing(10)
@@ -138,7 +140,7 @@ class SyncSettingsDialog(QDialog):
 
         # آخر نسخة
         self._backup_info_label = QLabel("آخر نسخة: جاري التحقق...")
-        self._backup_info_label.setFont(QFont("Cairo", 11))
+        self._backup_info_label.setFont(get_font(FONT_SIZE_SMALL))
         self._backup_info_label.setObjectName("statusLabel")
         backup_layout.addWidget(self._backup_info_label)
 
@@ -146,7 +148,7 @@ class SyncSettingsDialog(QDialog):
         self._restore_btn = QPushButton("استعادة نسخة سابقة...")
         self._restore_btn.setIcon(icon('fa5s.download', color='#ffffff'))
         self._restore_btn.setIconSize(QSize(16, 16))
-        self._restore_btn.setFont(QFont("Cairo", 11, QFont.Bold))
+        self._restore_btn.setFont(get_font(FONT_SIZE_SMALL, FONT_WEIGHT_BOLD))
         self._restore_btn.setMinimumHeight(38)
         self._restore_btn.setCursor(Qt.PointingHandCursor)
         self._restore_btn.setObjectName("pullBtn")
@@ -156,10 +158,10 @@ class SyncSettingsDialog(QDialog):
         layout.addWidget(backup_group)
 
         # ══════════════════════════════════════════
-        # 💻 تحديثات التطوير (Git)
+        # تحديثات التطوير (Git)
         # ══════════════════════════════════════════
         git_group = QGroupBox("  تحديثات التطوير (Git)")
-        git_group.setFont(QFont("Cairo", 12, QFont.Bold))
+        git_group.setFont(get_font(FONT_SIZE_SUBTITLE - 3, FONT_WEIGHT_BOLD))
         git_group.setObjectName("optionsGroup")
         git_layout = QHBoxLayout(git_group)
         git_layout.setSpacing(12)
@@ -169,7 +171,7 @@ class SyncSettingsDialog(QDialog):
         self._git_pull_btn = QPushButton("جلب التحديثات")
         self._git_pull_btn.setIcon(icon('fa5s.cloud-download-alt', color='#ffffff'))
         self._git_pull_btn.setIconSize(QSize(16, 16))
-        self._git_pull_btn.setFont(QFont("Cairo", 12, QFont.Bold))
+        self._git_pull_btn.setFont(get_font(FONT_SIZE_SUBTITLE - 3, FONT_WEIGHT_BOLD))
         self._git_pull_btn.setMinimumHeight(45)
         self._git_pull_btn.setCursor(Qt.PointingHandCursor)
         self._git_pull_btn.setObjectName("pullBtn")
@@ -180,7 +182,7 @@ class SyncSettingsDialog(QDialog):
         self._git_push_btn = QPushButton("رفع التحديثات")
         self._git_push_btn.setIcon(icon('fa5s.cloud-upload-alt', color='#ffffff'))
         self._git_push_btn.setIconSize(QSize(16, 16))
-        self._git_push_btn.setFont(QFont("Cairo", 12, QFont.Bold))
+        self._git_push_btn.setFont(get_font(FONT_SIZE_SUBTITLE - 3, FONT_WEIGHT_BOLD))
         self._git_push_btn.setMinimumHeight(45)
         self._git_push_btn.setCursor(Qt.PointingHandCursor)
         self._git_push_btn.setObjectName("pushBtn")
@@ -191,20 +193,20 @@ class SyncSettingsDialog(QDialog):
 
         # === آخر مزامنة + سجل ===
         self._status_label = QLabel("")
-        self._status_label.setFont(QFont("Cairo", 11))
+        self._status_label.setFont(get_font(FONT_SIZE_SMALL))
         self._status_label.setAlignment(Qt.AlignCenter)
         self._status_label.setObjectName("statusLabel")
         layout.addWidget(self._status_label)
 
         # سجل العمليات
         log_label = QLabel("سجل العمليات:")
-        log_label.setFont(QFont("Cairo", 11))
+        log_label.setFont(get_font(FONT_SIZE_SMALL))
         log_label.setObjectName("logLabel")
         layout.addWidget(log_label)
 
         self._log_area = QTextEdit()
         self._log_area.setReadOnly(True)
-        self._log_area.setFont(QFont("Consolas", 10))
+        self._log_area.setFont(get_font(FONT_SIZE_SMALL - 1, family="Consolas"))
         self._log_area.setMinimumHeight(100)
         self._log_area.setMaximumHeight(140)
         self._log_area.setObjectName("logArea")
@@ -216,7 +218,7 @@ class SyncSettingsDialog(QDialog):
         btn_layout.addStretch()
 
         cancel_btn = QPushButton("إلغاء")
-        cancel_btn.setFont(QFont("Cairo", 12))
+        cancel_btn.setFont(get_font(FONT_SIZE_SUBTITLE - 3))
         cancel_btn.setMinimumHeight(40)
         cancel_btn.setMinimumWidth(120)
         cancel_btn.setCursor(Qt.PointingHandCursor)
@@ -227,7 +229,7 @@ class SyncSettingsDialog(QDialog):
         save_btn = QPushButton("حفظ الإعدادات")
         save_btn.setIcon(icon('fa5s.save', color='#ffffff'))
         save_btn.setIconSize(QSize(16, 16))
-        save_btn.setFont(QFont("Cairo", 12, QFont.Bold))
+        save_btn.setFont(get_font(FONT_SIZE_SUBTITLE - 3, FONT_WEIGHT_BOLD))
         save_btn.setMinimumHeight(40)
         save_btn.setMinimumWidth(160)
         save_btn.setCursor(Qt.PointingHandCursor)
@@ -383,11 +385,11 @@ class SyncSettingsDialog(QDialog):
         dlg_layout.setSpacing(12)
 
         dlg_label = QLabel("اختر النسخة المراد استعادتها:")
-        dlg_label.setFont(QFont("Cairo", 12))
+        dlg_label.setFont(get_font(FONT_SIZE_SUBTITLE - 3))
         dlg_layout.addWidget(dlg_label)
 
         backup_list = QListWidget()
-        backup_list.setFont(QFont("Consolas", 11))
+        backup_list.setFont(get_font(FONT_SIZE_SMALL, family="Consolas"))
         for backup in backups:
             item = QListWidgetItem(
                 f"{backup.formatted_time}  |  {backup.formatted_size}"
@@ -401,57 +403,38 @@ class SyncSettingsDialog(QDialog):
         btn_row.addStretch()
 
         cancel_btn = QPushButton("إلغاء")
-        cancel_btn.setFont(QFont("Cairo", 11))
+        cancel_btn.setFont(get_font(FONT_SIZE_SMALL))
         cancel_btn.setMinimumHeight(35)
         cancel_btn.clicked.connect(dialog.reject)
         btn_row.addWidget(cancel_btn)
 
-        restore_btn = QPushButton("📥 استعادة")
-        restore_btn.setFont(QFont("Cairo", 11, QFont.Bold))
+        restore_btn = QPushButton("استعادة")
+        restore_btn.setFont(get_font(FONT_SIZE_SMALL, FONT_WEIGHT_BOLD))
         restore_btn.setMinimumHeight(35)
         restore_btn.clicked.connect(dialog.accept)
         btn_row.addWidget(restore_btn)
 
         dlg_layout.addLayout(btn_row)
 
-        # تطبيق ثيم بسيط
-        theme = get_current_theme()
-        if theme == "dark":
-            dialog.setStyleSheet("""
-                QDialog { background-color: #1e293b; }
-                QLabel { color: #f1f5f9; }
-                QListWidget {
-                    background: #0f172a; color: #e2e8f0;
-                    border: 1px solid #334155; border-radius: 8px;
-                    padding: 5px;
-                }
-                QListWidget::item { padding: 8px; border-radius: 4px; }
-                QListWidget::item:selected { background: #0891b2; }
-                QPushButton {
-                    background: #334155; color: #f1f5f9;
-                    border: none; border-radius: 6px;
-                    padding: 8px 16px;
-                }
-                QPushButton:hover { background: #475569; }
-            """)
-        else:
-            dialog.setStyleSheet("""
-                QDialog { background-color: #f8fafc; }
-                QLabel { color: #1e293b; }
-                QListWidget {
-                    background: #ffffff; color: #334155;
-                    border: 1px solid #e2e8f0; border-radius: 8px;
-                    padding: 5px;
-                }
-                QListWidget::item { padding: 8px; border-radius: 4px; }
-                QListWidget::item:selected { background: #0891b2; color: white; }
-                QPushButton {
-                    background: #e2e8f0; color: #1e293b;
-                    border: none; border-radius: 6px;
-                    padding: 8px 16px;
-                }
-                QPushButton:hover { background: #cbd5e1; }
-            """)
+        # تطبيق ثيم باستخدام الپاليت
+        p = get_current_palette()
+        dialog.setStyleSheet(f"""
+            QDialog {{ background-color: {p['bg_dialog']}; }}
+            QLabel {{ color: {p['text_primary']}; }}
+            QListWidget {{
+                background: {p['bg_main']}; color: {p['text_primary']};
+                border: 1px solid {p['border']}; border-radius: 8px;
+                padding: 5px;
+            }}
+            QListWidget::item {{ padding: 8px; border-radius: 4px; }}
+            QListWidget::item:selected {{ background: {p['accent']}; color: {p['text_on_primary']}; }}
+            QPushButton {{
+                background: {p['bg_card']}; color: {p['text_primary']};
+                border: none; border-radius: 6px;
+                padding: 8px 16px;
+            }}
+            QPushButton:hover {{ background: {p['bg_hover']}; }}
+        """)
 
         if dialog.exec_() != QDialog.Accepted:
             return
@@ -507,164 +490,85 @@ class SyncSettingsDialog(QDialog):
 
     def _apply_theme(self):
         """تطبيق الثيم."""
-        theme = get_current_theme()
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            QDialog {{ background-color: {p['bg_main']}; }}
+            QLabel {{ color: {p['text_primary']}; background: transparent; }}
+            QLabel#dialogTitle {{ color: {p['accent']}; }}
+            QLabel#statusLabel {{ color: {p['text_secondary']}; }}
+            QLabel#logLabel {{ color: {p['text_secondary']}; }}
 
-        if theme == "dark":
-            self.setStyleSheet("""
-                QDialog { background-color: #0f172a; }
-                QLabel { color: #f1f5f9; background: transparent; }
-                QLabel#dialogTitle { color: #38bdf8; }
-                QLabel#statusLabel { color: #94a3b8; }
-                QLabel#logLabel { color: #94a3b8; }
+            QGroupBox {{
+                color: {p['accent']};
+                border: 1px solid {p['border']};
+                border-radius: 10px;
+                margin-top: 10px;
+                padding-top: 15px;
+            }}
+            QGroupBox::title {{
+                subcontrol-origin: margin;
+                left: 15px;
+                padding: 0 8px;
+            }}
 
-                QGroupBox {
-                    color: #06b6d4;
-                    border: 1px solid #334155;
-                    border-radius: 10px;
-                    margin-top: 10px;
-                    padding-top: 15px;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    left: 15px;
-                    padding: 0 8px;
-                }
+            QCheckBox {{ color: {p['text_primary']}; spacing: 10px; }}
+            QCheckBox::indicator {{
+                width: 22px; height: 22px;
+                border: 2px solid {p['border_light']};
+                border-radius: 4px;
+                background: {p['bg_input']};
+            }}
+            QCheckBox::indicator:checked {{
+                background: {p['accent']};
+                border-color: {p['accent']};
+            }}
+            QCheckBox::indicator:hover {{ border-color: {p['accent']}; }}
 
-                QCheckBox { color: #f1f5f9; spacing: 10px; }
-                QCheckBox::indicator {
-                    width: 22px; height: 22px;
-                    border: 2px solid #475569;
-                    border-radius: 4px;
-                    background: #1e293b;
-                }
-                QCheckBox::indicator:checked {
-                    background: #06b6d4;
-                    border-color: #06b6d4;
-                }
-                QCheckBox::indicator:hover { border-color: #06b6d4; }
+            QSpinBox {{
+                background: {p['bg_input']}; color: {p['text_primary']};
+                border: 2px solid {p['border']}; border-radius: 6px;
+                padding: 5px 10px;
+            }}
+            QSpinBox:focus {{ border-color: {p['accent']}; }}
 
-                QSpinBox {
-                    background: #1e293b; color: #f1f5f9;
-                    border: 2px solid #334155; border-radius: 6px;
-                    padding: 5px 10px;
-                }
-                QSpinBox:focus { border-color: #06b6d4; }
+            QPushButton#syncNowBtn {{
+                background: {p['accent']}; color: {p['text_on_primary']};
+                border: none; border-radius: 10px;
+            }}
+            QPushButton#syncNowBtn:hover {{ background: {p['info']}; }}
+            QPushButton#syncNowBtn:disabled {{ background: {p['disabled_bg']}; color: {p['disabled_text']}; }}
 
-                QPushButton#syncNowBtn {
-                    background: #0891b2; color: #ffffff;
-                    border: none; border-radius: 10px;
-                }
-                QPushButton#syncNowBtn:hover { background: #06b6d4; }
-                QPushButton#syncNowBtn:disabled { background: #334155; color: #64748b; }
+            QPushButton#pullBtn {{
+                background: {p['success']}; color: {p['text_on_primary']};
+                border: none; border-radius: 10px;
+            }}
+            QPushButton#pullBtn:hover {{ background: {p['success']}cc; }}
+            QPushButton#pullBtn:disabled {{ background: {p['disabled_bg']}; color: {p['disabled_text']}; }}
 
-                QPushButton#pullBtn {
-                    background: #0d9488; color: #ffffff;
-                    border: none; border-radius: 10px;
-                }
-                QPushButton#pullBtn:hover { background: #14b8a6; }
-                QPushButton#pullBtn:disabled { background: #334155; color: #64748b; }
+            QPushButton#pushBtn {{
+                background: {p['primary']}; color: {p['text_on_primary']};
+                border: none; border-radius: 10px;
+            }}
+            QPushButton#pushBtn:hover {{ background: {p['primary_hover']}; }}
+            QPushButton#pushBtn:disabled {{ background: {p['disabled_bg']}; color: {p['disabled_text']}; }}
 
-                QPushButton#pushBtn {
-                    background: #7c3aed; color: #ffffff;
-                    border: none; border-radius: 10px;
-                }
-                QPushButton#pushBtn:hover { background: #8b5cf6; }
-                QPushButton#pushBtn:disabled { background: #334155; color: #64748b; }
+            QPushButton#saveBtn {{
+                background: {p['success']}; color: {p['text_on_primary']};
+                border: none; border-radius: 8px;
+                padding: 8px 20px;
+            }}
+            QPushButton#saveBtn:hover {{ background: {p['success']}cc; }}
 
-                QPushButton#saveBtn {
-                    background: #10b981; color: #ffffff;
-                    border: none; border-radius: 8px;
-                    padding: 8px 20px;
-                }
-                QPushButton#saveBtn:hover { background: #059669; }
+            QPushButton#cancelBtn {{
+                background: {p['bg_card']}; color: {p['text_primary']};
+                border: none; border-radius: 8px;
+                padding: 8px 20px;
+            }}
+            QPushButton#cancelBtn:hover {{ background: {p['bg_hover']}; }}
 
-                QPushButton#cancelBtn {
-                    background: #334155; color: #f1f5f9;
-                    border: none; border-radius: 8px;
-                    padding: 8px 20px;
-                }
-                QPushButton#cancelBtn:hover { background: #475569; }
-
-                QTextEdit#logArea {
-                    background: #1e293b; color: #e2e8f0;
-                    border: 1px solid #334155; border-radius: 8px;
-                    padding: 10px;
-                }
-            """)
-        else:
-            self.setStyleSheet("""
-                QDialog { background-color: #f8fafc; }
-                QLabel { color: #1e293b; background: transparent; }
-                QLabel#dialogTitle { color: #0891b2; }
-                QLabel#statusLabel { color: #64748b; }
-                QLabel#logLabel { color: #64748b; }
-
-                QGroupBox {
-                    color: #0891b2;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 10px;
-                    margin-top: 10px;
-                    padding-top: 15px;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    left: 15px;
-                    padding: 0 8px;
-                }
-
-                QCheckBox { color: #1e293b; spacing: 10px; }
-                QCheckBox::indicator {
-                    width: 22px; height: 22px;
-                    border: 2px solid #cbd5e1;
-                    border-radius: 4px;
-                    background: #ffffff;
-                }
-                QCheckBox::indicator:checked {
-                    background: #0891b2;
-                    border-color: #0891b2;
-                }
-
-                QSpinBox {
-                    background: #ffffff; color: #1e293b;
-                    border: 2px solid #e2e8f0; border-radius: 6px;
-                    padding: 5px 10px;
-                }
-
-                QPushButton#syncNowBtn {
-                    background: #0891b2; color: #ffffff;
-                    border: none; border-radius: 10px;
-                }
-                QPushButton#syncNowBtn:hover { background: #06b6d4; }
-                QPushButton#syncNowBtn:disabled { background: #e2e8f0; color: #94a3b8; }
-
-                QPushButton#pullBtn {
-                    background: #0d9488; color: #ffffff;
-                    border: none; border-radius: 10px;
-                }
-                QPushButton#pullBtn:hover { background: #14b8a6; }
-                QPushButton#pullBtn:disabled { background: #e2e8f0; color: #94a3b8; }
-
-                QPushButton#pushBtn {
-                    background: #7c3aed; color: #ffffff;
-                    border: none; border-radius: 10px;
-                }
-                QPushButton#pushBtn:hover { background: #8b5cf6; }
-                QPushButton#pushBtn:disabled { background: #e2e8f0; color: #94a3b8; }
-
-                QPushButton#saveBtn {
-                    background: #10b981; color: #ffffff;
-                    border: none; border-radius: 8px;
-                    padding: 8px 20px;
-                }
-                QPushButton#cancelBtn {
-                    background: #e2e8f0; color: #1e293b;
-                    border: none; border-radius: 8px;
-                    padding: 8px 20px;
-                }
-
-                QTextEdit#logArea {
-                    background: #ffffff; color: #334155;
-                    border: 1px solid #e2e8f0; border-radius: 8px;
-                    padding: 10px;
-                }
-            """)
+            QTextEdit#logArea {{
+                background: {p['bg_input']}; color: {p['text_primary']};
+                border: 1px solid {p['border']}; border-radius: 8px;
+                padding: 10px;
+            }}
+        """)

@@ -15,6 +15,7 @@ from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtGui import QFont, QIcon
 
 from core.logging import app_logger
+from core.themes import get_current_palette, get_font, FONT_SIZE_BODY, FONT_SIZE_SMALL
 
 from ..components.chat_sidebar import CopilotSidebar
 from ..components.action_preview import ActionPreview
@@ -74,21 +75,23 @@ class CopilotMainWindow(QMainWindow):
         main_layout.addWidget(content_splitter, 1)
 
         # Apply style
-        self.setStyleSheet("""
-            QMainWindow {
-                background-color: #f9fafb;
-            }
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            QMainWindow {{
+                background-color: {p['bg_main']};
+            }}
         """)
 
     def _create_nav_panel(self) -> QWidget:
         """Create the navigation panel."""
+        p = get_current_palette()
         panel = QFrame()
         panel.setFixedWidth(60)
-        panel.setStyleSheet("""
-            QFrame {
+        panel.setStyleSheet(f"""
+            QFrame {{
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #8b5cf6, stop:1 #6366f1);
-            }
+                    stop:0 {p['accent']}, stop:1 {p['primary']});
+            }}
         """)
 
         layout = QVBoxLayout(panel)
@@ -163,12 +166,13 @@ class CopilotMainWindow(QMainWindow):
 
     def _create_right_panel(self) -> QWidget:
         """Create the right panel with tabs."""
+        p = get_current_palette()
         panel = QFrame()
-        panel.setStyleSheet("""
-            QFrame {
-                background-color: white;
-                border-left: 1px solid #e5e7eb;
-            }
+        panel.setStyleSheet(f"""
+            QFrame {{
+                background-color: {p['bg_card']};
+                border-left: 1px solid {p['border']};
+            }}
         """)
 
         layout = QVBoxLayout(panel)
@@ -178,24 +182,24 @@ class CopilotMainWindow(QMainWindow):
         # Tab widget
         self.right_tabs = QTabWidget()
         self.right_tabs.setTabPosition(QTabWidget.North)
-        self.right_tabs.setStyleSheet("""
-            QTabWidget::pane {
+        self.right_tabs.setStyleSheet(f"""
+            QTabWidget::pane {{
                 border: none;
-                background-color: white;
-            }
-            QTabBar::tab {
+                background-color: {p['bg_card']};
+            }}
+            QTabBar::tab {{
                 padding: 10px 16px;
-                background-color: #f3f4f6;
+                background-color: {p['bg_hover']};
                 border: none;
                 border-bottom: 2px solid transparent;
-            }
-            QTabBar::tab:selected {
-                background-color: white;
-                border-bottom: 2px solid #8b5cf6;
-            }
-            QTabBar::tab:hover {
-                background-color: #e5e7eb;
-            }
+            }}
+            QTabBar::tab:selected {{
+                background-color: {p['bg_card']};
+                border-bottom: 2px solid {p['accent']};
+            }}
+            QTabBar::tab:hover {{
+                background-color: {p['border']};
+            }}
         """)
 
         # Actions tab
@@ -225,22 +229,23 @@ class CopilotMainWindow(QMainWindow):
 
         # Header
         header = QHBoxLayout()
+        p = get_current_palette()
         title = QLabel("سجل المحادثات")
-        title.setStyleSheet("font-size: 16px; font-weight: bold; color: #1f2937;")
+        title.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {p['text_primary']};")
 
         clear_btn = QPushButton("مسح الكل")
-        clear_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #fee2e2;
-                color: #dc2626;
+        clear_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['danger']}20;
+                color: {p['danger']};
                 border: none;
                 border-radius: 6px;
                 padding: 6px 12px;
                 font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #fecaca;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['danger']}35;
+            }}
         """)
         clear_btn.clicked.connect(self._clear_history)
 
@@ -251,41 +256,41 @@ class CopilotMainWindow(QMainWindow):
 
         # Session list
         self.history_list = QListWidget()
-        self.history_list.setStyleSheet("""
-            QListWidget {
-                border: 1px solid #e5e7eb;
+        self.history_list.setStyleSheet(f"""
+            QListWidget {{
+                border: 1px solid {p['border']};
                 border-radius: 8px;
-                background-color: #f9fafb;
-            }
-            QListWidget::item {
+                background-color: {p['bg_main']};
+            }}
+            QListWidget::item {{
                 padding: 12px;
-                border-bottom: 1px solid #e5e7eb;
-            }
-            QListWidget::item:selected {
-                background-color: #ede9fe;
-            }
-            QListWidget::item:hover {
-                background-color: #f3f4f6;
-            }
+                border-bottom: 1px solid {p['border']};
+            }}
+            QListWidget::item:selected {{
+                background-color: {p['selection_bg']};
+            }}
+            QListWidget::item:hover {{
+                background-color: {p['bg_hover']};
+            }}
         """)
         self.history_list.itemClicked.connect(self._on_history_item_clicked)
         layout.addWidget(self.history_list, 1)
 
         # Session preview
         preview_label = QLabel("معاينة:")
-        preview_label.setStyleSheet("font-size: 13px; font-weight: bold; color: #374151;")
+        preview_label.setStyleSheet(f"font-size: 13px; font-weight: bold; color: {p['text_primary']};")
         layout.addWidget(preview_label)
 
         self.history_preview = QTextEdit()
         self.history_preview.setReadOnly(True)
         self.history_preview.setMaximumHeight(150)
-        self.history_preview.setStyleSheet("""
-            QTextEdit {
-                border: 1px solid #e5e7eb;
+        self.history_preview.setStyleSheet(f"""
+            QTextEdit {{
+                border: 1px solid {p['border']};
                 border-radius: 8px;
-                background-color: white;
+                background-color: {p['bg_card']};
                 font-size: 12px;
-            }
+            }}
         """)
         layout.addWidget(self.history_preview)
 

@@ -16,6 +16,65 @@
 
 ---
 
+## الجلسة: 9 فبراير 2026 - إعادة هيكلة كاملة لنظام الثيمات (Centralized Theme Module)
+
+### ملخص الجلسة:
+
+**تم حذف نظام الثيمات القديم بالكامل (118 ملف) وبناء موديول مركزي جديد من الصفر.**
+
+### ما تم إنجازه:
+
+1. **حذف النظام القديم:** 118 ملف (مجلدات dark/light + collectors + ملفات فردية للألوان والخطوط)
+
+2. **بناء موديول مركزي جديد:**
+   - `core/themes/theme_palettes.py` - 24 palette لون (16 داكن + 8 فاتح) مع خصائص إضافية (bg_hover, bg_tooltip, shadow_color, إلخ)
+   - `core/themes/theme_styles.py` - 10 أنماط واجهة مستقلة (Modern, Fluent, Flat, Glassmorphism, Neumorphism, Rounded, Compact, Classic, Elegant, Bold)
+   - `core/themes/theme_fonts.py` - نظام خطوط مركزي مع get_font() و font scaling
+   - `core/themes/theme_persistence.py` - حفظ واسترجاع إعدادات الثيم/الاستايل في theme_settings.json
+   - `core/themes/theme_generator.py` - محرك QSS شامل يجمع Style + Theme → stylesheet كامل (يغطي 24+ نوع widget)
+   - `core/themes/theme_manager.py` - مدير مركزي مع تطبيق على QApplication + تبديل في real-time
+   - `core/themes/__init__.py` - Public API شاملة
+
+3. **التطبيق على مستوى QApplication:**
+   - `main.py` محدّث - `apply_theme_to_app(app)` يطبق مرة واحدة وكل widget يرث تلقائياً
+   - `ui/windows/base/window_init.py` - أُزيل setStyleSheet اليدوي
+
+4. **شاشة اختيار الثيم والاستايل:**
+   - `ui/dialogs/themes/themes_dialog.py` - أُعيد كتابتها بالكامل مع تبويبين: النمط (10 خيارات) + الألوان (24 خيار)
+
+5. **تنظيف الألوان/الخطوط المُثبتة (hardcoded):**
+   - تحديث 50+ ملف لإزالة الألوان الثابتة واستخدام النظام المركزي
+   - استبدال QFont("Cairo", N) بـ get_font(FONT_SIZE_*, FONT_WEIGHT_*)
+   - استبدال hardcoded hex بـ get_current_palette()
+
+### الملفات الجديدة:
+- `core/themes/theme_palettes.py`
+- `core/themes/theme_styles.py`
+- `core/themes/theme_fonts.py`
+- `core/themes/theme_persistence.py`
+- `core/themes/theme_generator.py`
+- `core/themes/theme_manager.py`
+- `core/themes/__init__.py`
+
+### كيفية الاستخدام:
+```python
+# في main.py (مرة واحدة):
+from core.themes import apply_theme_to_app
+apply_theme_to_app(app)
+
+# تبديل في وقت التشغيل:
+from core.themes import switch_theme, switch_style
+switch_theme("tokyo_night")  # 24 خيار
+switch_style("flat")         # 10 خيارات
+
+# الوصول للألوان:
+from core.themes import get_current_palette
+p = get_current_palette()
+color = p['primary']
+```
+
+---
+
 ## الجلسة: 8 فبراير 2026 (5) - تنفيذ المحور G كاملاً (الإيميل المتقدم AI-Powered)
 
 ### ملخص الجلسة:

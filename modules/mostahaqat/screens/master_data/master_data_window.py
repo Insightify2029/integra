@@ -27,7 +27,7 @@ from ui.components.tables.enterprise import EnterpriseTableWidget
 from ui.components.notifications import toast_success, toast_error, toast_warning, toast_info
 from ui.dialogs.message import confirm, show_warning, show_error
 from core.database.queries import select_all, delete_returning_count, get_count
-from core.themes import get_current_theme
+from core.themes import get_current_palette
 from core.logging import app_logger
 
 from .master_data_dialog import MasterDataDialog
@@ -248,92 +248,47 @@ class MasterDataWindow(BaseWindow):
         status.showMessage("جاهز")
 
     def _apply_theme(self):
-        """Apply current theme to the window."""
-        theme = get_current_theme()
+        """Apply current theme using palette."""
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            QMainWindow {{ background-color: {p['bg_main']}; }}
 
-        if theme == 'dark':
-            self.setStyleSheet("""
-                QMainWindow { background-color: #0f172a; }
+            QToolBar#masterDataToolbar {{
+                background-color: {p['bg_header']};
+                border: none;
+                border-bottom: 1px solid {p['border']};
+                padding: 8px;
+                spacing: 6px;
+            }}
+            QToolBar#masterDataToolbar QToolButton {{
+                background-color: {p['bg_card']};
+                color: {p['text_primary']};
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-size: 13px;
+                font-weight: 500;
+            }}
+            QToolBar#masterDataToolbar QToolButton:hover {{
+                background-color: {p['bg_hover']};
+            }}
+            QToolBar#masterDataToolbar QToolButton:pressed {{
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
+            }}
+            QToolBar#masterDataToolbar::separator {{
+                width: 1px;
+                background-color: {p['border']};
+                margin: 0 10px;
+            }}
 
-                QToolBar#masterDataToolbar {
-                    background-color: #1e293b;
-                    border: none;
-                    border-bottom: 1px solid #334155;
-                    padding: 8px;
-                    spacing: 6px;
-                }
-                QToolBar#masterDataToolbar QToolButton {
-                    background-color: #334155;
-                    color: #f1f5f9;
-                    border: none;
-                    border-radius: 6px;
-                    padding: 8px 16px;
-                    font-size: 13px;
-                    font-family: Cairo;
-                    font-weight: 500;
-                }
-                QToolBar#masterDataToolbar QToolButton:hover {
-                    background-color: #475569;
-                }
-                QToolBar#masterDataToolbar QToolButton:pressed {
-                    background-color: #2563eb;
-                }
-                QToolBar#masterDataToolbar::separator {
-                    width: 1px;
-                    background-color: #475569;
-                    margin: 0 10px;
-                }
-
-                QStatusBar#masterDataStatusBar {
-                    background-color: #1e293b;
-                    color: #94a3b8;
-                    border-top: 1px solid #334155;
-                    padding: 5px;
-                    font-family: Cairo;
-                }
-            """)
-        else:
-            self.setStyleSheet("""
-                QMainWindow { background-color: #f8fafc; }
-
-                QToolBar#masterDataToolbar {
-                    background-color: #ffffff;
-                    border: none;
-                    border-bottom: 1px solid #e2e8f0;
-                    padding: 8px;
-                    spacing: 6px;
-                }
-                QToolBar#masterDataToolbar QToolButton {
-                    background-color: #e2e8f0;
-                    color: #1e293b;
-                    border: none;
-                    border-radius: 6px;
-                    padding: 8px 16px;
-                    font-size: 13px;
-                    font-family: Cairo;
-                    font-weight: 500;
-                }
-                QToolBar#masterDataToolbar QToolButton:hover {
-                    background-color: #cbd5e1;
-                }
-                QToolBar#masterDataToolbar QToolButton:pressed {
-                    background-color: #2563eb;
-                    color: #ffffff;
-                }
-                QToolBar#masterDataToolbar::separator {
-                    width: 1px;
-                    background-color: #e2e8f0;
-                    margin: 0 10px;
-                }
-
-                QStatusBar#masterDataStatusBar {
-                    background-color: #ffffff;
-                    color: #64748b;
-                    border-top: 1px solid #e2e8f0;
-                    padding: 5px;
-                    font-family: Cairo;
-                }
-            """)
+            QStatusBar#masterDataStatusBar {{
+                background-color: {p['bg_header']};
+                color: {p['text_secondary']};
+                border-top: 1px solid {p['border']};
+                padding: 5px;
+            }}
+        """)
 
     # ═══════════════════════════════════════════════════════════════
     # Data Operations

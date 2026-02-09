@@ -20,6 +20,7 @@ from PyQt5.QtCore import Qt, QMimeData, pyqtSignal
 from PyQt5.QtGui import QDrag, QPixmap, QPainter, QColor, QFont, QCursor
 
 from core.logging import app_logger
+from core.themes import get_current_palette
 
 
 class ElementType(Enum):
@@ -178,20 +179,22 @@ class DraggableElementButton(QToolButton):
         self.setCheckable(False)
 
         # Style
-        self.setStyleSheet("""
-            QToolButton {
-                background: #ffffff;
-                border: 1px solid #e5e7eb;
+        p = get_current_palette()
+        self._p = p
+        self.setStyleSheet(f"""
+            QToolButton {{
+                background: {p['bg_card']};
+                border: 1px solid {p['border']};
                 border-radius: 8px;
                 padding: 8px;
-            }
-            QToolButton:hover {
-                background: #f3f4f6;
-                border-color: #2563eb;
-            }
-            QToolButton:pressed {
-                background: #e5e7eb;
-            }
+            }}
+            QToolButton:hover {{
+                background: {p['bg_hover']};
+                border-color: {p['primary']};
+            }}
+            QToolButton:pressed {{
+                background: {p['border']};
+            }}
         """)
 
         # Tooltip
@@ -209,15 +212,16 @@ class DraggableElementButton(QToolButton):
         painter.setRenderHint(QPainter.Antialiasing)
 
         # Draw icon
+        p = self._p
         icon = self._definition.get("icon", "?")
         painter.setFont(QFont("Segoe UI Emoji", 20))
-        painter.setPen(QColor("#2563eb"))
+        painter.setPen(QColor(p['primary']))
         painter.drawText(self.rect().adjusted(0, -10, 0, 0), Qt.AlignHCenter | Qt.AlignVCenter, icon)
 
         # Draw label
         name = self._definition.get("name_ar", "")
         painter.setFont(QFont("Cairo", 9))
-        painter.setPen(QColor("#374151"))
+        painter.setPen(QColor(p['text_primary']))
         painter.drawText(self.rect().adjusted(0, 25, 0, 0), Qt.AlignHCenter | Qt.AlignBottom, name)
 
     def mousePressEvent(self, event) -> None:
@@ -249,8 +253,9 @@ class DraggableElementButton(QToolButton):
             painter.setRenderHint(QPainter.Antialiasing)
 
             # Draw background
-            painter.setBrush(QColor("#f0f9ff"))
-            painter.setPen(QColor("#2563eb"))
+            p = self._p
+            painter.setBrush(QColor(p['primary_light']))
+            painter.setPen(QColor(p['primary']))
             painter.drawRoundedRect(2, 2, 66, 66, 8, 8)
 
             # Draw icon
@@ -300,15 +305,16 @@ class CategorySection(QFrame):
         category = CATEGORIES.get(self.category_id, {})
 
         # Expand/collapse button
+        p = get_current_palette()
         self._toggle_btn = QPushButton("▼")
         self._toggle_btn.setFixedSize(20, 20)
-        self._toggle_btn.setStyleSheet("""
-            QPushButton {
+        self._toggle_btn.setStyleSheet(f"""
+            QPushButton {{
                 background: transparent;
                 border: none;
-                color: #64748b;
+                color: {p['text_muted']};
                 font-size: 10px;
-            }
+            }}
         """)
         self._toggle_btn.clicked.connect(self._toggle)
         header_layout.addWidget(self._toggle_btn)
@@ -318,7 +324,7 @@ class CategorySection(QFrame):
         header_layout.addWidget(icon_label)
 
         name_label = QLabel(category.get("name_ar", ""))
-        name_label.setStyleSheet("font-weight: bold; color: #374151;")
+        name_label.setStyleSheet(f"font-weight: bold; color: {p['text_primary']};")
         header_layout.addWidget(name_label)
 
         header_layout.addStretch()
@@ -345,12 +351,12 @@ class CategorySection(QFrame):
         layout.addWidget(self._grid_widget)
 
         # Style
-        self.setStyleSheet("""
-            CategorySection {
-                background: #f9fafb;
-                border: 1px solid #e5e7eb;
+        self.setStyleSheet(f"""
+            CategorySection {{
+                background: {p['bg_main']};
+                border: 1px solid {p['border']};
                 border-radius: 8px;
-            }
+            }}
         """)
 
     def _toggle(self) -> None:
@@ -383,11 +389,12 @@ class ElementPalette(QWidget):
         layout.setSpacing(10)
 
         # Title
+        p = get_current_palette()
         title = QLabel("عناصر التقرير")
-        title.setStyleSheet("""
+        title.setStyleSheet(f"""
             font-size: 14px;
             font-weight: bold;
-            color: #1f2937;
+            color: {p['text_primary']};
             padding: 5px;
         """)
         layout.addWidget(title)
@@ -431,11 +438,11 @@ class ElementPalette(QWidget):
         layout.addWidget(scroll)
 
         # Style
-        self.setStyleSheet("""
-            ElementPalette {
-                background: #ffffff;
-                border-left: 1px solid #e5e7eb;
-            }
+        self.setStyleSheet(f"""
+            ElementPalette {{
+                background: {p['bg_card']};
+                border-left: 1px solid {p['border']};
+            }}
         """)
 
         self.setMinimumWidth(180)

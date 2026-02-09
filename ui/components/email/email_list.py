@@ -11,11 +11,11 @@ from PyQt5.QtWidgets import (
     QPushButton, QMenu, QAction, QAbstractItemView
 )
 from PyQt5.QtCore import Qt, pyqtSignal, QSize
-from PyQt5.QtGui import QFont, QColor, QIcon
+from PyQt5.QtGui import QColor, QIcon
 
 from core.email import Email, EmailImportance
 from core.logging import app_logger
-from core.themes import get_current_theme
+from core.themes import get_current_palette
 
 
 class EmailListItem(QFrame):
@@ -30,7 +30,7 @@ class EmailListItem(QFrame):
 
     def _setup_ui(self):
         """Setup the item UI."""
-        self._is_dark = get_current_theme() == 'dark'
+        self._palette = get_current_palette()
         self.setFrameShape(QFrame.NoFrame)
         self.setCursor(Qt.PointingHandCursor)
 
@@ -44,23 +44,20 @@ class EmailListItem(QFrame):
         top_row.setSpacing(8)
 
         # Unread indicator
-        dot_color = "#3b82f6" if self._is_dark else "#0078d4"
         self.unread_dot = QLabel("●" if not self.email.is_read else "")
-        self.unread_dot.setStyleSheet(f"color: {dot_color}; font-size: 8px;")
+        self.unread_dot.setStyleSheet(f"color: {self._palette['primary']}; font-size: 8px;")
         self.unread_dot.setFixedWidth(12)
 
         # Sender
-        text_color = "#f1f5f9" if self._is_dark else "#333"
         self.sender_label = QLabel(self.email.sender_name or self.email.sender_email)
         self.sender_label.setStyleSheet(
             f"font-weight: {'bold' if not self.email.is_read else 'normal'}; "
-            f"font-size: 13px; color: {text_color};"
+            f"font-size: 13px; color: {self._palette['text_primary']};"
         )
 
         # Date
-        date_color = "#64748b" if self._is_dark else "#888"
         self.date_label = QLabel(self.email.display_date)
-        self.date_label.setStyleSheet(f"font-size: 11px; color: {date_color};")
+        self.date_label.setStyleSheet(f"font-size: 11px; color: {self._palette['text_muted']};")
 
         # Icons
         icons = []
@@ -80,18 +77,16 @@ class EmailListItem(QFrame):
         top_row.addWidget(self.date_label)
 
         # Subject row
-        subj_color = "#f1f5f9" if self._is_dark else "#333"
         self.subject_label = QLabel(self.email.subject)
         self.subject_label.setStyleSheet(
             f"font-weight: {'600' if not self.email.is_read else 'normal'}; "
-            f"font-size: 12px; color: {subj_color};"
+            f"font-size: 12px; color: {self._palette['text_primary']};"
         )
         self.subject_label.setWordWrap(False)
 
         # Preview row
-        prev_color = "#94a3b8" if self._is_dark else "#666"
         self.preview_label = QLabel(self.email.preview)
-        self.preview_label.setStyleSheet(f"font-size: 11px; color: {prev_color};")
+        self.preview_label.setStyleSheet(f"font-size: 11px; color: {self._palette['text_secondary']};")
         self.preview_label.setWordWrap(False)
 
         # AI info row (if analyzed)
@@ -102,9 +97,8 @@ class EmailListItem(QFrame):
                 ai_text.append(f"📁 {self.email.ai_category}")
             if self.email.ai_priority:
                 ai_text.append(f"⚡ {self.email.ai_priority}")
-            ai_label_color = "#93c5fd" if self._is_dark else "#0078d4"
             self.ai_label.setText(" | ".join(ai_text))
-            self.ai_label.setStyleSheet(f"font-size: 10px; color: {ai_label_color};")
+            self.ai_label.setStyleSheet(f"font-size: 10px; color: {self._palette['info']};")
         else:
             self.ai_label.hide()
 
@@ -118,30 +112,29 @@ class EmailListItem(QFrame):
 
     def _update_style(self):
         """Update item style based on state."""
-        is_dark = getattr(self, '_is_dark', False)
+        p = getattr(self, '_palette', get_current_palette())
         if not self.email.is_read:
-            bg_color = "#1e3a5f" if is_dark else "#f0f7ff"
+            bg_color = p['primary_light']
         else:
-            bg_color = "#0f172a" if is_dark else "#ffffff"
+            bg_color = p['bg_main']
 
-        border_color = "#334155" if is_dark else "#e8e8e8"
-        hover_color = "#1e293b" if is_dark else "#e8f4ff"
         self.setStyleSheet(f"""
             EmailListItem {{
                 background-color: {bg_color};
-                border-bottom: 1px solid {border_color};
+                border-bottom: 1px solid {p['border']};
             }}
             EmailListItem:hover {{
-                background-color: {hover_color};
+                background-color: {p['bg_hover']};
             }}
         """)
 
     def mark_as_read(self):
         """Mark email as read and update UI."""
         self.email.is_read = True
+        p = getattr(self, '_palette', get_current_palette())
         self.unread_dot.setText("")
-        self.sender_label.setStyleSheet("font-weight: normal; font-size: 13px; color: #333;")
-        self.subject_label.setStyleSheet("font-weight: normal; font-size: 12px; color: #333;")
+        self.sender_label.setStyleSheet(f"font-weight: normal; font-size: 13px; color: {p['text_primary']};")
+        self.subject_label.setStyleSheet(f"font-weight: normal; font-size: 12px; color: {p['text_primary']};")
         self._update_style()
 
 
@@ -163,11 +156,12 @@ class EmailListWidget(QWidget):
         super().__init__(parent)
         self._emails: List[Email] = []
         self._items: dict = {}  # entry_id -> QListWidgetItem
-        self._is_dark = get_current_theme() == 'dark'
+        self._palette = get_current_palette()
         self._setup_ui()
 
     def _setup_ui(self):
         """Setup the widget UI."""
+        p = self._palette
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
@@ -178,27 +172,24 @@ class EmailListWidget(QWidget):
 
         # Search bar
         search_frame = QFrame()
-        sf_bg = "#1e293b" if self._is_dark else "#f8f8f8"
-        sf_border = "#334155" if self._is_dark else "#ddd"
-        search_frame.setStyleSheet(f"background-color: {sf_bg}; border-bottom: 1px solid {sf_border};")
+        search_frame.setStyleSheet(
+            f"background-color: {p['bg_card']}; border-bottom: 1px solid {p['border']};"
+        )
         search_layout = QHBoxLayout(search_frame)
         search_layout.setContentsMargins(8, 6, 8, 6)
 
-        si_bg = "#0f172a" if self._is_dark else "white"
-        si_border = "#475569" if self._is_dark else "#ddd"
-        si_color = "#f1f5f9" if self._is_dark else "#333"
         self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("🔍 بحث في الإيميلات...")
+        self.search_input.setPlaceholderText("بحث في الإيميلات...")
         self.search_input.setStyleSheet(f"""
             QLineEdit {{
-                border: 1px solid {si_border};
+                border: 1px solid {p['border_light']};
                 border-radius: 4px;
                 padding: 6px 10px;
-                background: {si_bg};
-                color: {si_color};
+                background: {p['bg_input']};
+                color: {p['text_primary']};
             }}
             QLineEdit:focus {{
-                border-color: #2563eb;
+                border-color: {p['primary']};
             }}
         """)
         self.search_input.textChanged.connect(self._on_search)
@@ -207,22 +198,20 @@ class EmailListWidget(QWidget):
         layout.addWidget(search_frame)
 
         # Email list
-        list_bg = "#0f172a" if self._is_dark else "white"
-        list_sel = "#1e3a5f" if self._is_dark else "#e8f4ff"
         self.list_widget = QListWidget()
         self.list_widget.setSelectionMode(QAbstractItemView.SingleSelection)
         self.list_widget.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.list_widget.setStyleSheet(f"""
             QListWidget {{
                 border: none;
-                background-color: {list_bg};
+                background-color: {p['bg_main']};
             }}
             QListWidget::item {{
                 padding: 0;
                 border: none;
             }}
             QListWidget::item:selected {{
-                background-color: {list_sel};
+                background-color: {p['primary_light']};
             }}
         """)
         self.list_widget.itemClicked.connect(self._on_item_clicked)
@@ -233,18 +222,18 @@ class EmailListWidget(QWidget):
         layout.addWidget(self.list_widget)
 
         # Status bar
-        sl_color = "#94a3b8" if self._is_dark else "#666"
-        sl_bg = "#1e293b" if self._is_dark else "#f8f8f8"
         self.status_label = QLabel("لا توجد رسائل")
-        self.status_label.setStyleSheet(f"padding: 8px; color: {sl_color}; font-size: 11px; background: {sl_bg};")
+        self.status_label.setStyleSheet(
+            f"padding: 8px; color: {p['text_secondary']}; font-size: 11px;"
+            f" background: {p['bg_card']};"
+        )
         layout.addWidget(self.status_label)
 
     def _create_toolbar(self) -> QWidget:
         """Create the toolbar."""
+        p = self._palette
         toolbar = QFrame()
-        tb_bg = "#1e293b" if self._is_dark else "#f0f0f0"
-        tb_border = "#334155" if self._is_dark else "#ddd"
-        toolbar.setStyleSheet(f"background-color: {tb_bg}; border-bottom: 1px solid {tb_border};")
+        toolbar.setStyleSheet(f"background-color: {p['bg_card']}; border-bottom: 1px solid {p['border']};")
         layout = QHBoxLayout(toolbar)
         layout.setContentsMargins(8, 4, 8, 4)
         layout.setSpacing(4)
@@ -280,32 +269,29 @@ class EmailListWidget(QWidget):
 
     def _button_style(self, active: bool = False) -> str:
         """Get button style (theme-aware)."""
-        is_dark = getattr(self, '_is_dark', False)
+        p = getattr(self, '_palette', get_current_palette())
         if active:
-            return """
-                QPushButton {
-                    background-color: #2563eb;
-                    color: white;
+            return f"""
+                QPushButton {{
+                    background-color: {p['primary']};
+                    color: {p['text_on_primary']};
                     border: none;
                     border-radius: 4px;
                     padding: 4px 12px;
                     font-size: 11px;
-                }
+                }}
             """
-        border = "#475569" if is_dark else "#ccc"
-        color = "#f1f5f9" if is_dark else "#333"
-        hover = "#334155" if is_dark else "#e8e8e8"
         return f"""
             QPushButton {{
                 background-color: transparent;
-                border: 1px solid {border};
+                border: 1px solid {p['border_light']};
                 border-radius: 4px;
                 padding: 4px 12px;
                 font-size: 11px;
-                color: {color};
+                color: {p['text_primary']};
             }}
             QPushButton:hover {{
-                background-color: {hover};
+                background-color: {p['bg_hover']};
             }}
         """
 

@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (
     QMenu, QSizePolicy, QGraphicsDropShadowEffect
 )
 from PyQt5.QtCore import Qt, QSize, QTimer
-from PyQt5.QtGui import QFont, QColor, QCursor, QPixmap
+from PyQt5.QtGui import QColor, QCursor, QPixmap
 
 import os
 
@@ -23,7 +23,13 @@ from .launcher_statusbar import LauncherStatusBar
 from core.config.app import APP_VERSION
 from core.config.modules import get_enabled_modules
 from core.database.connection import connect, disconnect
-from core.themes import get_stylesheet, get_current_theme
+from core.themes import (
+    get_stylesheet, get_current_palette, is_dark_theme,
+    get_font, FONT_SIZE_TINY, FONT_SIZE_SMALL, FONT_SIZE_BODY,
+    FONT_SIZE_SUBTITLE, FONT_SIZE_TITLE, FONT_SIZE_HEADING,
+    FONT_SIZE_DISPLAY, FONT_SIZE_MODULE_ICON,
+    FONT_WEIGHT_BOLD, FONT_FAMILY_ARABIC,
+)
 from core.utils.icons import icon as qta_icon, QTAWESOME_AVAILABLE
 from ui.components.notifications import toast_info
 
@@ -118,11 +124,13 @@ class LauncherWindow(BaseWindow):
         root.addWidget(self._build_top_nav())
 
         # 2) Thin accent line
+        palette = get_current_palette()
         accent = QFrame()
         accent.setFixedHeight(2)
         accent.setStyleSheet(
-            "background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-            " stop:0 transparent, stop:0.2 #2563eb, stop:0.8 #3b82f6, stop:1 transparent);"
+            f"background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
+            f" stop:0 transparent, stop:0.2 {palette['primary']},"
+            f" stop:0.8 {palette['primary_hover']}, stop:1 transparent);"
         )
         root.addWidget(accent)
 
@@ -148,8 +156,8 @@ class LauncherWindow(BaseWindow):
             logo_label.setPixmap(scaled)
         else:
             logo_label.setText("INTEGRA")
-            logo_label.setFont(QFont("Cairo", 48, QFont.Bold))
-            logo_label.setStyleSheet("color: #2563eb;")
+            logo_label.setFont(get_font(FONT_SIZE_DISPLAY + 20, FONT_WEIGHT_BOLD))
+            logo_label.setStyleSheet(f"color: {palette['primary']};")
         logo_label.setStyleSheet("background: transparent;")
         center_layout.addWidget(logo_label)
 
@@ -163,11 +171,12 @@ class LauncherWindow(BaseWindow):
 
     def _build_top_nav(self):
         """Build the professional top navigation bar."""
-        is_dark = get_current_theme() == 'dark'
-        bg = "#0b1222" if is_dark else "#ffffff"
-        border_c = "#1e293b" if is_dark else "#e2e8f0"
-        text_c = "#e2e8f0" if is_dark else "#1e293b"
-        muted_c = "#94a3b8" if is_dark else "#64748b"
+        palette = get_current_palette()
+        bg = palette['bg_sidebar']
+        border_c = palette['border']
+        text_c = palette['text_primary']
+        muted_c = palette['text_muted']
+        hover_bg = palette['bg_hover']
 
         nav = QWidget()
         nav.setFixedHeight(52)
@@ -185,10 +194,10 @@ class LauncherWindow(BaseWindow):
 
         # ── Brand / Logo ──
         brand = QLabel("INTEGRA")
-        brand.setFont(QFont("Cairo", 18, QFont.Bold))
+        brand.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
         brand.setStyleSheet(
-            "color: #2563eb; letter-spacing: 4px;"
-            " padding: 0 20px 0 4px; background: transparent;"
+            f"color: {palette['primary']}; letter-spacing: 4px;"
+            f" padding: 0 20px 0 4px; background: transparent;"
         )
         layout.addWidget(brand)
 
@@ -209,21 +218,21 @@ class LauncherWindow(BaseWindow):
                 border: none;
                 padding: 8px 14px;
                 border-radius: 6px;
-                font-family: Cairo;
-                font-size: 11pt;
+                font-family: {FONT_FAMILY_ARABIC};
+                font-size: {FONT_SIZE_SMALL}pt;
             }}
             QToolButton:hover {{
-                background: {'#1e293b' if is_dark else '#f1f5f9'};
+                background: {hover_bg};
             }}
             QToolButton::menu-indicator {{ image: none; }}
         """
 
-        menu_qss = self._get_menu_stylesheet(is_dark)
+        menu_qss = self._get_menu_stylesheet()
 
         for group in MODULE_GROUPS:
             btn = QToolButton()
             btn.setText(f"  {group['name_ar']}  ")
-            btn.setFont(QFont("Cairo", 11))
+            btn.setFont(get_font(FONT_SIZE_SMALL))
             btn.setCursor(QCursor(Qt.PointingHandCursor))
             btn.setPopupMode(QToolButton.InstantPopup)
             btn.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
@@ -267,7 +276,7 @@ class LauncherWindow(BaseWindow):
                 border-radius: 6px;
             }}
             QToolButton:hover {{
-                background: {'#1e293b' if is_dark else '#f1f5f9'};
+                background: {hover_bg};
             }}
         """
 
@@ -297,65 +306,39 @@ class LauncherWindow(BaseWindow):
 
         return nav
 
-    def _get_menu_stylesheet(self, is_dark: bool) -> str:
-        """Get dropdown menu stylesheet."""
-        if is_dark:
-            return """
-                QMenu {
-                    background: #0f1b2d;
-                    border: 1px solid #1e3a5f;
-                    border-radius: 8px;
-                    padding: 6px;
-                }
-                QMenu::item {
-                    color: #e2e8f0;
-                    padding: 10px 24px 10px 12px;
-                    border-radius: 6px;
-                    font-family: Cairo;
-                    font-size: 12pt;
-                }
-                QMenu::item:selected {
-                    background: #1e293b;
-                    color: #60a5fa;
-                }
-                QMenu::separator {
-                    height: 1px;
-                    background: #1e293b;
-                    margin: 4px 8px;
-                }
-            """
-        return """
-            QMenu {
-                background: #ffffff;
-                border: 1px solid #e2e8f0;
+    def _get_menu_stylesheet(self) -> str:
+        """Get dropdown menu stylesheet using palette colors."""
+        palette = get_current_palette()
+        return f"""
+            QMenu {{
+                background: {palette['bg_card']};
+                border: 1px solid {palette['border']};
                 border-radius: 8px;
                 padding: 6px;
-            }
-            QMenu::item {
-                color: #1e293b;
+            }}
+            QMenu::item {{
+                color: {palette['text_primary']};
                 padding: 10px 24px 10px 12px;
                 border-radius: 6px;
-                font-family: Cairo;
-                font-size: 12pt;
-            }
-            QMenu::item:selected {
-                background: #f1f5f9;
-                color: #2563eb;
-            }
-            QMenu::separator {
+                font-family: {FONT_FAMILY_ARABIC};
+                font-size: {FONT_SIZE_SUBTITLE - 3}pt;
+            }}
+            QMenu::item:selected {{
+                background: {palette['bg_hover']};
+                color: {palette['primary']};
+            }}
+            QMenu::separator {{
                 height: 1px;
-                background: #e2e8f0;
+                background: {palette['border']};
                 margin: 4px 8px;
-            }
+            }}
         """
 
     # ─── Welcome Section ─────────────────────────────────────
 
     def _build_welcome_section(self, parent_layout):
         """Build the welcome header area."""
-        is_dark = get_current_theme() == 'dark'
-        text_c = "#f1f5f9" if is_dark else "#1e293b"
-        muted_c = "#94a3b8" if is_dark else "#64748b"
+        palette = get_current_palette()
 
         section = QWidget()
         lay = QVBoxLayout(section)
@@ -363,15 +346,15 @@ class LauncherWindow(BaseWindow):
         lay.setSpacing(6)
 
         title = QLabel("مرحباً بك في INTEGRA")
-        title.setFont(QFont("Cairo", 22, QFont.Bold))
-        title.setStyleSheet(f"color: {text_c}; background: transparent;")
+        title.setFont(get_font(FONT_SIZE_HEADING, FONT_WEIGHT_BOLD))
+        title.setStyleSheet(f"color: {palette['text_primary']}; background: transparent;")
         lay.addWidget(title)
 
         subtitle = QLabel(
             "اختر أحد الموديولات للبدء، أو استخدم القوائم في الأعلى للتنقل السريع"
         )
-        subtitle.setFont(QFont("Cairo", 12))
-        subtitle.setStyleSheet(f"color: {muted_c}; background: transparent;")
+        subtitle.setFont(get_font(FONT_SIZE_SUBTITLE - 3))
+        subtitle.setStyleSheet(f"color: {palette['text_muted']}; background: transparent;")
         lay.addWidget(subtitle)
 
         parent_layout.addWidget(section)
@@ -380,8 +363,6 @@ class LauncherWindow(BaseWindow):
 
     def _build_module_grid(self, parent_layout):
         """Build module cards grid grouped by category."""
-        is_dark = get_current_theme() == 'dark'
-
         for group in MODULE_GROUPS:
             group_mods = [
                 self._modules_map[mid]
@@ -393,7 +374,7 @@ class LauncherWindow(BaseWindow):
 
             # Group header
             header = QLabel(f"  {group['name_ar']}")
-            header.setFont(QFont("Cairo", 14, QFont.Bold))
+            header.setFont(get_font(FONT_SIZE_SUBTITLE - 1, FONT_WEIGHT_BOLD))
             header.setStyleSheet(
                 f"color: {group['color']}; background: transparent; padding-top: 8px;"
             )
@@ -432,12 +413,12 @@ class LauncherWindow(BaseWindow):
 
     def _create_module_card(self, mod: dict, group_color: str) -> QFrame:
         """Create a single professional module card."""
-        is_dark = get_current_theme() == 'dark'
-        card_bg = "#111c2e" if is_dark else "#ffffff"
-        card_hover = "#182642" if is_dark else "#f8fafc"
-        text_c = "#e2e8f0" if is_dark else "#1e293b"
-        muted_c = "#64748b" if is_dark else "#94a3b8"
-        border_c = "#1e293b" if is_dark else "#e2e8f0"
+        palette = get_current_palette()
+        card_bg = palette['bg_card']
+        card_hover = palette['bg_hover']
+        text_c = palette['text_primary']
+        muted_c = palette['text_muted']
+        border_c = palette['border']
         accent = mod.get('color', group_color)
 
         card = QFrame()
@@ -463,7 +444,7 @@ class LauncherWindow(BaseWindow):
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(16)
         shadow.setOffset(0, 2)
-        shadow.setColor(QColor(0, 0, 0, 40 if is_dark else 20))
+        shadow.setColor(QColor(0, 0, 0, 40 if palette['is_dark'] else 20))
         card.setGraphicsEffect(shadow)
 
         layout = QVBoxLayout(card)
@@ -480,13 +461,13 @@ class LauncherWindow(BaseWindow):
             icon_label.setPixmap(pixmap)
         else:
             icon_label.setText(mod.get('icon', ''))
-            icon_label.setFont(QFont("Cairo", 28))
+            icon_label.setFont(get_font(FONT_SIZE_DISPLAY))
         icon_label.setFixedHeight(42)
         layout.addWidget(icon_label)
 
         # Arabic name
         name_ar = QLabel(mod['name_ar'])
-        name_ar.setFont(QFont("Cairo", 13, QFont.Bold))
+        name_ar.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
         name_ar.setAlignment(Qt.AlignCenter)
         name_ar.setStyleSheet(f"color: {text_c};")
         name_ar.setWordWrap(True)
@@ -494,7 +475,7 @@ class LauncherWindow(BaseWindow):
 
         # English name
         name_en = QLabel(mod['name_en'])
-        name_en.setFont(QFont("Cairo", 9))
+        name_en.setFont(get_font(FONT_SIZE_TINY))
         name_en.setAlignment(Qt.AlignCenter)
         name_en.setStyleSheet(f"color: {muted_c};")
         layout.addWidget(name_en)

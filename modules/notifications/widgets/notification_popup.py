@@ -16,6 +16,7 @@ from PyQt5.QtCore import Qt, pyqtSignal, QSize
 from PyQt5.QtGui import QFont, QCursor
 
 from core.logging import app_logger
+from core.themes import get_current_palette, get_font, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_WEIGHT_BOLD
 
 
 class NotificationPopup(QFrame):
@@ -38,15 +39,16 @@ class NotificationPopup(QFrame):
 
     def _setup_ui(self):
         """إعداد الواجهة"""
+        p = get_current_palette()
         self.setFixedWidth(350)
         self.setMaximumHeight(450)
 
-        self.setStyleSheet("""
-            QFrame {
-                background-color: white;
-                border: 1px solid #ddd;
+        self.setStyleSheet(f"""
+            QFrame {{
+                background-color: {p['bg_card']};
+                border: 1px solid {p['border']};
                 border-radius: 8px;
-            }
+            }}
         """)
 
         layout = QVBoxLayout(self)
@@ -61,11 +63,11 @@ class NotificationPopup(QFrame):
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.scroll_area.setStyleSheet("""
-            QScrollArea {
+        self.scroll_area.setStyleSheet(f"""
+            QScrollArea {{
                 border: none;
-                background-color: white;
-            }
+                background-color: {p['bg_card']};
+            }}
         """)
 
         self.notifications_container = QWidget()
@@ -83,14 +85,15 @@ class NotificationPopup(QFrame):
 
     def _create_header(self) -> QWidget:
         """إنشاء رأس القائمة"""
+        p = get_current_palette()
         header = QFrame()
-        header.setStyleSheet("""
-            QFrame {
-                background-color: #f8f9fa;
-                border-bottom: 1px solid #eee;
+        header.setStyleSheet(f"""
+            QFrame {{
+                background-color: {p['bg_main']};
+                border-bottom: 1px solid {p['border']};
                 border-top-left-radius: 8px;
                 border-top-right-radius: 8px;
-            }
+            }}
         """)
 
         layout = QHBoxLayout(header)
@@ -98,8 +101,8 @@ class NotificationPopup(QFrame):
 
         # العنوان
         title = QLabel("الإشعارات")
-        title.setFont(QFont("Cairo", 12, QFont.Bold))
-        title.setStyleSheet("color: #333; border: none;")
+        title.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
+        title.setStyleSheet(f"color: {p['text_primary']}; border: none;")
         layout.addWidget(title)
 
         layout.addStretch()
@@ -107,18 +110,18 @@ class NotificationPopup(QFrame):
         # زر تحديد الكل كمقروء
         mark_all_btn = QPushButton("تحديد الكل كمقروء")
         mark_all_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        mark_all_btn.setFont(QFont("Cairo", 9))
-        mark_all_btn.setStyleSheet("""
-            QPushButton {
+        mark_all_btn.setFont(get_font(FONT_SIZE_SMALL))
+        mark_all_btn.setStyleSheet(f"""
+            QPushButton {{
                 background-color: transparent;
-                color: #3498db;
+                color: {p['primary']};
                 border: none;
                 padding: 4px 8px;
-            }
-            QPushButton:hover {
-                color: #2980b9;
+            }}
+            QPushButton:hover {{
+                color: {p['primary_hover']};
                 text-decoration: underline;
-            }
+            }}
         """)
         mark_all_btn.clicked.connect(self._mark_all_read)
         layout.addWidget(mark_all_btn)
@@ -127,14 +130,15 @@ class NotificationPopup(QFrame):
 
     def _create_footer(self) -> QWidget:
         """إنشاء ذيل القائمة"""
+        p = get_current_palette()
         footer = QFrame()
-        footer.setStyleSheet("""
-            QFrame {
-                background-color: #f8f9fa;
-                border-top: 1px solid #eee;
+        footer.setStyleSheet(f"""
+            QFrame {{
+                background-color: {p['bg_main']};
+                border-top: 1px solid {p['border']};
                 border-bottom-left-radius: 8px;
                 border-bottom-right-radius: 8px;
-            }
+            }}
         """)
 
         layout = QHBoxLayout(footer)
@@ -143,18 +147,18 @@ class NotificationPopup(QFrame):
         # زر عرض الكل
         view_all_btn = QPushButton("عرض كل الإشعارات")
         view_all_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        view_all_btn.setFont(QFont("Cairo", 10))
-        view_all_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #3498db;
-                color: white;
+        view_all_btn.setFont(get_font(FONT_SIZE_BODY))
+        view_all_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 4px;
                 padding: 8px 16px;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['primary_hover']};
+            }}
         """)
         view_all_btn.clicked.connect(self._on_view_all)
         layout.addWidget(view_all_btn, 1)
@@ -201,17 +205,19 @@ class NotificationPopup(QFrame):
 
     def _show_empty_state(self):
         """عرض حالة الفراغ"""
+        p = get_current_palette()
         empty_label = QLabel("لا توجد إشعارات")
-        empty_label.setFont(QFont("Cairo", 11))
-        empty_label.setStyleSheet("color: #888; padding: 20px;")
+        empty_label.setFont(get_font(FONT_SIZE_BODY))
+        empty_label.setStyleSheet(f"color: {p['text_muted']}; padding: 20px;")
         empty_label.setAlignment(Qt.AlignCenter)
         self.notifications_layout.insertWidget(0, empty_label)
 
     def _show_error_state(self):
         """عرض حالة الخطأ"""
+        p = get_current_palette()
         error_label = QLabel("حدث خطأ في تحميل الإشعارات")
-        error_label.setFont(QFont("Cairo", 10))
-        error_label.setStyleSheet("color: #e74c3c; padding: 20px;")
+        error_label.setFont(get_font(FONT_SIZE_BODY))
+        error_label.setStyleSheet(f"color: {p['danger']}; padding: 20px;")
         error_label.setAlignment(Qt.AlignCenter)
         self.notifications_layout.insertWidget(0, error_label)
 

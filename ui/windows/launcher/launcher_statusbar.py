@@ -9,6 +9,7 @@ from PyQt5.QtCore import QTimer, Qt
 
 from core.config.app import APP_VERSION
 from core.database.connection import is_connected
+from core.themes import get_current_palette
 from core.utils.icons import icon
 
 
@@ -61,15 +62,16 @@ class LauncherStatusBar(QStatusBar):
 
     def _update_connection_status(self):
         """Update connection status display."""
+        palette = get_current_palette()
         if is_connected():
             self._conn_icon.setPixmap(
-                icon('fa5s.check-circle', color='#10b981').pixmap(14, 14)
+                icon('fa5s.check-circle', color=palette['success']).pixmap(14, 14)
             )
             self._conn_text.setText("متصل")
-            self._conn_text.setStyleSheet("color: #10b981; font-weight: bold;")
+            self._conn_text.setStyleSheet(f"color: {palette['success']}; font-weight: bold;")
         else:
             self._conn_icon.setPixmap(
-                icon('fa5s.times-circle', color='#ef4444').pixmap(14, 14)
+                icon('fa5s.times-circle', color=palette['danger']).pixmap(14, 14)
             )
             self._conn_text.setText("غير متصل")
-            self._conn_text.setStyleSheet("color: #ef4444; font-weight: bold;")
+            self._conn_text.setStyleSheet(f"color: {palette['danger']}; font-weight: bold;")

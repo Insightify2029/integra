@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 
+from core.themes import get_current_palette, get_font, FONT_SIZE_DISPLAY, FONT_SIZE_BODY, FONT_WEIGHT_BOLD
 from ui.windows.base import BaseWindow
 from ui.components.notifications import toast_info
 
@@ -195,33 +196,34 @@ class MostahaqatWindow(BaseWindow):
         """Setup main toolbar with quick actions."""
         toolbar = QToolBar("الأدوات الرئيسية")
         toolbar.setMovable(False)
-        toolbar.setStyleSheet("""
-            QToolBar {
-                background-color: #1e293b;
+        p = get_current_palette()
+        toolbar.setStyleSheet(f"""
+            QToolBar {{
+                background-color: {p['bg_header']};
                 border: none;
                 padding: 8px;
                 spacing: 5px;
-            }
-            QToolBar QToolButton {
-                background-color: #334155;
-                color: #f1f5f9;
+            }}
+            QToolBar QToolButton {{
+                background-color: {p['bg_card']};
+                color: {p['text_primary']};
                 border: none;
                 border-radius: 6px;
                 padding: 8px 16px;
                 font-size: 13px;
                 font-weight: 500;
-            }
-            QToolBar QToolButton:hover {
-                background-color: #475569;
-            }
-            QToolBar QToolButton:pressed {
-                background-color: #2563eb;
-            }
-            QToolBar::separator {
+            }}
+            QToolBar QToolButton:hover {{
+                background-color: {p['bg_hover']};
+            }}
+            QToolBar QToolButton:pressed {{
+                background-color: {p['primary']};
+            }}
+            QToolBar::separator {{
                 width: 1px;
-                background-color: #475569;
+                background-color: {p['border']};
                 margin: 0 10px;
-            }
+            }}
         """)
         
         # Quick actions
@@ -279,42 +281,44 @@ class MostahaqatWindow(BaseWindow):
     
     def _create_welcome_screen(self) -> QWidget:
         """Create welcome screen widget."""
+        p = get_current_palette()
         workspace = QFrame()
-        workspace.setStyleSheet("""
-            QFrame {
-                background-color: #0f172a;
-            }
+        workspace.setStyleSheet(f"""
+            QFrame {{
+                background-color: {p['bg_main']};
+            }}
         """)
-        
+
         ws_layout = QVBoxLayout(workspace)
         ws_layout.setAlignment(Qt.AlignCenter)
-        
+
         # Title
         title = QLabel("مستحقات العاملين")
-        title.setFont(QFont("Cairo", 36, QFont.Bold))
-        title.setStyleSheet("color: #38bdf8; background: transparent;")
+        title.setFont(get_font(FONT_SIZE_DISPLAY, FONT_WEIGHT_BOLD))
+        title.setStyleSheet(f"color: {p['accent']}; background: transparent;")
         title.setAlignment(Qt.AlignCenter)
         ws_layout.addWidget(title)
-        
+
         # Subtitle
         subtitle = QLabel("اختر من القائمة أو شريط الأدوات للبدء")
-        subtitle.setFont(QFont("Cairo", 14))
-        subtitle.setStyleSheet("color: #64748b; background: transparent;")
+        subtitle.setFont(get_font(FONT_SIZE_BODY))
+        subtitle.setStyleSheet(f"color: {p['text_muted']}; background: transparent;")
         subtitle.setAlignment(Qt.AlignCenter)
         ws_layout.addWidget(subtitle)
-        
+
         return workspace
     
     def _setup_statusbar(self):
         """Setup status bar."""
+        p = get_current_palette()
         status = self.statusBar()
-        status.setStyleSheet("""
-            QStatusBar {
-                background-color: #1e293b;
-                color: #94a3b8;
-                border-top: 1px solid #334155;
+        status.setStyleSheet(f"""
+            QStatusBar {{
+                background-color: {p['bg_header']};
+                color: {p['text_secondary']};
+                border-top: 1px solid {p['border']};
                 padding: 5px;
-            }
+            }}
         """)
         status.showMessage("جاهز")
     

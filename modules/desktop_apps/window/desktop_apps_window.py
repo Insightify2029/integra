@@ -26,192 +26,7 @@ from PyQt5.QtCore import Qt, QTimer, pyqtSignal
 
 from ui.windows.base import BaseWindow
 from core.logging import app_logger
-
-
-# ═══════════════════════════════════════════════════════
-# Styles
-# ═══════════════════════════════════════════════════════
-
-ACCENT_COLOR = "#7c3aed"  # Violet
-
-SECTION_STYLE = f"""
-    QGroupBox {{
-        font-size: 16px;
-        font-weight: bold;
-        color: {ACCENT_COLOR};
-        border: 2px solid {ACCENT_COLOR}40;
-        border-radius: 10px;
-        margin-top: 10px;
-        padding-top: 20px;
-        font-family: 'Cairo', sans-serif;
-    }}
-    QGroupBox::title {{
-        subcontrol-origin: margin;
-        left: 15px;
-        padding: 0 8px;
-    }}
-"""
-
-BTN_STYLE = f"""
-    QPushButton {{
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        padding: 8px 16px;
-        background-color: {ACCENT_COLOR};
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-weight: bold;
-    }}
-    QPushButton:hover {{
-        background-color: #6d28d9;
-    }}
-    QPushButton:disabled {{
-        background-color: #374151;
-        color: #6b7280;
-    }}
-"""
-
-BTN_SECONDARY_STYLE = """
-    QPushButton {
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        padding: 8px 16px;
-        background-color: #374151;
-        color: white;
-        border: 1px solid #4b5563;
-        border-radius: 6px;
-        font-weight: bold;
-    }
-    QPushButton:hover {
-        background-color: #4b5563;
-    }
-    QPushButton:disabled {
-        background-color: #1f2937;
-        color: #6b7280;
-    }
-"""
-
-BTN_SUCCESS_STYLE = """
-    QPushButton {
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        padding: 8px 16px;
-        background-color: #059669;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-weight: bold;
-    }
-    QPushButton:hover {
-        background-color: #047857;
-    }
-"""
-
-BTN_DANGER_STYLE = """
-    QPushButton {
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        padding: 8px 16px;
-        background-color: #dc2626;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-weight: bold;
-    }
-    QPushButton:hover {
-        background-color: #b91c1c;
-    }
-"""
-
-INPUT_STYLE = f"""
-    QLineEdit, QTextEdit, QComboBox, QSpinBox {{
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        padding: 8px;
-        border: 1px solid #4b5563;
-        border-radius: 6px;
-        background-color: #1f2937;
-        color: white;
-    }}
-    QLineEdit:focus, QTextEdit:focus {{
-        border: 2px solid {ACCENT_COLOR};
-    }}
-"""
-
-TABLE_STYLE = f"""
-    QTableWidget {{
-        font-size: 12px;
-        font-family: 'Cairo', sans-serif;
-        gridline-color: #374151;
-        background-color: #1f2937;
-        color: white;
-        border: 1px solid #374151;
-        border-radius: 6px;
-    }}
-    QTableWidget::item {{
-        padding: 6px;
-    }}
-    QTableWidget::item:selected {{
-        background-color: {ACCENT_COLOR}40;
-    }}
-    QHeaderView::section {{
-        background-color: #374151;
-        color: white;
-        font-weight: bold;
-        padding: 8px;
-        border: none;
-    }}
-"""
-
-TAB_STYLE = f"""
-    QTabWidget::pane {{
-        border: 1px solid {ACCENT_COLOR}40;
-        border-radius: 8px;
-        background-color: #111827;
-    }}
-    QTabBar::tab {{
-        font-size: 14px;
-        font-family: 'Cairo', sans-serif;
-        font-weight: bold;
-        padding: 10px 20px;
-        margin: 2px;
-        border-radius: 6px;
-        background-color: #1f2937;
-        color: #9ca3af;
-    }}
-    QTabBar::tab:selected {{
-        background-color: {ACCENT_COLOR};
-        color: white;
-    }}
-    QTabBar::tab:hover {{
-        background-color: #374151;
-        color: white;
-    }}
-"""
-
-STATUS_LABEL_STYLE = """
-    QLabel {
-        font-size: 12px;
-        font-family: 'Cairo', sans-serif;
-        color: #9ca3af;
-        padding: 4px 8px;
-    }
-"""
-
-CARD_STYLE = f"""
-    QFrame {{
-        background-color: #1f2937;
-        border: 1px solid {ACCENT_COLOR}30;
-        border-radius: 10px;
-        padding: 15px;
-    }}
-"""
-
-
-# ═══════════════════════════════════════════════════════
-# Main Window
-# ═══════════════════════════════════════════════════════
+from core.themes import get_current_palette
 
 class DesktopAppsWindow(BaseWindow):
     """
@@ -241,10 +56,180 @@ class DesktopAppsWindow(BaseWindow):
 
         app_logger.info("Desktop Apps window opened")
 
+    # ─── Styles ────────────────────────────────────
+
+    def _build_styles(self):
+        """Build palette-based styles."""
+        p = get_current_palette()
+        self._p = p
+
+        self._section_style = f"""
+            QGroupBox {{
+                font-size: 16px;
+                font-weight: bold;
+                color: {p['accent']};
+                border: 2px solid {p['accent']}40;
+                border-radius: 10px;
+                margin-top: 10px;
+                padding-top: 20px;
+            }}
+            QGroupBox::title {{
+                subcontrol-origin: margin;
+                left: 15px;
+                padding: 0 8px;
+            }}
+        """
+
+        self._btn_style = f"""
+            QPushButton {{
+                padding: 8px 16px;
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+            }}
+            QPushButton:hover {{
+                background-color: {p['primary_hover']};
+            }}
+            QPushButton:disabled {{
+                background-color: {p['disabled_bg']};
+                color: {p['disabled_text']};
+            }}
+        """
+
+        self._btn_secondary_style = f"""
+            QPushButton {{
+                padding: 8px 16px;
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+                border: 1px solid {p['border']};
+                border-radius: 6px;
+                font-weight: bold;
+            }}
+            QPushButton:hover {{
+                background-color: {p['bg_hover']};
+            }}
+            QPushButton:disabled {{
+                background-color: {p['bg_main']};
+                color: {p['disabled_text']};
+            }}
+        """
+
+        self._btn_success_style = f"""
+            QPushButton {{
+                padding: 8px 16px;
+                background-color: {p['success']};
+                color: {p['text_on_primary']};
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+            }}
+            QPushButton:hover {{
+                background-color: {p['success']};
+                opacity: 0.9;
+            }}
+        """
+
+        self._btn_danger_style = f"""
+            QPushButton {{
+                padding: 8px 16px;
+                background-color: {p['danger']};
+                color: {p['text_on_primary']};
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+            }}
+            QPushButton:hover {{
+                background-color: {p['danger']};
+                opacity: 0.9;
+            }}
+        """
+
+        self._input_style = f"""
+            QLineEdit, QTextEdit, QComboBox, QSpinBox {{
+                padding: 8px;
+                border: 1px solid {p['border']};
+                border-radius: 6px;
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+            }}
+            QLineEdit:focus, QTextEdit:focus {{
+                border: 2px solid {p['border_focus']};
+            }}
+        """
+
+        self._table_style = f"""
+            QTableWidget {{
+                gridline-color: {p['border']};
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+                border: 1px solid {p['border']};
+                border-radius: 6px;
+            }}
+            QTableWidget::item {{
+                padding: 6px;
+            }}
+            QTableWidget::item:selected {{
+                background-color: {p['selection_bg']};
+            }}
+            QHeaderView::section {{
+                background-color: {p['bg_header']};
+                color: {p['text_primary']};
+                font-weight: bold;
+                padding: 8px;
+                border: none;
+            }}
+        """
+
+        self._tab_style = f"""
+            QTabWidget::pane {{
+                border: 1px solid {p['border']};
+                border-radius: 8px;
+                background-color: {p['bg_main']};
+            }}
+            QTabBar::tab {{
+                font-weight: bold;
+                padding: 10px 20px;
+                margin: 2px;
+                border-radius: 6px;
+                background-color: {p['bg_input']};
+                color: {p['text_muted']};
+            }}
+            QTabBar::tab:selected {{
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
+            }}
+            QTabBar::tab:hover {{
+                background-color: {p['bg_hover']};
+                color: {p['text_primary']};
+            }}
+        """
+
+        self._status_label_style = f"""
+            QLabel {{
+                font-size: 12px;
+                color: {p['text_muted']};
+                padding: 4px 8px;
+            }}
+        """
+
+        self._card_style = f"""
+            QFrame {{
+                background-color: {p['bg_card']};
+                border: 1px solid {p['border']};
+                border-radius: 10px;
+                padding: 15px;
+            }}
+        """
+
     # ─── UI Setup ────────────────────────────────────
 
     def _setup_ui(self):
         """Build the main UI."""
+        self._build_styles()
+        p = self._p
+
         central = QWidget()
         self.setCentralWidget(central)
         main_layout = QVBoxLayout(central)
@@ -257,7 +242,7 @@ class DesktopAppsWindow(BaseWindow):
 
         # Tab widget
         self._tabs = QTabWidget()
-        self._tabs.setStyleSheet(TAB_STYLE)
+        self._tabs.setStyleSheet(self._tab_style)
         main_layout.addWidget(self._tabs)
 
         # Create tabs
@@ -268,31 +253,30 @@ class DesktopAppsWindow(BaseWindow):
 
         # Status bar
         self._status_label = QLabel("جاهز")
-        self._status_label.setStyleSheet(STATUS_LABEL_STYLE)
+        self._status_label.setStyleSheet(self._status_label_style)
         main_layout.addWidget(self._status_label)
 
     def _create_header(self) -> QFrame:
         """Create header section."""
+        p = self._p
         frame = QFrame()
-        frame.setStyleSheet(CARD_STYLE)
+        frame.setStyleSheet(self._card_style)
         layout = QHBoxLayout(frame)
 
         title = QLabel("💬 تكامل تطبيقات سطح المكتب")
         title.setStyleSheet(f"""
             font-size: 22px;
             font-weight: bold;
-            color: {ACCENT_COLOR};
-            font-family: 'Cairo', sans-serif;
+            color: {p['accent']};
         """)
         layout.addWidget(title)
 
         layout.addStretch()
 
         subtitle = QLabel("WhatsApp  |  Telegram  |  Teams  |  Automation")
-        subtitle.setStyleSheet("""
+        subtitle.setStyleSheet(f"""
             font-size: 13px;
-            color: #9ca3af;
-            font-family: 'Cairo', sans-serif;
+            color: {p['text_muted']};
         """)
         layout.addWidget(subtitle)
 
@@ -314,21 +298,21 @@ class DesktopAppsWindow(BaseWindow):
 
         # ── Send Message Section ──
         send_group = QGroupBox("إرسال رسالة")
-        send_group.setStyleSheet(SECTION_STYLE)
+        send_group.setStyleSheet(self._section_style)
         send_layout = QFormLayout(send_group)
 
         self._wa_phone = QLineEdit()
         self._wa_phone.setPlaceholderText("+966 5XX XXX XXXX")
-        self._wa_phone.setStyleSheet(INPUT_STYLE)
+        self._wa_phone.setStyleSheet(self._input_style)
         send_layout.addRow("رقم الهاتف:", self._wa_phone)
 
         self._wa_name = QLineEdit()
         self._wa_name.setPlaceholderText("اسم المستلم (اختياري)")
-        self._wa_name.setStyleSheet(INPUT_STYLE)
+        self._wa_name.setStyleSheet(self._input_style)
         send_layout.addRow("الاسم:", self._wa_name)
 
         self._wa_template = QComboBox()
-        self._wa_template.setStyleSheet(INPUT_STYLE)
+        self._wa_template.setStyleSheet(self._input_style)
         self._wa_template.addItem("رسالة مخصصة", "custom")
         self._wa_template.addItem("إشعار الراتب", "salary_notification")
         self._wa_template.addItem("الموافقة على الإجازة", "leave_approval")
@@ -340,20 +324,20 @@ class DesktopAppsWindow(BaseWindow):
         self._wa_message = QTextEdit()
         self._wa_message.setMaximumHeight(120)
         self._wa_message.setPlaceholderText("اكتب رسالتك هنا...")
-        self._wa_message.setStyleSheet(INPUT_STYLE)
+        self._wa_message.setStyleSheet(self._input_style)
         send_layout.addRow("الرسالة:", self._wa_message)
 
         btn_row = QHBoxLayout()
         self._wa_send_btn = QPushButton("📤 إرسال")
-        self._wa_send_btn.setStyleSheet(BTN_STYLE)
+        self._wa_send_btn.setStyleSheet(self._btn_style)
         btn_row.addWidget(self._wa_send_btn)
 
         self._wa_send_file_btn = QPushButton("📎 إرسال ملف")
-        self._wa_send_file_btn.setStyleSheet(BTN_SECONDARY_STYLE)
+        self._wa_send_file_btn.setStyleSheet(self._btn_secondary_style)
         btn_row.addWidget(self._wa_send_file_btn)
 
         self._wa_queue_btn = QPushButton("📋 إضافة للقائمة")
-        self._wa_queue_btn.setStyleSheet(BTN_SECONDARY_STYLE)
+        self._wa_queue_btn.setStyleSheet(self._btn_secondary_style)
         btn_row.addWidget(self._wa_queue_btn)
 
         btn_row.addStretch()
@@ -363,17 +347,17 @@ class DesktopAppsWindow(BaseWindow):
 
         # ── Contacts Section ──
         contacts_group = QGroupBox("جهات الاتصال")
-        contacts_group.setStyleSheet(SECTION_STYLE)
+        contacts_group.setStyleSheet(self._section_style)
         contacts_layout = QVBoxLayout(contacts_group)
 
         contacts_toolbar = QHBoxLayout()
         self._wa_contact_search = QLineEdit()
         self._wa_contact_search.setPlaceholderText("بحث في جهات الاتصال...")
-        self._wa_contact_search.setStyleSheet(INPUT_STYLE)
+        self._wa_contact_search.setStyleSheet(self._input_style)
         contacts_toolbar.addWidget(self._wa_contact_search)
 
         self._wa_add_contact_btn = QPushButton("➕ إضافة")
-        self._wa_add_contact_btn.setStyleSheet(BTN_SUCCESS_STYLE)
+        self._wa_add_contact_btn.setStyleSheet(self._btn_success_style)
         contacts_toolbar.addWidget(self._wa_add_contact_btn)
 
         contacts_layout.addLayout(contacts_toolbar)
@@ -384,28 +368,28 @@ class DesktopAppsWindow(BaseWindow):
             ["الاسم", "الرقم", "كود الدولة", "إجراء"]
         )
         self._wa_contacts_table.horizontalHeader().setStretchLastSection(True)
-        self._wa_contacts_table.setStyleSheet(TABLE_STYLE)
+        self._wa_contacts_table.setStyleSheet(self._table_style)
         contacts_layout.addWidget(self._wa_contacts_table)
 
         layout.addWidget(contacts_group)
 
         # ── Message Queue Section ──
         queue_group = QGroupBox("قائمة الإرسال")
-        queue_group.setStyleSheet(SECTION_STYLE)
+        queue_group.setStyleSheet(self._section_style)
         queue_layout = QVBoxLayout(queue_group)
 
         queue_toolbar = QHBoxLayout()
         self._wa_process_queue_btn = QPushButton("▶️ إرسال الكل")
-        self._wa_process_queue_btn.setStyleSheet(BTN_STYLE)
+        self._wa_process_queue_btn.setStyleSheet(self._btn_style)
         queue_toolbar.addWidget(self._wa_process_queue_btn)
 
         self._wa_clear_queue_btn = QPushButton("🗑️ مسح القائمة")
-        self._wa_clear_queue_btn.setStyleSheet(BTN_DANGER_STYLE)
+        self._wa_clear_queue_btn.setStyleSheet(self._btn_danger_style)
         queue_toolbar.addWidget(self._wa_clear_queue_btn)
 
         queue_toolbar.addStretch()
         self._wa_queue_count = QLabel("0 رسالة في القائمة")
-        self._wa_queue_count.setStyleSheet(STATUS_LABEL_STYLE)
+        self._wa_queue_count.setStyleSheet(self._status_label_style)
         queue_toolbar.addWidget(self._wa_queue_count)
         queue_layout.addLayout(queue_toolbar)
 
@@ -415,7 +399,7 @@ class DesktopAppsWindow(BaseWindow):
             ["المستلم", "الرسالة", "الحالة", "إجراء"]
         )
         self._wa_queue_table.horizontalHeader().setStretchLastSection(True)
-        self._wa_queue_table.setStyleSheet(TABLE_STYLE)
+        self._wa_queue_table.setStyleSheet(self._table_style)
         queue_layout.addWidget(self._wa_queue_table)
 
         layout.addWidget(queue_group)
@@ -445,32 +429,32 @@ class DesktopAppsWindow(BaseWindow):
 
         # ── Bot Configuration ──
         config_group = QGroupBox("إعدادات البوت")
-        config_group.setStyleSheet(SECTION_STYLE)
+        config_group.setStyleSheet(self._section_style)
         config_layout = QFormLayout(config_group)
 
         self._tg_token = QLineEdit()
         self._tg_token.setPlaceholderText("أدخل Bot Token من @BotFather")
         self._tg_token.setEchoMode(QLineEdit.Password)
-        self._tg_token.setStyleSheet(INPUT_STYLE)
+        self._tg_token.setStyleSheet(self._input_style)
         config_layout.addRow("Bot Token:", self._tg_token)
 
         self._tg_default_chat = QLineEdit()
         self._tg_default_chat.setPlaceholderText("Chat ID الافتراضي")
-        self._tg_default_chat.setStyleSheet(INPUT_STYLE)
+        self._tg_default_chat.setStyleSheet(self._input_style)
         config_layout.addRow("Chat ID:", self._tg_default_chat)
 
         config_btns = QHBoxLayout()
         self._tg_test_btn = QPushButton("🔗 اختبار الاتصال")
-        self._tg_test_btn.setStyleSheet(BTN_STYLE)
+        self._tg_test_btn.setStyleSheet(self._btn_style)
         config_btns.addWidget(self._tg_test_btn)
 
         self._tg_save_btn = QPushButton("💾 حفظ الإعدادات")
-        self._tg_save_btn.setStyleSheet(BTN_SUCCESS_STYLE)
+        self._tg_save_btn.setStyleSheet(self._btn_success_style)
         config_btns.addWidget(self._tg_save_btn)
 
         config_btns.addStretch()
         self._tg_status = QLabel("غير متصل")
-        self._tg_status.setStyleSheet("color: #ef4444; font-weight: bold;")
+        self._tg_status.setStyleSheet(f"color: {self._p['danger']}; font-weight: bold;")
         config_btns.addWidget(self._tg_status)
 
         config_layout.addRow("", config_btns)
@@ -478,16 +462,16 @@ class DesktopAppsWindow(BaseWindow):
 
         # ── Send Alert ──
         alert_group = QGroupBox("إرسال تنبيه")
-        alert_group.setStyleSheet(SECTION_STYLE)
+        alert_group.setStyleSheet(self._section_style)
         alert_layout = QFormLayout(alert_group)
 
         self._tg_alert_chat = QLineEdit()
         self._tg_alert_chat.setPlaceholderText("Chat ID (اتركه فارغاً للافتراضي)")
-        self._tg_alert_chat.setStyleSheet(INPUT_STYLE)
+        self._tg_alert_chat.setStyleSheet(self._input_style)
         alert_layout.addRow("Chat ID:", self._tg_alert_chat)
 
         self._tg_priority = QComboBox()
-        self._tg_priority.setStyleSheet(INPUT_STYLE)
+        self._tg_priority.setStyleSheet(self._input_style)
         self._tg_priority.addItem("عادي", "normal")
         self._tg_priority.addItem("منخفض", "low")
         self._tg_priority.addItem("مرتفع", "high")
@@ -498,20 +482,20 @@ class DesktopAppsWindow(BaseWindow):
         self._tg_message = QTextEdit()
         self._tg_message.setMaximumHeight(100)
         self._tg_message.setPlaceholderText("نص التنبيه...")
-        self._tg_message.setStyleSheet(INPUT_STYLE)
+        self._tg_message.setStyleSheet(self._input_style)
         alert_layout.addRow("الرسالة:", self._tg_message)
 
         alert_btns = QHBoxLayout()
         self._tg_send_alert_btn = QPushButton("🔔 إرسال تنبيه")
-        self._tg_send_alert_btn.setStyleSheet(BTN_STYLE)
+        self._tg_send_alert_btn.setStyleSheet(self._btn_style)
         alert_btns.addWidget(self._tg_send_alert_btn)
 
         self._tg_send_file_btn = QPushButton("📎 إرسال ملف")
-        self._tg_send_file_btn.setStyleSheet(BTN_SECONDARY_STYLE)
+        self._tg_send_file_btn.setStyleSheet(self._btn_secondary_style)
         alert_btns.addWidget(self._tg_send_file_btn)
 
         self._tg_approval_btn = QPushButton("📋 طلب موافقة")
-        self._tg_approval_btn.setStyleSheet(BTN_SECONDARY_STYLE)
+        self._tg_approval_btn.setStyleSheet(self._btn_secondary_style)
         alert_btns.addWidget(self._tg_approval_btn)
 
         alert_btns.addStretch()
@@ -520,16 +504,16 @@ class DesktopAppsWindow(BaseWindow):
 
         # ── Chats List ──
         chats_group = QGroupBox("المحادثات")
-        chats_group.setStyleSheet(SECTION_STYLE)
+        chats_group.setStyleSheet(self._section_style)
         chats_layout = QVBoxLayout(chats_group)
 
         chats_toolbar = QHBoxLayout()
         self._tg_add_chat_btn = QPushButton("➕ إضافة محادثة")
-        self._tg_add_chat_btn.setStyleSheet(BTN_SUCCESS_STYLE)
+        self._tg_add_chat_btn.setStyleSheet(self._btn_success_style)
         chats_toolbar.addWidget(self._tg_add_chat_btn)
 
         self._tg_broadcast_btn = QPushButton("📢 بث رسالة")
-        self._tg_broadcast_btn.setStyleSheet(BTN_SECONDARY_STYLE)
+        self._tg_broadcast_btn.setStyleSheet(self._btn_secondary_style)
         chats_toolbar.addWidget(self._tg_broadcast_btn)
 
         chats_toolbar.addStretch()
@@ -541,14 +525,14 @@ class DesktopAppsWindow(BaseWindow):
             ["الاسم", "Chat ID", "النوع", "الحالة"]
         )
         self._tg_chats_table.horizontalHeader().setStretchLastSection(True)
-        self._tg_chats_table.setStyleSheet(TABLE_STYLE)
+        self._tg_chats_table.setStyleSheet(self._table_style)
         chats_layout.addWidget(self._tg_chats_table)
 
         layout.addWidget(chats_group)
 
         # ── Alert History ──
         history_group = QGroupBox("سجل التنبيهات")
-        history_group.setStyleSheet(SECTION_STYLE)
+        history_group.setStyleSheet(self._section_style)
         history_layout = QVBoxLayout(history_group)
 
         self._tg_history_table = QTableWidget()
@@ -557,7 +541,7 @@ class DesktopAppsWindow(BaseWindow):
             ["التاريخ", "المستلم", "الأولوية", "الرسالة", "الحالة"]
         )
         self._tg_history_table.horizontalHeader().setStretchLastSection(True)
-        self._tg_history_table.setStyleSheet(TABLE_STYLE)
+        self._tg_history_table.setStyleSheet(self._table_style)
         history_layout.addWidget(self._tg_history_table)
 
         layout.addWidget(history_group)
@@ -586,20 +570,20 @@ class DesktopAppsWindow(BaseWindow):
 
         # ── Channels Configuration ──
         channels_group = QGroupBox("القنوات")
-        channels_group.setStyleSheet(SECTION_STYLE)
+        channels_group.setStyleSheet(self._section_style)
         channels_layout = QVBoxLayout(channels_group)
 
         channels_toolbar = QHBoxLayout()
         self._teams_add_channel_btn = QPushButton("➕ إضافة قناة")
-        self._teams_add_channel_btn.setStyleSheet(BTN_SUCCESS_STYLE)
+        self._teams_add_channel_btn.setStyleSheet(self._btn_success_style)
         channels_toolbar.addWidget(self._teams_add_channel_btn)
 
         self._teams_test_btn = QPushButton("🔗 اختبار")
-        self._teams_test_btn.setStyleSheet(BTN_STYLE)
+        self._teams_test_btn.setStyleSheet(self._btn_style)
         channels_toolbar.addWidget(self._teams_test_btn)
 
         self._teams_save_btn = QPushButton("💾 حفظ")
-        self._teams_save_btn.setStyleSheet(BTN_SECONDARY_STYLE)
+        self._teams_save_btn.setStyleSheet(self._btn_secondary_style)
         channels_toolbar.addWidget(self._teams_save_btn)
 
         channels_toolbar.addStretch()
@@ -611,23 +595,23 @@ class DesktopAppsWindow(BaseWindow):
             ["الاسم", "النوع", "Webhook URL", "الحالة", "إجراء"]
         )
         self._teams_channels_table.horizontalHeader().setStretchLastSection(True)
-        self._teams_channels_table.setStyleSheet(TABLE_STYLE)
+        self._teams_channels_table.setStyleSheet(self._table_style)
         channels_layout.addWidget(self._teams_channels_table)
 
         layout.addWidget(channels_group)
 
         # ── Send Message ──
         send_group = QGroupBox("إرسال رسالة")
-        send_group.setStyleSheet(SECTION_STYLE)
+        send_group.setStyleSheet(self._section_style)
         send_layout = QFormLayout(send_group)
 
         self._teams_channel_select = QComboBox()
-        self._teams_channel_select.setStyleSheet(INPUT_STYLE)
+        self._teams_channel_select.setStyleSheet(self._input_style)
         self._teams_channel_select.addItem("القناة الافتراضية", "default")
         send_layout.addRow("القناة:", self._teams_channel_select)
 
         self._teams_card_type = QComboBox()
-        self._teams_card_type.setStyleSheet(INPUT_STYLE)
+        self._teams_card_type.setStyleSheet(self._input_style)
         self._teams_card_type.addItem("رسالة نصية", "text")
         self._teams_card_type.addItem("تنبيه", "alert")
         self._teams_card_type.addItem("طلب موافقة", "approval")
@@ -638,22 +622,22 @@ class DesktopAppsWindow(BaseWindow):
 
         self._teams_title = QLineEdit()
         self._teams_title.setPlaceholderText("عنوان الرسالة")
-        self._teams_title.setStyleSheet(INPUT_STYLE)
+        self._teams_title.setStyleSheet(self._input_style)
         send_layout.addRow("العنوان:", self._teams_title)
 
         self._teams_message = QTextEdit()
         self._teams_message.setMaximumHeight(100)
         self._teams_message.setPlaceholderText("نص الرسالة...")
-        self._teams_message.setStyleSheet(INPUT_STYLE)
+        self._teams_message.setStyleSheet(self._input_style)
         send_layout.addRow("الرسالة:", self._teams_message)
 
         send_btns = QHBoxLayout()
         self._teams_send_btn = QPushButton("📤 إرسال")
-        self._teams_send_btn.setStyleSheet(BTN_STYLE)
+        self._teams_send_btn.setStyleSheet(self._btn_style)
         send_btns.addWidget(self._teams_send_btn)
 
         self._teams_broadcast_btn = QPushButton("📢 بث للكل")
-        self._teams_broadcast_btn.setStyleSheet(BTN_SECONDARY_STYLE)
+        self._teams_broadcast_btn.setStyleSheet(self._btn_secondary_style)
         send_btns.addWidget(self._teams_broadcast_btn)
 
         send_btns.addStretch()
@@ -663,7 +647,7 @@ class DesktopAppsWindow(BaseWindow):
 
         # ── Message History ──
         history_group = QGroupBox("سجل الرسائل")
-        history_group.setStyleSheet(SECTION_STYLE)
+        history_group.setStyleSheet(self._section_style)
         history_layout = QVBoxLayout(history_group)
 
         self._teams_history_table = QTableWidget()
@@ -672,7 +656,7 @@ class DesktopAppsWindow(BaseWindow):
             ["التاريخ", "القناة", "النوع", "العنوان", "الحالة"]
         )
         self._teams_history_table.horizontalHeader().setStretchLastSection(True)
-        self._teams_history_table.setStyleSheet(TABLE_STYLE)
+        self._teams_history_table.setStyleSheet(self._table_style)
         history_layout.addWidget(self._teams_history_table)
 
         layout.addWidget(history_group)
@@ -701,17 +685,17 @@ class DesktopAppsWindow(BaseWindow):
 
         # ── Window Management ──
         windows_group = QGroupBox("إدارة النوافذ")
-        windows_group.setStyleSheet(SECTION_STYLE)
+        windows_group.setStyleSheet(self._section_style)
         windows_layout = QVBoxLayout(windows_group)
 
         win_toolbar = QHBoxLayout()
         self._auto_refresh_btn = QPushButton("🔄 تحديث النوافذ")
-        self._auto_refresh_btn.setStyleSheet(BTN_STYLE)
+        self._auto_refresh_btn.setStyleSheet(self._btn_style)
         win_toolbar.addWidget(self._auto_refresh_btn)
 
         self._auto_filter = QLineEdit()
         self._auto_filter.setPlaceholderText("فلتر بالعنوان...")
-        self._auto_filter.setStyleSheet(INPUT_STYLE)
+        self._auto_filter.setStyleSheet(self._input_style)
         win_toolbar.addWidget(self._auto_filter)
 
         win_toolbar.addStretch()
@@ -723,28 +707,28 @@ class DesktopAppsWindow(BaseWindow):
             ["العنوان", "البرنامج", "PID", "الحجم", "إجراء"]
         )
         self._auto_windows_table.horizontalHeader().setStretchLastSection(True)
-        self._auto_windows_table.setStyleSheet(TABLE_STYLE)
+        self._auto_windows_table.setStyleSheet(self._table_style)
         windows_layout.addWidget(self._auto_windows_table)
 
         win_actions = QHBoxLayout()
         self._auto_focus_btn = QPushButton("🔍 تركيز")
-        self._auto_focus_btn.setStyleSheet(BTN_SECONDARY_STYLE)
+        self._auto_focus_btn.setStyleSheet(self._btn_secondary_style)
         win_actions.addWidget(self._auto_focus_btn)
 
         self._auto_minimize_btn = QPushButton("➖ تصغير")
-        self._auto_minimize_btn.setStyleSheet(BTN_SECONDARY_STYLE)
+        self._auto_minimize_btn.setStyleSheet(self._btn_secondary_style)
         win_actions.addWidget(self._auto_minimize_btn)
 
         self._auto_maximize_btn = QPushButton("➕ تكبير")
-        self._auto_maximize_btn.setStyleSheet(BTN_SECONDARY_STYLE)
+        self._auto_maximize_btn.setStyleSheet(self._btn_secondary_style)
         win_actions.addWidget(self._auto_maximize_btn)
 
         self._auto_close_btn = QPushButton("✖ إغلاق")
-        self._auto_close_btn.setStyleSheet(BTN_DANGER_STYLE)
+        self._auto_close_btn.setStyleSheet(self._btn_danger_style)
         win_actions.addWidget(self._auto_close_btn)
 
         self._auto_screenshot_btn = QPushButton("📸 لقطة")
-        self._auto_screenshot_btn.setStyleSheet(BTN_SECONDARY_STYLE)
+        self._auto_screenshot_btn.setStyleSheet(self._btn_secondary_style)
         win_actions.addWidget(self._auto_screenshot_btn)
 
         win_actions.addStretch()
@@ -754,16 +738,16 @@ class DesktopAppsWindow(BaseWindow):
 
         # ── Registered Applications ──
         apps_group = QGroupBox("التطبيقات المسجلة")
-        apps_group.setStyleSheet(SECTION_STYLE)
+        apps_group.setStyleSheet(self._section_style)
         apps_layout = QVBoxLayout(apps_group)
 
         apps_toolbar = QHBoxLayout()
         self._auto_add_app_btn = QPushButton("➕ تسجيل تطبيق")
-        self._auto_add_app_btn.setStyleSheet(BTN_SUCCESS_STYLE)
+        self._auto_add_app_btn.setStyleSheet(self._btn_success_style)
         apps_toolbar.addWidget(self._auto_add_app_btn)
 
         self._auto_launch_btn = QPushButton("🚀 تشغيل")
-        self._auto_launch_btn.setStyleSheet(BTN_STYLE)
+        self._auto_launch_btn.setStyleSheet(self._btn_style)
         apps_toolbar.addWidget(self._auto_launch_btn)
 
         apps_toolbar.addStretch()
@@ -775,27 +759,27 @@ class DesktopAppsWindow(BaseWindow):
             ["الاسم", "المسار", "إجراء"]
         )
         self._auto_apps_table.horizontalHeader().setStretchLastSection(True)
-        self._auto_apps_table.setStyleSheet(TABLE_STYLE)
+        self._auto_apps_table.setStyleSheet(self._table_style)
         apps_layout.addWidget(self._auto_apps_table)
 
         layout.addWidget(apps_group)
 
         # ── Workflows ──
         workflow_group = QGroupBox("سيناريوهات الأتمتة")
-        workflow_group.setStyleSheet(SECTION_STYLE)
+        workflow_group.setStyleSheet(self._section_style)
         workflow_layout = QVBoxLayout(workflow_group)
 
         wf_toolbar = QHBoxLayout()
         self._auto_new_workflow_btn = QPushButton("➕ سيناريو جديد")
-        self._auto_new_workflow_btn.setStyleSheet(BTN_SUCCESS_STYLE)
+        self._auto_new_workflow_btn.setStyleSheet(self._btn_success_style)
         wf_toolbar.addWidget(self._auto_new_workflow_btn)
 
         self._auto_run_workflow_btn = QPushButton("▶️ تشغيل")
-        self._auto_run_workflow_btn.setStyleSheet(BTN_STYLE)
+        self._auto_run_workflow_btn.setStyleSheet(self._btn_style)
         wf_toolbar.addWidget(self._auto_run_workflow_btn)
 
         self._auto_save_workflows_btn = QPushButton("💾 حفظ")
-        self._auto_save_workflows_btn.setStyleSheet(BTN_SECONDARY_STYLE)
+        self._auto_save_workflows_btn.setStyleSheet(self._btn_secondary_style)
         wf_toolbar.addWidget(self._auto_save_workflows_btn)
 
         wf_toolbar.addStretch()
@@ -809,38 +793,38 @@ class DesktopAppsWindow(BaseWindow):
         self._auto_workflows_table.horizontalHeader().setStretchLastSection(
             True
         )
-        self._auto_workflows_table.setStyleSheet(TABLE_STYLE)
+        self._auto_workflows_table.setStyleSheet(self._table_style)
         workflow_layout.addWidget(self._auto_workflows_table)
 
         layout.addWidget(workflow_group)
 
         # ── System Info ──
         info_group = QGroupBox("معلومات النظام")
-        info_group.setStyleSheet(SECTION_STYLE)
+        info_group.setStyleSheet(self._section_style)
         info_layout = QGridLayout(info_group)
 
         self._auto_platform_label = QLabel("المنصة: -")
-        self._auto_platform_label.setStyleSheet(STATUS_LABEL_STYLE)
+        self._auto_platform_label.setStyleSheet(self._status_label_style)
         info_layout.addWidget(self._auto_platform_label, 0, 0)
 
         self._auto_window_mgmt_label = QLabel("إدارة النوافذ: -")
-        self._auto_window_mgmt_label.setStyleSheet(STATUS_LABEL_STYLE)
+        self._auto_window_mgmt_label.setStyleSheet(self._status_label_style)
         info_layout.addWidget(self._auto_window_mgmt_label, 0, 1)
 
         self._auto_clipboard_label = QLabel("الحافظة: -")
-        self._auto_clipboard_label.setStyleSheet(STATUS_LABEL_STYLE)
+        self._auto_clipboard_label.setStyleSheet(self._status_label_style)
         info_layout.addWidget(self._auto_clipboard_label, 0, 2)
 
         self._auto_screenshot_label = QLabel("لقطات الشاشة: -")
-        self._auto_screenshot_label.setStyleSheet(STATUS_LABEL_STYLE)
+        self._auto_screenshot_label.setStyleSheet(self._status_label_style)
         info_layout.addWidget(self._auto_screenshot_label, 1, 0)
 
         self._auto_apps_count_label = QLabel("التطبيقات: 0")
-        self._auto_apps_count_label.setStyleSheet(STATUS_LABEL_STYLE)
+        self._auto_apps_count_label.setStyleSheet(self._status_label_style)
         info_layout.addWidget(self._auto_apps_count_label, 1, 1)
 
         self._auto_workflows_count_label = QLabel("السيناريوهات: 0")
-        self._auto_workflows_count_label.setStyleSheet(STATUS_LABEL_STYLE)
+        self._auto_workflows_count_label.setStyleSheet(self._status_label_style)
         info_layout.addWidget(self._auto_workflows_count_label, 1, 2)
 
         layout.addWidget(info_group)
@@ -1043,7 +1027,7 @@ class DesktopAppsWindow(BaseWindow):
         tg.set_token(token)
         if tg.test_connection():
             self._tg_status.setText("✅ متصل")
-            self._tg_status.setStyleSheet("color: #10b981; font-weight: bold;")
+            self._tg_status.setStyleSheet(f"color: {self._p['success']}; font-weight: bold;")
             info = tg.get_bot_info()
             if info:
                 self._status_label.setText(
@@ -1051,7 +1035,7 @@ class DesktopAppsWindow(BaseWindow):
                 )
         else:
             self._tg_status.setText("❌ فشل الاتصال")
-            self._tg_status.setStyleSheet("color: #ef4444; font-weight: bold;")
+            self._tg_status.setStyleSheet(f"color: {self._p['danger']}; font-weight: bold;")
             self._status_label.setText("❌ فشل الاتصال بالبوت")
 
     def _on_tg_save(self):

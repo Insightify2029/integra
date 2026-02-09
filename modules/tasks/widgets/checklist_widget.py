@@ -21,6 +21,7 @@ from ..repository import (
     add_checklist_item, toggle_checklist_item,
     delete_checklist_item, get_task_repository
 )
+from core.themes import get_current_palette, get_font, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_WEIGHT_BOLD
 
 
 class ChecklistItemWidget(QFrame):
@@ -40,6 +41,7 @@ class ChecklistItemWidget(QFrame):
 
     def _setup_ui(self):
         """إعداد واجهة المستخدم"""
+        p = get_current_palette()
         self.setObjectName("checklistItem")
         self.setFixedHeight(40)
 
@@ -55,10 +57,10 @@ class ChecklistItemWidget(QFrame):
 
         # Title
         self.title_label = QLabel(self.item.title)
-        self.title_label.setFont(QFont("Cairo", 11))
+        self.title_label.setFont(get_font(FONT_SIZE_BODY))
         if self.item.is_completed:
             self.title_label.setStyleSheet(
-                "color: #6c757d; text-decoration: line-through;"
+                f"color: {p['text_muted']}; text-decoration: line-through;"
             )
         layout.addWidget(self.title_label, 1)
 
@@ -66,32 +68,32 @@ class ChecklistItemWidget(QFrame):
         self.delete_btn = QPushButton("×")
         self.delete_btn.setFixedSize(24, 24)
         self.delete_btn.clicked.connect(lambda: self.deleted.emit(self.item.id))
-        self.delete_btn.setStyleSheet("""
-            QPushButton {
+        self.delete_btn.setStyleSheet(f"""
+            QPushButton {{
                 background-color: transparent;
-                color: #dc3545;
+                color: {p['danger']};
                 border: none;
                 font-size: 16px;
                 font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #dc354520;
+            }}
+            QPushButton:hover {{
+                background-color: {p['danger']}20;
                 border-radius: 4px;
-            }
+            }}
         """)
         self.delete_btn.hide()
         layout.addWidget(self.delete_btn)
 
         # Style
-        self.setStyleSheet("""
-            QFrame#checklistItem {
-                background-color: white;
-                border: 1px solid #e9ecef;
+        self.setStyleSheet(f"""
+            QFrame#checklistItem {{
+                background-color: {p['bg_card']};
+                border: 1px solid {p['border']};
                 border-radius: 6px;
-            }
-            QFrame#checklistItem:hover {
-                border-color: #dee2e6;
-            }
+            }}
+            QFrame#checklistItem:hover {{
+                border-color: {p['border_light']};
+            }}
         """)
 
     def _on_toggled(self, state):
@@ -100,9 +102,10 @@ class ChecklistItemWidget(QFrame):
         self.toggled.emit(self.item.id, is_completed)
 
         # Update style
+        p = get_current_palette()
         if is_completed:
             self.title_label.setStyleSheet(
-                "color: #6c757d; text-decoration: line-through;"
+                f"color: {p['text_muted']}; text-decoration: line-through;"
             )
         else:
             self.title_label.setStyleSheet("")
@@ -146,15 +149,16 @@ class ChecklistWidget(QFrame):
         header = QHBoxLayout()
         header.setSpacing(8)
 
+        p = get_current_palette()
         title = QLabel("✓ قائمة التحقق")
-        title.setFont(QFont("Cairo", 11, QFont.Bold))
+        title.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
         header.addWidget(title)
 
         header.addStretch()
 
         self.progress_label = QLabel("0/0")
-        self.progress_label.setFont(QFont("Cairo", 10))
-        self.progress_label.setStyleSheet("color: #6c757d;")
+        self.progress_label.setFont(get_font(FONT_SIZE_BODY))
+        self.progress_label.setStyleSheet(f"color: {p['text_muted']};")
         header.addWidget(self.progress_label)
 
         layout.addLayout(header)
@@ -176,36 +180,36 @@ class ChecklistWidget(QFrame):
         self.add_input.setPlaceholderText("➕ أضف عنصر جديد...")
         self.add_input.setFixedHeight(36)
         self.add_input.returnPressed.connect(self._add_item)
-        self.add_input.setStyleSheet("""
-            QLineEdit {
-                border: 1px solid #dee2e6;
+        self.add_input.setStyleSheet(f"""
+            QLineEdit {{
+                border: 1px solid {p['border']};
                 border-radius: 6px;
                 padding: 0 12px;
                 font-size: 12px;
-                background-color: #f8f9fa;
-            }
-            QLineEdit:focus {
-                border-color: #007bff;
-                background-color: white;
-            }
+                background-color: {p['bg_input']};
+            }}
+            QLineEdit:focus {{
+                border-color: {p['border_focus']};
+                background-color: {p['bg_card']};
+            }}
         """)
         add_layout.addWidget(self.add_input, 1)
 
         self.add_btn = QPushButton("+")
         self.add_btn.setFixedSize(36, 36)
         self.add_btn.clicked.connect(self._add_item)
-        self.add_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #28a745;
-                color: white;
+        self.add_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['success']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 6px;
                 font-size: 18px;
                 font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #218838;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['success']}dd;
+            }}
         """)
         add_layout.addWidget(self.add_btn)
 

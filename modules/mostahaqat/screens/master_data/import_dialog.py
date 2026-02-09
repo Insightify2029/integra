@@ -27,7 +27,7 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QFont, QColor
 
 from core.database.queries import select_all, insert_returning_id, get_count
-from core.themes import get_current_theme
+from core.themes import get_current_palette, get_font, FONT_SIZE_TITLE, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_WEIGHT_BOLD
 from core.logging import app_logger
 from ui.components.notifications import toast_error, toast_warning, toast_info
 
@@ -121,7 +121,7 @@ class ImportDialog(QDialog):
 
         # Header
         header = QLabel(f"📥 استيراد بيانات {title_ar}")
-        header.setFont(QFont("Cairo", 16, QFont.Bold))
+        header.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
         header.setAlignment(Qt.AlignCenter)
         header.setObjectName("importHeader")
         layout.addWidget(header)
@@ -135,7 +135,7 @@ class ImportDialog(QDialog):
             f"الأعمدة المطلوبة في ملف Excel: {fields_text}\n"
             f"يمكن أن يكون ترتيب الأعمدة في السطر الأول كعناوين."
         )
-        instructions.setFont(QFont("Cairo", 11))
+        instructions.setFont(get_font(FONT_SIZE_SMALL))
         instructions.setObjectName("importInstructions")
         instructions.setWordWrap(True)
         instructions.setAlignment(Qt.AlignCenter)
@@ -148,12 +148,12 @@ class ImportDialog(QDialog):
         file_layout.setContentsMargins(15, 10, 15, 10)
 
         self._file_label = QLabel("لم يتم اختيار ملف")
-        self._file_label.setFont(QFont("Cairo", 11))
+        self._file_label.setFont(get_font(FONT_SIZE_SMALL))
         self._file_label.setObjectName("fileLabel")
         file_layout.addWidget(self._file_label, 1)
 
         browse_btn = QPushButton("📂 اختيار ملف Excel")
-        browse_btn.setFont(QFont("Cairo", 11))
+        browse_btn.setFont(get_font(FONT_SIZE_SMALL))
         browse_btn.setCursor(Qt.PointingHandCursor)
         browse_btn.setProperty("primary", True)
         browse_btn.clicked.connect(self._browse_file)
@@ -172,7 +172,7 @@ class ImportDialog(QDialog):
 
         # AI Analysis label
         self._ai_label = QLabel("")
-        self._ai_label.setFont(QFont("Cairo", 11))
+        self._ai_label.setFont(get_font(FONT_SIZE_SMALL))
         self._ai_label.setObjectName("aiLabel")
         self._ai_label.setWordWrap(True)
         self._ai_label.setVisible(False)
@@ -180,7 +180,7 @@ class ImportDialog(QDialog):
 
         # Validation summary
         self._validation_label = QLabel("")
-        self._validation_label.setFont(QFont("Cairo", 12, QFont.Bold))
+        self._validation_label.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
         self._validation_label.setObjectName("validationLabel")
         self._validation_label.setAlignment(Qt.AlignCenter)
         self._validation_label.setVisible(False)
@@ -194,7 +194,7 @@ class ImportDialog(QDialog):
 
         # Skip duplicates checkbox
         self._skip_duplicates = QCheckBox("تخطي السجلات المكررة تلقائياً")
-        self._skip_duplicates.setFont(QFont("Cairo", 11))
+        self._skip_duplicates.setFont(get_font(FONT_SIZE_SMALL))
         self._skip_duplicates.setChecked(True)
         self._skip_duplicates.setObjectName("skipDuplicates")
         layout.addWidget(self._skip_duplicates)
@@ -204,14 +204,14 @@ class ImportDialog(QDialog):
         buttons_layout.addStretch()
 
         cancel_btn = QPushButton("❌ إلغاء")
-        cancel_btn.setFont(QFont("Cairo", 12))
+        cancel_btn.setFont(get_font(FONT_SIZE_BODY))
         cancel_btn.setMinimumHeight(44)
         cancel_btn.setCursor(Qt.PointingHandCursor)
         cancel_btn.clicked.connect(self.reject)
         buttons_layout.addWidget(cancel_btn)
 
         self._validate_btn = QPushButton("🤖 تحقق بالذكاء الاصطناعي")
-        self._validate_btn.setFont(QFont("Cairo", 12))
+        self._validate_btn.setFont(get_font(FONT_SIZE_BODY))
         self._validate_btn.setMinimumHeight(44)
         self._validate_btn.setCursor(Qt.PointingHandCursor)
         self._validate_btn.setProperty("primary", True)
@@ -220,7 +220,7 @@ class ImportDialog(QDialog):
         buttons_layout.addWidget(self._validate_btn)
 
         self._import_btn = QPushButton("📥 استيراد البيانات")
-        self._import_btn.setFont(QFont("Cairo", 12, QFont.Bold))
+        self._import_btn.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
         self._import_btn.setMinimumHeight(44)
         self._import_btn.setCursor(Qt.PointingHandCursor)
         self._import_btn.setProperty("buttonColor", "success")
@@ -627,129 +627,66 @@ class ImportDialog(QDialog):
     # ═══════════════════════════════════════════════════════════════
 
     def _apply_theme(self):
-        """Apply current theme."""
-        theme = get_current_theme()
+        """Apply current theme using palette."""
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            QDialog {{ background-color: {p['bg_dialog']}; }}
 
-        if theme == 'dark':
-            self.setStyleSheet("""
-                QDialog { background-color: #1e293b; }
+            QLabel {{ color: {p['text_primary']}; background: transparent; }}
+            QLabel#importHeader {{ color: {p['accent']}; }}
+            QLabel#importInstructions {{ color: {p['text_secondary']}; }}
+            QLabel#fileLabel {{ color: {p['text_secondary']}; }}
+            QLabel#aiLabel {{
+                color: {p['info']}; background-color: {p['bg_main']};
+                border: 1px solid {p['border']}; border-radius: 8px;
+                padding: 12px; font-size: 12px;
+            }}
+            QLabel#validationLabel {{ color: {p['accent']}; }}
 
-                QLabel { color: #f1f5f9; background: transparent; }
-                QLabel#importHeader { color: #38bdf8; }
-                QLabel#importInstructions { color: #94a3b8; }
-                QLabel#fileLabel { color: #94a3b8; }
-                QLabel#aiLabel {
-                    color: #a5f3fc; background-color: #0f172a;
-                    border: 1px solid #164e63; border-radius: 8px;
-                    padding: 12px; font-size: 12px;
-                }
-                QLabel#validationLabel { color: #38bdf8; }
+            QFrame#fileFrame {{
+                background-color: {p['bg_main']};
+                border: 1px solid {p['border']};
+                border-radius: 8px;
+            }}
 
-                QFrame#fileFrame {
-                    background-color: #0f172a;
-                    border: 1px solid #334155;
-                    border-radius: 8px;
-                }
+            QTableWidget#previewTable {{
+                background-color: {p['bg_main']};
+                color: {p['text_primary']};
+                border: 1px solid {p['border']};
+                border-radius: 8px;
+                gridline-color: {p['border']};
+                selection-background-color: {p['selection_bg']};
+            }}
+            QTableWidget#previewTable QHeaderView::section {{
+                background-color: {p['bg_header']};
+                color: {p['text_secondary']};
+                border: 1px solid {p['border']};
+                padding: 6px;
+                font-weight: bold;
+            }}
+            QTableWidget#previewTable::item:alternate {{
+                background-color: {p['bg_card']};
+            }}
 
-                QTableWidget#previewTable {
-                    background-color: #0f172a;
-                    color: #f1f5f9;
-                    border: 1px solid #334155;
-                    border-radius: 8px;
-                    gridline-color: #334155;
-                    selection-background-color: #1e40af;
-                }
-                QTableWidget#previewTable QHeaderView::section {
-                    background-color: #1e293b;
-                    color: #94a3b8;
-                    border: 1px solid #334155;
-                    padding: 6px;
-                    font-weight: bold;
-                    font-family: Cairo;
-                }
-                QTableWidget#previewTable::item:alternate {
-                    background-color: #1e293b;
-                }
+            QCheckBox#skipDuplicates {{ color: {p['text_secondary']}; spacing: 8px; }}
 
-                QCheckBox#skipDuplicates { color: #94a3b8; spacing: 8px; }
+            QProgressBar#importProgress {{
+                background-color: {p['bg_main']}; border: none;
+                border-radius: 4px; height: 8px;
+            }}
+            QProgressBar#importProgress::chunk {{
+                background-color: {p['success']}; border-radius: 4px;
+            }}
 
-                QProgressBar#importProgress {
-                    background-color: #0f172a; border: none;
-                    border-radius: 4px; height: 8px;
-                }
-                QProgressBar#importProgress::chunk {
-                    background-color: #10b981; border-radius: 4px;
-                }
-
-                QPushButton {
-                    background-color: #334155; color: #f1f5f9;
-                    border: none; border-radius: 8px;
-                    padding: 10px 20px; font-weight: bold;
-                }
-                QPushButton:hover { background-color: #475569; }
-                QPushButton:disabled { background-color: #1e293b; color: #475569; }
-                QPushButton[primary="true"] { background-color: #2563eb; }
-                QPushButton[primary="true"]:hover { background-color: #1d4ed8; }
-                QPushButton[buttonColor="success"] { background-color: #10b981; }
-                QPushButton[buttonColor="success"]:hover { background-color: #059669; }
-            """)
-        else:
-            self.setStyleSheet("""
-                QDialog { background-color: #ffffff; }
-
-                QLabel { color: #1e293b; background: transparent; }
-                QLabel#importHeader { color: #0891b2; }
-                QLabel#importInstructions { color: #64748b; }
-                QLabel#fileLabel { color: #64748b; }
-                QLabel#aiLabel {
-                    color: #155e75; background-color: #ecfeff;
-                    border: 1px solid #a5f3fc; border-radius: 8px;
-                    padding: 12px; font-size: 12px;
-                }
-                QLabel#validationLabel { color: #0891b2; }
-
-                QFrame#fileFrame {
-                    background-color: #f8fafc;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 8px;
-                }
-
-                QTableWidget#previewTable {
-                    background-color: #ffffff;
-                    color: #1e293b;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 8px;
-                    gridline-color: #e2e8f0;
-                    selection-background-color: #dbeafe;
-                }
-                QTableWidget#previewTable QHeaderView::section {
-                    background-color: #f1f5f9;
-                    color: #475569;
-                    border: 1px solid #e2e8f0;
-                    padding: 6px;
-                    font-weight: bold;
-                    font-family: Cairo;
-                }
-
-                QCheckBox#skipDuplicates { color: #64748b; spacing: 8px; }
-
-                QProgressBar#importProgress {
-                    background-color: #f1f5f9; border: none;
-                    border-radius: 4px; height: 8px;
-                }
-                QProgressBar#importProgress::chunk {
-                    background-color: #10b981; border-radius: 4px;
-                }
-
-                QPushButton {
-                    background-color: #e2e8f0; color: #1e293b;
-                    border: none; border-radius: 8px;
-                    padding: 10px 20px; font-weight: bold;
-                }
-                QPushButton:hover { background-color: #cbd5e1; }
-                QPushButton:disabled { background-color: #f1f5f9; color: #94a3b8; }
-                QPushButton[primary="true"] { background-color: #2563eb; color: #ffffff; }
-                QPushButton[primary="true"]:hover { background-color: #1d4ed8; }
-                QPushButton[buttonColor="success"] { background-color: #10b981; color: #ffffff; }
-                QPushButton[buttonColor="success"]:hover { background-color: #059669; }
-            """)
+            QPushButton {{
+                background-color: {p['bg_card']}; color: {p['text_primary']};
+                border: none; border-radius: 8px;
+                padding: 10px 20px; font-weight: bold;
+            }}
+            QPushButton:hover {{ background-color: {p['bg_hover']}; }}
+            QPushButton:disabled {{ background-color: {p['disabled_bg']}; color: {p['disabled_text']}; }}
+            QPushButton[primary="true"] {{ background-color: {p['primary']}; color: {p['text_on_primary']}; }}
+            QPushButton[primary="true"]:hover {{ background-color: {p['primary_hover']}; }}
+            QPushButton[buttonColor="success"] {{ background-color: {p['success']}; color: {p['text_on_primary']}; }}
+            QPushButton[buttonColor="success"]:hover {{ background-color: {p['success']}; }}
+        """)

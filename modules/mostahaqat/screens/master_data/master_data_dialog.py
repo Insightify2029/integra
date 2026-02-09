@@ -21,7 +21,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 
 from core.database.queries import select_all, insert_returning_id, update, get_count
-from core.themes import get_current_theme
+from core.themes import get_current_palette, get_font, FONT_SIZE_TITLE, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_WEIGHT_BOLD
 from core.logging import app_logger
 from ui.components.notifications import toast_error, toast_warning
 
@@ -94,7 +94,7 @@ class MasterDataDialog(QDialog):
         header_label = QLabel(
             f"{'➕ إضافة' if self._mode == 'add' else '✏️ تعديل'} {title_ar}"
         )
-        header_label.setFont(QFont("Cairo", 16, QFont.Bold))
+        header_label.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
         header_label.setAlignment(Qt.AlignCenter)
         header_label.setObjectName("dialogHeader")
         layout.addWidget(header_label)
@@ -121,13 +121,13 @@ class MasterDataDialog(QDialog):
             # Label
             label_text = f"{field_label}{'  *' if is_required else ''}:"
             lbl = QLabel(label_text)
-            lbl.setFont(QFont("Cairo", 12))
+            lbl.setFont(get_font(FONT_SIZE_BODY))
             lbl.setObjectName("fieldLabel")
             card_layout.addWidget(lbl)
 
             # Input
             inp = QLineEdit()
-            inp.setFont(QFont("Cairo", 13))
+            inp.setFont(get_font(FONT_SIZE_BODY))
             inp.setMinimumHeight(42)
             inp.setObjectName("fieldInput")
             inp.setPlaceholderText(f"أدخل {field_label}")
@@ -139,7 +139,7 @@ class MasterDataDialog(QDialog):
 
             # Error label (hidden by default)
             err = QLabel("")
-            err.setFont(QFont("Cairo", 10))
+            err.setFont(get_font(FONT_SIZE_SMALL))
             err.setObjectName("fieldError")
             err.setVisible(False)
             card_layout.addWidget(err)
@@ -151,7 +151,7 @@ class MasterDataDialog(QDialog):
         if self._mode == 'edit':
             record_id = self._record.get('id', '')
             id_label = QLabel(f"رقم السجل: {record_id}")
-            id_label.setFont(QFont("Cairo", 10))
+            id_label.setFont(get_font(FONT_SIZE_SMALL))
             id_label.setObjectName("recordIdLabel")
             id_label.setAlignment(Qt.AlignCenter)
             layout.addWidget(id_label)
@@ -163,7 +163,7 @@ class MasterDataDialog(QDialog):
 
         # Cancel
         cancel_btn = QPushButton("❌ إلغاء")
-        cancel_btn.setFont(QFont("Cairo", 12))
+        cancel_btn.setFont(get_font(FONT_SIZE_BODY))
         cancel_btn.setMinimumHeight(44)
         cancel_btn.setMinimumWidth(140)
         cancel_btn.setCursor(Qt.PointingHandCursor)
@@ -174,7 +174,7 @@ class MasterDataDialog(QDialog):
         # Save
         save_text = "➕ إضافة" if self._mode == 'add' else "✅ حفظ التعديلات"
         save_btn = QPushButton(save_text)
-        save_btn.setFont(QFont("Cairo", 12, QFont.Bold))
+        save_btn.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
         save_btn.setMinimumHeight(44)
         save_btn.setMinimumWidth(180)
         save_btn.setCursor(Qt.PointingHandCursor)
@@ -350,88 +350,45 @@ class MasterDataDialog(QDialog):
         )
 
     def _apply_theme(self):
-        """Apply current theme."""
-        theme = get_current_theme()
+        """Apply current theme using palette."""
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            QDialog {{ background-color: {p['bg_dialog']}; }}
 
-        if theme == 'dark':
-            self.setStyleSheet("""
-                QDialog { background-color: #1e293b; }
+            QLabel {{ color: {p['text_primary']}; background: transparent; }}
+            QLabel#dialogHeader {{ color: {p['accent']}; }}
+            QLabel#fieldLabel {{ color: {p['text_secondary']}; }}
+            QLabel#fieldError {{ color: {p['danger']}; font-weight: bold; }}
+            QLabel#recordIdLabel {{ color: {p['text_muted']}; }}
 
-                QLabel { color: #f1f5f9; background: transparent; }
-                QLabel#dialogHeader { color: #38bdf8; }
-                QLabel#fieldLabel { color: #94a3b8; }
-                QLabel#fieldError { color: #f87171; font-weight: bold; }
-                QLabel#recordIdLabel { color: #64748b; }
+            QFrame#dialogSeparator {{ background-color: {p['border']}; }}
+            QFrame#fieldsCard {{
+                background-color: {p['bg_main']};
+                border: 1px solid {p['border']};
+                border-radius: 12px;
+            }}
 
-                QFrame#dialogSeparator { background-color: #334155; }
-                QFrame#fieldsCard {
-                    background-color: #0f172a;
-                    border: 1px solid #334155;
-                    border-radius: 12px;
-                }
+            QLineEdit#fieldInput {{
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+                border: 2px solid {p['border']};
+                border-radius: 8px;
+                padding: 8px 12px;
+                font-size: 13px;
+            }}
+            QLineEdit#fieldInput:focus {{ border-color: {p['border_focus']}; }}
 
-                QLineEdit#fieldInput {
-                    background-color: #1e293b;
-                    color: #f1f5f9;
-                    border: 2px solid #334155;
-                    border-radius: 8px;
-                    padding: 8px 12px;
-                    font-size: 13px;
-                }
-                QLineEdit#fieldInput:focus { border-color: #06b6d4; }
-
-                QPushButton {
-                    background-color: #334155;
-                    color: #f1f5f9;
-                    border: none;
-                    border-radius: 8px;
-                    padding: 10px 20px;
-                    font-weight: bold;
-                }
-                QPushButton:hover { background-color: #475569; }
-                QPushButton[buttonColor="success"] { background-color: #10b981; }
-                QPushButton[buttonColor="success"]:hover { background-color: #059669; }
-                QPushButton[buttonColor="danger"] { background-color: #ef4444; }
-                QPushButton[buttonColor="danger"]:hover { background-color: #dc2626; }
-            """)
-        else:
-            self.setStyleSheet("""
-                QDialog { background-color: #ffffff; }
-
-                QLabel { color: #1e293b; background: transparent; }
-                QLabel#dialogHeader { color: #0891b2; }
-                QLabel#fieldLabel { color: #64748b; }
-                QLabel#fieldError { color: #ef4444; font-weight: bold; }
-                QLabel#recordIdLabel { color: #94a3b8; }
-
-                QFrame#dialogSeparator { background-color: #e2e8f0; }
-                QFrame#fieldsCard {
-                    background-color: #f8fafc;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 12px;
-                }
-
-                QLineEdit#fieldInput {
-                    background-color: #ffffff;
-                    color: #1e293b;
-                    border: 2px solid #e2e8f0;
-                    border-radius: 8px;
-                    padding: 8px 12px;
-                    font-size: 13px;
-                }
-                QLineEdit#fieldInput:focus { border-color: #06b6d4; }
-
-                QPushButton {
-                    background-color: #e2e8f0;
-                    color: #1e293b;
-                    border: none;
-                    border-radius: 8px;
-                    padding: 10px 20px;
-                    font-weight: bold;
-                }
-                QPushButton:hover { background-color: #cbd5e1; }
-                QPushButton[buttonColor="success"] { background-color: #10b981; color: #ffffff; }
-                QPushButton[buttonColor="success"]:hover { background-color: #059669; }
-                QPushButton[buttonColor="danger"] { background-color: #ef4444; color: #ffffff; }
-                QPushButton[buttonColor="danger"]:hover { background-color: #dc2626; }
-            """)
+            QPushButton {{
+                background-color: {p['bg_card']};
+                color: {p['text_primary']};
+                border: none;
+                border-radius: 8px;
+                padding: 10px 20px;
+                font-weight: bold;
+            }}
+            QPushButton:hover {{ background-color: {p['bg_hover']}; }}
+            QPushButton[buttonColor="success"] {{ background-color: {p['success']}; color: {p['text_on_primary']}; }}
+            QPushButton[buttonColor="success"]:hover {{ background-color: {p['success']}; }}
+            QPushButton[buttonColor="danger"] {{ background-color: {p['danger']}; color: {p['text_on_primary']}; }}
+            QPushButton[buttonColor="danger"]:hover {{ background-color: {p['danger']}; }}
+        """)

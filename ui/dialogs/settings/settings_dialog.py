@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, QSize
 
-from core.themes import get_stylesheet
+from core.themes import get_stylesheet, get_current_palette
 from core.database.connection import is_connected
 from core.config import DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
 from core.utils.icons import icon
@@ -169,15 +169,16 @@ class SettingsDialog(QDialog):
 
     def _update_status(self):
         """Update connection status label."""
+        palette = get_current_palette()
         if is_connected():
             self._status_icon.setPixmap(
-                icon('fa5s.check-circle', color='#10b981').pixmap(16, 16)
+                icon('fa5s.check-circle', color=palette['success']).pixmap(16, 16)
             )
             self._status_text.setText("متصل")
-            self._status_text.setStyleSheet("color: #10b981; font-weight: bold;")
+            self._status_text.setStyleSheet(f"color: {palette['success']}; font-weight: bold;")
         else:
             self._status_icon.setPixmap(
-                icon('fa5s.times-circle', color='#ef4444').pixmap(16, 16)
+                icon('fa5s.times-circle', color=palette['danger']).pixmap(16, 16)
             )
             self._status_text.setText("غير متصل")
-            self._status_text.setStyleSheet("color: #ef4444; font-weight: bold;")
+            self._status_text.setStyleSheet(f"color: {palette['danger']}; font-weight: bold;")

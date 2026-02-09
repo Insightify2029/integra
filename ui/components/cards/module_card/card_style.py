@@ -1,57 +1,39 @@
 """
 Module Card Style
 =================
-Generates stylesheet for the module card.
+Generates stylesheet for the module card using centralized palette.
 """
 
-from core.themes import get_current_theme
+from core.themes import get_current_palette
 
 
-def get_card_style(accent_color="#2563eb"):
+def get_card_style(accent_color=""):
     """
     Get stylesheet for module card.
-    
+
     Args:
-        accent_color: The module's accent color
-    
+        accent_color: The module's accent color (uses palette primary if empty)
+
     Returns:
         str: QSS stylesheet
     """
-    theme = get_current_theme()
+    palette = get_current_palette()
+    accent = accent_color or palette['primary']
 
-    if theme == 'dark':
-        return f"""
-            QFrame {{
-                background-color: #1e293b;
-                border: 2px solid transparent;
-                border-radius: 20px;
-            }}
-            QFrame:hover {{
-                background-color: #334155;
-                border: 2px solid {accent_color};
-            }}
-            QFrame QLabel {{
-                border: none;
-                background: transparent;
-                padding: 0px;
-                margin: 0px;
-            }}
-        """
-    else:
-        return f"""
-            QFrame {{
-                background-color: #ffffff;
-                border: 2px solid transparent;
-                border-radius: 20px;
-            }}
-            QFrame:hover {{
-                background-color: #f1f5f9;
-                border: 2px solid {accent_color};
-            }}
-            QFrame QLabel {{
-                border: none;
-                background: transparent;
-                padding: 0px;
-                margin: 0px;
-            }}
-        """
+    return f"""
+        QFrame {{
+            background-color: {palette['bg_card']};
+            border: 2px solid transparent;
+            border-radius: 20px;
+        }}
+        QFrame:hover {{
+            background-color: {palette['bg_hover']};
+            border: 2px solid {accent};
+        }}
+        QFrame QLabel {{
+            border: none;
+            background: transparent;
+            padding: 0px;
+            margin: 0px;
+        }}
+    """

@@ -22,6 +22,7 @@ from ..models import (
     Task, TaskStatus, TaskPriority, TaskCategory,
     RecurrencePattern, RecurrenceType
 )
+from core.themes import get_current_palette, get_font, FONT_SIZE_BODY
 
 
 class TaskFormDialog(QDialog):
@@ -200,21 +201,22 @@ class TaskFormDialog(QDialog):
         buttons_layout = QHBoxLayout()
         buttons_layout.setSpacing(12)
 
+        p = get_current_palette()
         self.cancel_btn = QPushButton("إلغاء")
         self.cancel_btn.setFixedHeight(40)
         self.cancel_btn.clicked.connect(self.reject)
-        self.cancel_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #f8f9fa;
-                color: #495057;
-                border: 1px solid #dee2e6;
+        self.cancel_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['bg_main']};
+                color: {p['text_secondary']};
+                border: 1px solid {p['border']};
                 border-radius: 6px;
                 padding: 0 24px;
                 font-size: 14px;
-            }
-            QPushButton:hover {
-                background-color: #e9ecef;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['bg_hover']};
+            }}
         """)
         buttons_layout.addWidget(self.cancel_btn)
 
@@ -223,19 +225,19 @@ class TaskFormDialog(QDialog):
         self.save_btn = QPushButton("💾 حفظ")
         self.save_btn.setFixedHeight(40)
         self.save_btn.clicked.connect(self._save)
-        self.save_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #007bff;
-                color: white;
+        self.save_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 6px;
                 padding: 0 32px;
                 font-size: 14px;
                 font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #0056b3;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['primary_hover']};
+            }}
         """)
         buttons_layout.addWidget(self.save_btn)
 
@@ -243,36 +245,38 @@ class TaskFormDialog(QDialog):
 
     def _style_input(self, widget):
         """تنسيق حقل الإدخال"""
-        widget.setStyleSheet("""
-            QLineEdit, QTextEdit, QDateTimeEdit, QSpinBox {
-                border: 1px solid #dee2e6;
+        p = get_current_palette()
+        widget.setStyleSheet(f"""
+            QLineEdit, QTextEdit, QDateTimeEdit, QSpinBox {{
+                border: 1px solid {p['border']};
                 border-radius: 6px;
                 padding: 8px;
                 font-size: 13px;
-                background-color: white;
-            }
-            QLineEdit:focus, QTextEdit:focus, QDateTimeEdit:focus {
-                border-color: #007bff;
-            }
+                background-color: {p['bg_card']};
+            }}
+            QLineEdit:focus, QTextEdit:focus, QDateTimeEdit:focus {{
+                border-color: {p['border_focus']};
+            }}
         """)
 
     def _style_combo(self, combo):
         """تنسيق ComboBox"""
-        combo.setStyleSheet("""
-            QComboBox {
-                border: 1px solid #dee2e6;
+        p = get_current_palette()
+        combo.setStyleSheet(f"""
+            QComboBox {{
+                border: 1px solid {p['border']};
                 border-radius: 6px;
                 padding: 8px;
                 font-size: 13px;
-                background-color: white;
-            }
-            QComboBox:hover {
-                border-color: #007bff;
-            }
-            QComboBox::drop-down {
+                background-color: {p['bg_card']};
+            }}
+            QComboBox:hover {{
+                border-color: {p['border_focus']};
+            }}
+            QComboBox::drop-down {{
                 border: none;
                 width: 24px;
-            }
+            }}
         """)
 
     def _toggle_recurrence(self):
@@ -336,18 +340,19 @@ class TaskFormDialog(QDialog):
 
         title = self.title_input.text().strip()
         if not title:
+            p = get_current_palette()
             self.title_input.setFocus()
-            self.title_input.setStyleSheet("""
-                QLineEdit, QTextEdit, QDateTimeEdit, QSpinBox {
-                    border: 1px solid #dc3545;
+            self.title_input.setStyleSheet(f"""
+                QLineEdit, QTextEdit, QDateTimeEdit, QSpinBox {{
+                    border: 1px solid {p['danger']};
                     border-radius: 6px;
                     padding: 8px;
                     font-size: 13px;
-                    background-color: white;
-                }
-                QLineEdit:focus, QTextEdit:focus, QDateTimeEdit:focus {
-                    border-color: #dc3545;
-                }
+                    background-color: {p['bg_card']};
+                }}
+                QLineEdit:focus, QTextEdit:focus, QDateTimeEdit:focus {{
+                    border-color: {p['danger']};
+                }}
             """)
             return False
         return True
@@ -418,21 +423,22 @@ class QuickTaskInput(QFrame):
         layout.setSpacing(12)
 
         # Input
+        p = get_current_palette()
         self.input = QLineEdit()
         self.input.setPlaceholderText("➕ أضف مهمة جديدة...")
         self.input.setFixedHeight(36)
         self.input.returnPressed.connect(self._create_task)
-        self.input.setStyleSheet("""
-            QLineEdit {
-                border: 1px solid #dee2e6;
+        self.input.setStyleSheet(f"""
+            QLineEdit {{
+                border: 1px solid {p['border']};
                 border-radius: 6px;
                 padding: 0 12px;
                 font-size: 14px;
-                background-color: white;
-            }
-            QLineEdit:focus {
-                border-color: #007bff;
-            }
+                background-color: {p['bg_card']};
+            }}
+            QLineEdit:focus {{
+                border-color: {p['border_focus']};
+            }}
         """)
         layout.addWidget(self.input, 1)
 
@@ -443,14 +449,14 @@ class QuickTaskInput(QFrame):
             self.priority_combo.addItem(priority.label_ar, priority.value)
         # Default to normal
         self.priority_combo.setCurrentIndex(2)
-        self.priority_combo.setStyleSheet("""
-            QComboBox {
-                border: 1px solid #dee2e6;
+        self.priority_combo.setStyleSheet(f"""
+            QComboBox {{
+                border: 1px solid {p['border']};
                 border-radius: 6px;
                 padding: 0 8px;
                 font-size: 12px;
-                background-color: white;
-            }
+                background-color: {p['bg_card']};
+            }}
         """)
         layout.addWidget(self.priority_combo)
 
@@ -458,28 +464,28 @@ class QuickTaskInput(QFrame):
         self.add_btn = QPushButton("إضافة")
         self.add_btn.setFixedSize(80, 36)
         self.add_btn.clicked.connect(self._create_task)
-        self.add_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #28a745;
-                color: white;
+        self.add_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['success']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 6px;
                 font-weight: bold;
                 font-size: 13px;
-            }
-            QPushButton:hover {
-                background-color: #218838;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['success']}dd;
+            }}
         """)
         layout.addWidget(self.add_btn)
 
         # Frame style
-        self.setStyleSheet("""
-            QFrame#quickTaskInput {
-                background-color: #f8f9fa;
-                border: 1px solid #dee2e6;
+        self.setStyleSheet(f"""
+            QFrame#quickTaskInput {{
+                background-color: {p['bg_main']};
+                border: 1px solid {p['border']};
                 border-radius: 8px;
-            }
+            }}
         """)
 
     def _create_task(self):

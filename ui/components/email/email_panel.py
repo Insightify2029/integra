@@ -19,7 +19,7 @@ from core.email import (
     get_email_cache, cache_emails
 )
 from core.logging import app_logger
-from core.themes import get_current_theme
+from core.themes import get_current_palette
 
 # Try to import AI
 try:
@@ -293,7 +293,7 @@ class EmailPanel(QWidget):
         self._current_email: Optional[Email] = None
         self._load_worker: Optional[EmailLoadWorker] = None
         self._ai_worker: Optional[AIAnalyzeWorker] = None
-        self._is_dark = get_current_theme() == 'dark'
+        self._palette = get_current_palette()
         self._setup_ui()
 
     def _setup_ui(self):
@@ -308,10 +308,9 @@ class EmailPanel(QWidget):
 
         # Splitter for list and viewer
         splitter = QSplitter(Qt.Horizontal)
-        splitter_color = "#334155" if self._is_dark else "#e8e8e8"
         splitter.setStyleSheet(f"""
             QSplitter::handle {{
-                background-color: {splitter_color};
+                background-color: {self._palette['border']};
                 width: 1px;
             }}
         """)
@@ -343,13 +342,12 @@ class EmailPanel(QWidget):
 
     def _create_topbar(self) -> QWidget:
         """Create top bar with folder selection."""
+        p = self._palette
         topbar = QFrame()
-        topbar_bg = "#1e293b" if self._is_dark else "#f0f0f0"
-        topbar_border = "#334155" if self._is_dark else "#ddd"
         topbar.setStyleSheet(f"""
             QFrame {{
-                background-color: {topbar_bg};
-                border-bottom: 1px solid {topbar_border};
+                background-color: {p['bg_card']};
+                border-bottom: 1px solid {p['border']};
             }}
         """)
 
@@ -363,43 +361,39 @@ class EmailPanel(QWidget):
 
         # Folder selector
         folder_label = QLabel("المجلد:")
-        fl_color = "#f1f5f9" if self._is_dark else "#333"
-        folder_label.setStyleSheet(f"font-size: 12px; color: {fl_color};")
+        folder_label.setStyleSheet(f"font-size: 12px; color: {p['text_primary']};")
 
-        combo_bg = "#0f172a" if self._is_dark else "white"
-        combo_border = "#475569" if self._is_dark else "#ccc"
-        combo_color = "#f1f5f9" if self._is_dark else "#333"
         self.folder_combo = QComboBox()
         self.folder_combo.setStyleSheet(f"""
             QComboBox {{
-                border: 1px solid {combo_border};
+                border: 1px solid {p['border_light']};
                 border-radius: 4px;
                 padding: 6px 12px;
                 min-width: 150px;
-                background-color: {combo_bg};
-                color: {combo_color};
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
             }}
         """)
-        self.folder_combo.addItem("📥 الوارد", FolderType.INBOX)
-        self.folder_combo.addItem("📤 المرسل", FolderType.SENT)
-        self.folder_combo.addItem("📝 المسودات", FolderType.DRAFTS)
-        self.folder_combo.addItem("🗑️ المحذوف", FolderType.DELETED)
+        self.folder_combo.addItem("الوارد", FolderType.INBOX)
+        self.folder_combo.addItem("المرسل", FolderType.SENT)
+        self.folder_combo.addItem("المسودات", FolderType.DRAFTS)
+        self.folder_combo.addItem("المحذوف", FolderType.DELETED)
         self.folder_combo.currentIndexChanged.connect(self._on_folder_changed)
 
         # Compose button
-        compose_btn = QPushButton("✉️ رسالة جديدة")
-        compose_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #2563eb;
-                color: white;
+        compose_btn = QPushButton("رسالة جديدة")
+        compose_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 4px;
                 padding: 8px 16px;
                 font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #3b82f6;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['primary_hover']};
+            }}
         """)
         compose_btn.clicked.connect(self._on_compose)
 
@@ -413,17 +407,15 @@ class EmailPanel(QWidget):
 
     def _create_status_bar(self) -> QWidget:
         """Create status bar."""
+        p = self._palette
         status = QFrame()
-        sb_bg = "#0f172a" if self._is_dark else "#f8f8f8"
-        sb_border = "#334155" if self._is_dark else "#ddd"
-        status.setStyleSheet(f"background-color: {sb_bg}; border-top: 1px solid {sb_border};")
+        status.setStyleSheet(f"background-color: {p['bg_main']}; border-top: 1px solid {p['border']};")
 
         layout = QHBoxLayout(status)
         layout.setContentsMargins(12, 6, 12, 6)
 
         self.status_label = QLabel("جاهز")
-        sl_color = "#94a3b8" if self._is_dark else "#666"
-        self.status_label.setStyleSheet(f"font-size: 11px; color: {sl_color};")
+        self.status_label.setStyleSheet(f"font-size: 11px; color: {p['text_secondary']};")
 
         # AI status
         self.ai_status = QLabel()
@@ -437,23 +429,25 @@ class EmailPanel(QWidget):
 
     def _update_outlook_status(self):
         """Update Outlook connection status."""
+        p = self._palette
         if is_outlook_available():
             outlook = get_outlook()
             email = outlook.account_email or "متصل"
-            self.outlook_status.setText(f"✅ Outlook: {email}")
-            self.outlook_status.setStyleSheet("color: #22c55e; font-size: 11px;")
+            self.outlook_status.setText(f"Outlook: {email}")
+            self.outlook_status.setStyleSheet(f"color: {p['success']}; font-size: 11px;")
         else:
-            self.outlook_status.setText("❌ Outlook غير متصل")
-            self.outlook_status.setStyleSheet("color: #ef4444; font-size: 11px;")
+            self.outlook_status.setText("Outlook غير متصل")
+            self.outlook_status.setStyleSheet(f"color: {p['danger']}; font-size: 11px;")
 
     def _update_ai_status(self):
         """Update AI status."""
+        p = self._palette
         if AI_AVAILABLE and is_ollama_available():
-            self.ai_status.setText("🤖 AI متاح")
-            self.ai_status.setStyleSheet("color: #22c55e; font-size: 11px;")
+            self.ai_status.setText("AI متاح")
+            self.ai_status.setStyleSheet(f"color: {p['success']}; font-size: 11px;")
         else:
-            self.ai_status.setText("🤖 AI غير متاح")
-            self.ai_status.setStyleSheet("color: #888; font-size: 11px;")
+            self.ai_status.setText("AI غير متاح")
+            self.ai_status.setStyleSheet(f"color: {p['text_muted']}; font-size: 11px;")
 
     def _on_folder_changed(self, index: int):
         """Handle folder change."""

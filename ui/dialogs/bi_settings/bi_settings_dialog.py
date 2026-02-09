@@ -23,9 +23,10 @@ from PyQt5.QtWidgets import (
     QHeaderView, QFileDialog, QMessageBox, QFrame
 )
 from PyQt5.QtCore import Qt, QTime, QThread, pyqtSignal
-from PyQt5.QtGui import QFont
-
-from core.themes import get_stylesheet
+from core.themes import (
+    get_stylesheet, get_current_palette,
+    get_font, FONT_SIZE_BODY, FONT_SIZE_TITLE, FONT_WEIGHT_BOLD,
+)
 from core.logging import app_logger
 
 
@@ -129,8 +130,8 @@ class BISettingsDialog(QDialog):
         layout.setSpacing(15)
 
         # Header
-        header = QLabel("📊 تكامل Power BI Desktop")
-        header.setFont(QFont("Cairo", 16, QFont.Bold))
+        header = QLabel("تكامل Power BI Desktop")
+        header.setFont(get_font(FONT_SIZE_TITLE - 2, FONT_WEIGHT_BOLD))
         header.setAlignment(Qt.AlignCenter)
         layout.addWidget(header)
 
@@ -212,8 +213,9 @@ class BISettingsDialog(QDialog):
         layout.addWidget(string_group)
 
         # Info box
+        palette = get_current_palette()
         info_frame = QFrame()
-        info_frame.setStyleSheet("background-color: #1e3a5f; border-radius: 8px; padding: 10px;")
+        info_frame.setStyleSheet(f"background-color: {palette['primary_light']}; border-radius: 8px; padding: 10px;")
         info_layout = QVBoxLayout(info_frame)
 
         info_label = QLabel("""
@@ -508,24 +510,28 @@ class BISettingsDialog(QDialog):
             config["export"]["export_path"] = self.export_path_input.text()
 
             if save_settings(config):
-                self.status_label.setText("✅ تم حفظ الإعدادات")
-                self.status_label.setStyleSheet("color: #10b981;")
+                self.status_label.setText("تم حفظ الإعدادات")
+                p = get_current_palette()
+                self.status_label.setStyleSheet(f"color: {p['success']};")
             else:
-                self.status_label.setText("❌ فشل حفظ الإعدادات")
-                self.status_label.setStyleSheet("color: #ef4444;")
+                self.status_label.setText("فشل حفظ الإعدادات")
+                p = get_current_palette()
+                self.status_label.setStyleSheet(f"color: {p['danger']};")
 
         except Exception as e:
             app_logger.error(f"Failed to save BI settings: {e}")
-            self.status_label.setText(f"❌ خطأ: {str(e)}")
-            self.status_label.setStyleSheet("color: #ef4444;")
+            self.status_label.setText(f"خطأ: {str(e)}")
+            p = get_current_palette()
+            self.status_label.setStyleSheet(f"color: {p['danger']};")
 
     def _copy_connection_string(self):
         """Copy connection string to clipboard."""
         from PyQt5.QtWidgets import QApplication
         clipboard = QApplication.clipboard()
         clipboard.setText(self.conn_string.text())
-        self.status_label.setText("✅ تم نسخ نص الاتصال")
-        self.status_label.setStyleSheet("color: #10b981;")
+        self.status_label.setText("تم نسخ نص الاتصال")
+        p = get_current_palette()
+        self.status_label.setStyleSheet(f"color: {p['success']};")
 
     def _browse_export_path(self):
         """Browse for export directory."""
@@ -537,8 +543,9 @@ class BISettingsDialog(QDialog):
         """Start export operation."""
         # Prevent starting a new export while one is running
         if self._worker is not None and self._worker.isRunning():
-            self.status_label.setText("⏳ عملية تصدير قيد التنفيذ بالفعل...")
-            self.status_label.setStyleSheet("color: #f59e0b;")
+            self.status_label.setText("عملية تصدير قيد التنفيذ بالفعل...")
+            p = get_current_palette()
+            self.status_label.setStyleSheet(f"color: {p['warning']};")
             return
 
         self.progress_bar.setVisible(True)
@@ -557,13 +564,14 @@ class BISettingsDialog(QDialog):
     def _on_export_finished(self, success: bool, result: str):
         """Handle export completion."""
         self.progress_bar.setVisible(False)
+        p = get_current_palette()
 
         if success:
-            self.status_label.setText(f"✅ {result}")
-            self.status_label.setStyleSheet("color: #10b981;")
+            self.status_label.setText(f"{result}")
+            self.status_label.setStyleSheet(f"color: {p['success']};")
         else:
-            self.status_label.setText(f"❌ {result}")
-            self.status_label.setStyleSheet("color: #ef4444;")
+            self.status_label.setText(f"{result}")
+            self.status_label.setStyleSheet(f"color: {p['danger']};")
 
     def _refresh_views_list(self):
         """Refresh the views table."""
@@ -592,8 +600,9 @@ class BISettingsDialog(QDialog):
         """Create all BI Views."""
         # Prevent starting while another operation is running
         if self._worker is not None and self._worker.isRunning():
-            self.status_label.setText("⏳ عملية قيد التنفيذ بالفعل...")
-            self.status_label.setStyleSheet("color: #f59e0b;")
+            self.status_label.setText("عملية قيد التنفيذ بالفعل...")
+            p = get_current_palette()
+            self.status_label.setStyleSheet(f"color: {p['warning']};")
             return
 
         self.progress_bar.setVisible(True)
@@ -607,14 +616,15 @@ class BISettingsDialog(QDialog):
     def _on_views_finished(self, success: bool, created: int, failed: int):
         """Handle views creation completion."""
         self.progress_bar.setVisible(False)
+        p = get_current_palette()
 
         if success:
-            self.status_label.setText(f"✅ تم إنشاء {created} views ({failed} فشل)")
-            self.status_label.setStyleSheet("color: #10b981;")
+            self.status_label.setText(f"تم إنشاء {created} views ({failed} فشل)")
+            self.status_label.setStyleSheet(f"color: {p['success']};")
             self._refresh_views_list()
         else:
-            self.status_label.setText("❌ فشل إنشاء Views")
-            self.status_label.setStyleSheet("color: #ef4444;")
+            self.status_label.setText("فشل إنشاء Views")
+            self.status_label.setStyleSheet(f"color: {p['danger']};")
 
     def _refresh_templates_list(self):
         """Refresh the templates table."""

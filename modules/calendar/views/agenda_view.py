@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 
+from core.themes import get_current_palette, get_font, FONT_SIZE_SUBTITLE, FONT_SIZE_TITLE, FONT_WEIGHT_BOLD
 from ..models import CalendarEvent
 from ..widgets.calendar_header import DAY_NAMES_AR, MONTH_NAMES_AR
 from ..widgets.event_item import EventItem
@@ -38,11 +39,12 @@ class DaySection(QFrame):
         self._setup_ui()
 
     def _setup_ui(self):
-        self.setStyleSheet("""
-            DaySection {
-                background-color: white;
-                border-bottom: 1px solid #e0e0e0;
-            }
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            DaySection {{
+                background-color: {p['bg_card']};
+                border-bottom: 1px solid {p['border']};
+            }}
         """)
 
         layout = QHBoxLayout(self)
@@ -67,37 +69,35 @@ class DaySection(QFrame):
         is_weekend = day_index == 5 or day_index == 6
 
         if is_today:
-            day_label.setStyleSheet("color: #3498db; font-size: 11px; font-weight: bold;")
+            day_label.setStyleSheet(f"color: {p['primary']}; font-size: 11px; font-weight: bold;")
         elif is_weekend:
-            day_label.setStyleSheet("color: #e74c3c; font-size: 11px;")
+            day_label.setStyleSheet(f"color: {p['danger']}; font-size: 11px;")
         else:
-            day_label.setStyleSheet("color: #7f8c8d; font-size: 11px;")
+            day_label.setStyleSheet(f"color: {p['text_muted']}; font-size: 11px;")
 
         date_layout.addWidget(day_label)
 
         # رقم اليوم
         number_label = QLabel(str(self.section_date.day))
-        number_font = QFont("Cairo", 20)
-        number_font.setBold(True)
-        number_label.setFont(number_font)
+        number_label.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
         number_label.setAlignment(Qt.AlignCenter)
 
         if is_today:
-            number_label.setStyleSheet("""
-                QLabel {
-                    background-color: #3498db;
-                    color: white;
+            number_label.setStyleSheet(f"""
+                QLabel {{
+                    background-color: {p['primary']};
+                    color: {p['text_on_primary']};
                     border-radius: 20px;
                     min-width: 40px;
                     max-width: 40px;
                     min-height: 40px;
                     max-height: 40px;
-                }
+                }}
             """)
         elif is_weekend:
-            number_label.setStyleSheet("color: #e74c3c;")
+            number_label.setStyleSheet(f"color: {p['danger']};")
         else:
-            number_label.setStyleSheet("color: #2c3e50;")
+            number_label.setStyleSheet(f"color: {p['text_primary']};")
 
         date_layout.addWidget(number_label, alignment=Qt.AlignCenter)
 
@@ -106,7 +106,7 @@ class DaySection(QFrame):
             month_name = MONTH_NAMES_AR[self.section_date.month - 1]
             month_label = QLabel(month_name)
             month_label.setAlignment(Qt.AlignCenter)
-            month_label.setStyleSheet("color: #95a5a6; font-size: 10px;")
+            month_label.setStyleSheet(f"color: {p['text_muted']}; font-size: 10px;")
             date_layout.addWidget(month_label)
 
         date_layout.addStretch()
@@ -115,7 +115,7 @@ class DaySection(QFrame):
         # فاصل عمودي
         separator = QFrame()
         separator.setFrameShape(QFrame.VLine)
-        separator.setStyleSheet("background-color: #e0e0e0;")
+        separator.setStyleSheet(f"background-color: {p['border']};")
         layout.addWidget(separator)
 
         # عمود الأحداث
@@ -131,7 +131,7 @@ class DaySection(QFrame):
                 events_layout.addWidget(event_widget)
         else:
             no_events_label = QLabel("لا توجد أحداث")
-            no_events_label.setStyleSheet("color: #bdc3c7; font-style: italic;")
+            no_events_label.setStyleSheet(f"color: {p['text_muted']}; font-style: italic;")
             events_layout.addWidget(no_events_label)
 
         events_layout.addStretch()
@@ -164,7 +164,8 @@ class AgendaView(QWidget):
         self._build_agenda()
 
     def _setup_ui(self):
-        self.setStyleSheet("background-color: #f8f9fa;")
+        p = get_current_palette()
+        self.setStyleSheet(f"background-color: {p['bg_main']};")
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -172,27 +173,25 @@ class AgendaView(QWidget):
 
         # رأس الأجندة
         header = QFrame()
-        header.setStyleSheet("""
-            QFrame {
-                background-color: white;
-                border-bottom: 1px solid #e0e0e0;
-            }
+        header.setStyleSheet(f"""
+            QFrame {{
+                background-color: {p['bg_card']};
+                border-bottom: 1px solid {p['border']};
+            }}
         """)
         header_layout = QHBoxLayout(header)
         header_layout.setContentsMargins(16, 12, 16, 12)
 
         title_label = QLabel("الأجندة")
-        title_font = QFont("Cairo", 14)
-        title_font.setBold(True)
-        title_label.setFont(title_font)
-        title_label.setStyleSheet("color: #2c3e50;")
+        title_label.setFont(get_font(FONT_SIZE_SUBTITLE, FONT_WEIGHT_BOLD))
+        title_label.setStyleSheet(f"color: {p['text_primary']};")
         header_layout.addWidget(title_label)
 
         header_layout.addStretch()
 
         # عداد الأحداث
         self.count_label = QLabel()
-        self.count_label.setStyleSheet("color: #7f8c8d; font-size: 12px;")
+        self.count_label.setStyleSheet(f"color: {p['text_muted']}; font-size: 12px;")
         header_layout.addWidget(self.count_label)
 
         layout.addWidget(header)
@@ -267,12 +266,13 @@ class AgendaView(QWidget):
         if not has_sections:
             empty_label = QLabel("لا توجد أحداث قادمة")
             empty_label.setAlignment(Qt.AlignCenter)
-            empty_label.setStyleSheet("""
-                QLabel {
-                    color: #bdc3c7;
+            p = get_current_palette()
+            empty_label.setStyleSheet(f"""
+                QLabel {{
+                    color: {p['text_muted']};
                     font-size: 14px;
                     padding: 40px;
-                }
+                }}
             """)
             self.sections_layout.addWidget(empty_label)
 

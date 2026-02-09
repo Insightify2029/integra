@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QFrame, QLabel
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
 
+from core.themes import get_current_palette, get_font, FONT_SIZE_SUBTITLE, FONT_WEIGHT_BOLD
 from core.utils.icons import icon as qta_icon, QTAWESOME_AVAILABLE
 
 from .card_layout import create_card_layout
@@ -114,7 +115,8 @@ class ModuleCard(QFrame):
         title_ar = QLabel(ar_text)
         title_ar.setFont(QFont("Cairo", ar_font_size, QFont.Bold))
         title_ar.setAlignment(Qt.AlignCenter)
-        title_ar.setStyleSheet(f"color: {self.module_info['color']}; background: transparent; border: none;")
+        p = get_current_palette()
+        title_ar.setStyleSheet(f"color: {p['primary']}; background: transparent; border: none;")
         title_ar.setWordWrap(True)
         layout.addWidget(title_ar)
         
@@ -125,21 +127,20 @@ class ModuleCard(QFrame):
 
         qta_name = MODULE_ICON_MAP.get(self.module_id)
         if QTAWESOME_AVAILABLE and qta_name:
-            color = self.module_info.get('color', '#2563eb')
-            pixmap = qta_icon(qta_name, color=color).pixmap(56, 56)
+            pixmap = qta_icon(qta_name, color=p['primary']).pixmap(56, 56)
             icon_label.setPixmap(pixmap)
             icon_label.setFixedSize(64, 64)
         else:
             icon_label.setText(self.module_info['icon'])
-            icon_label.setFont(QFont("Segoe UI Emoji", 48))
+            icon_label.setFont(get_font(48))
 
         layout.addWidget(icon_label)
         
         # Add title (English) - BOTTOM
         title_en = QLabel(self.module_info['name_en'])
-        title_en.setFont(QFont("Segoe UI", 14))
+        title_en.setFont(get_font(FONT_SIZE_SUBTITLE))
         title_en.setAlignment(Qt.AlignCenter)
-        title_en.setStyleSheet("color: #64748b; background: transparent; border: none;")
+        title_en.setStyleSheet(f"color: {p['text_muted']}; background: transparent; border: none;")
         layout.addWidget(title_en)
     
     def mousePressEvent(self, event):

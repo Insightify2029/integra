@@ -30,106 +30,7 @@ from PyQt5.QtCore import Qt, pyqtSignal
 
 from ui.windows.base import BaseWindow
 from core.logging import app_logger
-
-
-# ═══════════════════════════════════════════════════════
-# Styles
-# ═══════════════════════════════════════════════════════
-
-ACCENT_COLOR = "#06b6d4"  # Cyan
-
-SECTION_STYLE = f"""
-    QGroupBox {{
-        font-size: 16px;
-        font-weight: bold;
-        color: {ACCENT_COLOR};
-        border: 2px solid {ACCENT_COLOR}40;
-        border-radius: 10px;
-        margin-top: 10px;
-        padding-top: 20px;
-        font-family: 'Cairo', sans-serif;
-    }}
-    QGroupBox::title {{
-        subcontrol-origin: margin;
-        left: 15px;
-        padding: 0 8px;
-    }}
-"""
-
-BTN_STYLE = f"""
-    QPushButton {{
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        padding: 8px 16px;
-        background-color: {ACCENT_COLOR};
-        color: #1f2937;
-        border: none;
-        border-radius: 6px;
-        font-weight: bold;
-    }}
-    QPushButton:hover {{
-        background-color: #0891b2;
-    }}
-    QPushButton:disabled {{
-        background-color: #374151;
-        color: #6b7280;
-    }}
-"""
-
-BTN_SECONDARY_STYLE = """
-    QPushButton {
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        padding: 8px 16px;
-        background-color: #374151;
-        color: #e5e7eb;
-        border: 1px solid #4b5563;
-        border-radius: 6px;
-    }
-    QPushButton:hover {
-        background-color: #4b5563;
-    }
-"""
-
-TABLE_STYLE = """
-    QTableWidget {
-        background-color: #1f2937;
-        color: #e5e7eb;
-        border: 1px solid #374151;
-        border-radius: 6px;
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        gridline-color: #374151;
-    }
-    QTableWidget::item {
-        padding: 5px;
-    }
-    QTableWidget::item:selected {
-        background-color: #06b6d440;
-    }
-    QHeaderView::section {
-        background-color: #111827;
-        color: #9ca3af;
-        padding: 8px;
-        border: 1px solid #374151;
-        font-weight: bold;
-    }
-"""
-
-INPUT_STYLE = """
-    QLineEdit, QComboBox, QSpinBox {
-        font-size: 13px;
-        font-family: 'Cairo', sans-serif;
-        padding: 6px 10px;
-        background-color: #1f2937;
-        color: #e5e7eb;
-        border: 1px solid #374151;
-        border-radius: 6px;
-    }
-    QLineEdit:focus, QComboBox:focus {
-        border-color: #06b6d4;
-    }
-"""
+from core.themes import get_current_palette
 
 
 class FileManagerWindow(BaseWindow):
@@ -154,8 +55,110 @@ class FileManagerWindow(BaseWindow):
 
         self._setup_ui()
 
+    def _build_styles(self):
+        """Build palette-based styles."""
+        p = get_current_palette()
+        self._p = p
+
+        self._section_style = f"""
+            QGroupBox {{
+                font-size: 16px;
+                font-weight: bold;
+                color: {p['accent']};
+                border: 2px solid {p['accent']}40;
+                border-radius: 10px;
+                margin-top: 10px;
+                padding-top: 20px;
+            }}
+            QGroupBox::title {{
+                subcontrol-origin: margin;
+                left: 15px;
+                padding: 0 8px;
+            }}
+        """
+
+        self._btn_style = f"""
+            QPushButton {{
+                padding: 8px 16px;
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+            }}
+            QPushButton:hover {{
+                background-color: {p['primary_hover']};
+            }}
+            QPushButton:disabled {{
+                background-color: {p['disabled_bg']};
+                color: {p['disabled_text']};
+            }}
+        """
+
+        self._btn_secondary_style = f"""
+            QPushButton {{
+                padding: 8px 16px;
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+                border: 1px solid {p['border']};
+                border-radius: 6px;
+            }}
+            QPushButton:hover {{
+                background-color: {p['bg_hover']};
+            }}
+        """
+
+        self._table_style = f"""
+            QTableWidget {{
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+                border: 1px solid {p['border']};
+                border-radius: 6px;
+                gridline-color: {p['border']};
+            }}
+            QTableWidget::item {{
+                padding: 5px;
+            }}
+            QTableWidget::item:selected {{
+                background-color: {p['selection_bg']};
+            }}
+            QHeaderView::section {{
+                background-color: {p['bg_header']};
+                color: {p['text_muted']};
+                padding: 8px;
+                border: 1px solid {p['border']};
+                font-weight: bold;
+            }}
+        """
+
+        self._input_style = f"""
+            QLineEdit, QComboBox, QSpinBox {{
+                padding: 6px 10px;
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+                border: 1px solid {p['border']};
+                border-radius: 6px;
+            }}
+            QLineEdit:focus, QComboBox:focus {{
+                border-color: {p['border_focus']};
+            }}
+        """
+
+        self._textedit_style = f"""
+            QTextEdit {{
+                background-color: {p['bg_input']};
+                color: {p['text_primary']};
+                border: 1px solid {p['border']};
+                border-radius: 6px;
+                padding: 10px;
+            }}
+        """
+
     def _setup_ui(self):
         """Setup the window UI."""
+        self._build_styles()
+        p = self._p
+
         central = QWidget()
         self.setCentralWidget(central)
 
@@ -169,44 +172,41 @@ class FileManagerWindow(BaseWindow):
         title.setStyleSheet(f"""
             font-size: 24px;
             font-weight: bold;
-            color: {ACCENT_COLOR};
+            color: {p['accent']};
             padding: 8px;
-            font-family: 'Cairo', sans-serif;
         """)
         main_layout.addWidget(title)
 
         # Status bar (created early - tabs may call _set_status during init)
         self.status_label = QLabel("جاهز")
         self.status_label.setStyleSheet(
-            "font-size: 12px; color: #6b7280; font-family: 'Cairo'; padding: 5px;"
+            f"font-size: 12px; color: {p['text_muted']}; padding: 5px;"
         )
 
         # Tab Widget
         self.tabs = QTabWidget()
         self.tabs.setStyleSheet(f"""
             QTabWidget::pane {{
-                border: 1px solid #374151;
+                border: 1px solid {p['border']};
                 border-radius: 6px;
-                background-color: #111827;
+                background-color: {p['bg_main']};
             }}
             QTabBar::tab {{
-                background-color: #1f2937;
-                color: #9ca3af;
+                background-color: {p['bg_input']};
+                color: {p['text_muted']};
                 padding: 10px 20px;
                 margin-right: 2px;
                 border-top-left-radius: 6px;
                 border-top-right-radius: 6px;
-                font-family: 'Cairo', sans-serif;
-                font-size: 13px;
                 font-weight: bold;
             }}
             QTabBar::tab:selected {{
-                background-color: {ACCENT_COLOR};
-                color: #1f2937;
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
             }}
             QTabBar::tab:hover:!selected {{
-                background-color: #374151;
-                color: #e5e7eb;
+                background-color: {p['bg_hover']};
+                color: {p['text_primary']};
             }}
         """)
         self.tabs.setLayoutDirection(Qt.RightToLeft)
@@ -237,25 +237,25 @@ class FileManagerWindow(BaseWindow):
         nav_layout = QHBoxLayout()
 
         btn_up = QPushButton("Up")
-        btn_up.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_up.setStyleSheet(self._btn_secondary_style)
         btn_up.setFixedWidth(60)
         btn_up.clicked.connect(self._browser_go_up)
         nav_layout.addWidget(btn_up)
 
         btn_home = QPushButton("Home")
-        btn_home.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_home.setStyleSheet(self._btn_secondary_style)
         btn_home.setFixedWidth(70)
         btn_home.clicked.connect(self._browser_go_home)
         nav_layout.addWidget(btn_home)
 
         self.path_input = QLineEdit()
-        self.path_input.setStyleSheet(INPUT_STYLE)
+        self.path_input.setStyleSheet(self._input_style)
         self.path_input.setText(str(Path.home()))
         self.path_input.returnPressed.connect(self._browser_navigate)
         nav_layout.addWidget(self.path_input)
 
         btn_go = QPushButton("Go")
-        btn_go.setStyleSheet(BTN_STYLE)
+        btn_go.setStyleSheet(self._btn_style)
         btn_go.setFixedWidth(60)
         btn_go.clicked.connect(self._browser_navigate)
         nav_layout.addWidget(btn_go)
@@ -264,7 +264,7 @@ class FileManagerWindow(BaseWindow):
 
         # File table
         self.file_table = QTableWidget()
-        self.file_table.setStyleSheet(TABLE_STYLE)
+        self.file_table.setStyleSheet(self._table_style)
         self.file_table.setColumnCount(4)
         self.file_table.setHorizontalHeaderLabels(["الاسم", "النوع", "الحجم", "تاريخ التعديل"])
         self.file_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
@@ -277,19 +277,19 @@ class FileManagerWindow(BaseWindow):
         actions = QHBoxLayout()
 
         btn_refresh = QPushButton("تحديث")
-        btn_refresh.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_refresh.setStyleSheet(self._btn_secondary_style)
         btn_refresh.clicked.connect(self._browser_refresh)
         actions.addWidget(btn_refresh)
 
         btn_new_folder = QPushButton("مجلد جديد")
-        btn_new_folder.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_new_folder.setStyleSheet(self._btn_secondary_style)
         btn_new_folder.clicked.connect(self._browser_new_folder)
         actions.addWidget(btn_new_folder)
 
         actions.addStretch()
 
         self.lbl_dir_stats = QLabel("")
-        self.lbl_dir_stats.setStyleSheet("font-size: 12px; color: #6b7280; font-family: 'Cairo';")
+        self.lbl_dir_stats.setStyleSheet(f"font-size: 12px; color: {self._p['text_muted']};")
         actions.addWidget(self.lbl_dir_stats)
 
         layout.addLayout(actions)
@@ -313,18 +313,18 @@ class FileManagerWindow(BaseWindow):
         file_layout = QHBoxLayout()
 
         self.excel_path = QLineEdit()
-        self.excel_path.setStyleSheet(INPUT_STYLE)
+        self.excel_path.setStyleSheet(self._input_style)
         self.excel_path.setPlaceholderText("اختر ملف Excel أو CSV...")
         self.excel_path.setReadOnly(True)
         file_layout.addWidget(self.excel_path)
 
         btn_browse_excel = QPushButton("استعراض")
-        btn_browse_excel.setStyleSheet(BTN_STYLE)
+        btn_browse_excel.setStyleSheet(self._btn_style)
         btn_browse_excel.clicked.connect(self._excel_browse)
         file_layout.addWidget(btn_browse_excel)
 
         btn_load_excel = QPushButton("تحميل")
-        btn_load_excel.setStyleSheet(BTN_STYLE)
+        btn_load_excel.setStyleSheet(self._btn_style)
         btn_load_excel.clicked.connect(self._excel_load)
         file_layout.addWidget(btn_load_excel)
 
@@ -332,13 +332,13 @@ class FileManagerWindow(BaseWindow):
 
         # Info label
         self.excel_info = QLabel("لم يتم تحميل ملف")
-        self.excel_info.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo';")
+        self.excel_info.setStyleSheet(f"font-size: 13px; color: {self._p['text_muted']};")
         self.excel_info.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.excel_info)
 
         # Data preview table
         self.excel_table = QTableWidget()
-        self.excel_table.setStyleSheet(TABLE_STYLE)
+        self.excel_table.setStyleSheet(self._table_style)
         self.excel_table.setLayoutDirection(Qt.RightToLeft)
         layout.addWidget(self.excel_table)
 
@@ -346,22 +346,22 @@ class FileManagerWindow(BaseWindow):
         excel_actions = QHBoxLayout()
 
         btn_analyze = QPushButton("تحليل الأعمدة")
-        btn_analyze.setStyleSheet(BTN_STYLE)
+        btn_analyze.setStyleSheet(self._btn_style)
         btn_analyze.clicked.connect(self._excel_analyze)
         excel_actions.addWidget(btn_analyze)
 
         btn_clean = QPushButton("تنظيف البيانات")
-        btn_clean.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_clean.setStyleSheet(self._btn_secondary_style)
         btn_clean.clicked.connect(self._excel_clean)
         excel_actions.addWidget(btn_clean)
 
         btn_duplicates = QPushButton("اكتشاف المكرر")
-        btn_duplicates.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_duplicates.setStyleSheet(self._btn_secondary_style)
         btn_duplicates.clicked.connect(self._excel_duplicates)
         excel_actions.addWidget(btn_duplicates)
 
         btn_quality = QPushButton("تقرير الجودة")
-        btn_quality.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_quality.setStyleSheet(self._btn_secondary_style)
         btn_quality.clicked.connect(self._excel_quality)
         excel_actions.addWidget(btn_quality)
 
@@ -370,17 +370,7 @@ class FileManagerWindow(BaseWindow):
 
         # Analysis results
         self.excel_results = QTextEdit()
-        self.excel_results.setStyleSheet("""
-            QTextEdit {
-                background-color: #1f2937;
-                color: #e5e7eb;
-                border: 1px solid #374151;
-                border-radius: 6px;
-                font-size: 13px;
-                font-family: 'Cairo', monospace;
-                padding: 10px;
-            }
-        """)
+        self.excel_results.setStyleSheet(self._textedit_style)
         self.excel_results.setReadOnly(True)
         self.excel_results.setMaximumHeight(200)
         layout.addWidget(self.excel_results)
@@ -401,13 +391,13 @@ class FileManagerWindow(BaseWindow):
         file_layout = QHBoxLayout()
 
         self.pdf_path = QLineEdit()
-        self.pdf_path.setStyleSheet(INPUT_STYLE)
+        self.pdf_path.setStyleSheet(self._input_style)
         self.pdf_path.setPlaceholderText("اختر ملف PDF...")
         self.pdf_path.setReadOnly(True)
         file_layout.addWidget(self.pdf_path)
 
         btn_browse_pdf = QPushButton("استعراض")
-        btn_browse_pdf.setStyleSheet(BTN_STYLE)
+        btn_browse_pdf.setStyleSheet(self._btn_style)
         btn_browse_pdf.clicked.connect(self._pdf_browse)
         file_layout.addWidget(btn_browse_pdf)
 
@@ -415,61 +405,61 @@ class FileManagerWindow(BaseWindow):
 
         # PDF Info
         self.pdf_info = QLabel("لم يتم تحميل ملف")
-        self.pdf_info.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo';")
+        self.pdf_info.setStyleSheet(f"font-size: 13px; color: {self._p['text_muted']};")
         self.pdf_info.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.pdf_info)
 
         # PDF Operations
         ops_group = QGroupBox("العمليات")
-        ops_group.setStyleSheet(SECTION_STYLE)
+        ops_group.setStyleSheet(self._section_style)
         ops_layout = QGridLayout()
         ops_group.setLayout(ops_layout)
 
         # Row 1: Split & Merge
         btn_split = QPushButton("فصل الصفحات")
-        btn_split.setStyleSheet(BTN_STYLE)
+        btn_split.setStyleSheet(self._btn_style)
         btn_split.clicked.connect(self._pdf_split_all)
         ops_layout.addWidget(btn_split, 0, 0)
 
         btn_merge = QPushButton("دمج ملفات PDF")
-        btn_merge.setStyleSheet(BTN_STYLE)
+        btn_merge.setStyleSheet(self._btn_style)
         btn_merge.clicked.connect(self._pdf_merge)
         ops_layout.addWidget(btn_merge, 0, 1)
 
         btn_compress = QPushButton("ضغط PDF")
-        btn_compress.setStyleSheet(BTN_STYLE)
+        btn_compress.setStyleSheet(self._btn_style)
         btn_compress.clicked.connect(self._pdf_compress)
         ops_layout.addWidget(btn_compress, 0, 2)
 
         # Row 2: OCR & Text
         btn_text = QPushButton("استخراج النص")
-        btn_text.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_text.setStyleSheet(self._btn_secondary_style)
         btn_text.clicked.connect(self._pdf_extract_text)
         ops_layout.addWidget(btn_text, 1, 0)
 
         btn_ocr = QPushButton("OCR (عربي + إنجليزي)")
-        btn_ocr.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_ocr.setStyleSheet(self._btn_secondary_style)
         btn_ocr.clicked.connect(self._pdf_ocr)
         ops_layout.addWidget(btn_ocr, 1, 1)
 
         btn_search = QPushButton("بحث في المحتوى")
-        btn_search.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_search.setStyleSheet(self._btn_secondary_style)
         btn_search.clicked.connect(self._pdf_search)
         ops_layout.addWidget(btn_search, 1, 2)
 
         # Row 3: Security & Conversion
         btn_watermark = QPushButton("علامة مائية")
-        btn_watermark.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_watermark.setStyleSheet(self._btn_secondary_style)
         btn_watermark.clicked.connect(self._pdf_watermark)
         ops_layout.addWidget(btn_watermark, 2, 0)
 
         btn_encrypt = QPushButton("تشفير بكلمة مرور")
-        btn_encrypt.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_encrypt.setStyleSheet(self._btn_secondary_style)
         btn_encrypt.clicked.connect(self._pdf_encrypt)
         ops_layout.addWidget(btn_encrypt, 2, 1)
 
         btn_to_images = QPushButton("تحويل إلى صور")
-        btn_to_images.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_to_images.setStyleSheet(self._btn_secondary_style)
         btn_to_images.clicked.connect(self._pdf_to_images)
         ops_layout.addWidget(btn_to_images, 2, 2)
 
@@ -477,17 +467,7 @@ class FileManagerWindow(BaseWindow):
 
         # Results area
         self.pdf_results = QTextEdit()
-        self.pdf_results.setStyleSheet("""
-            QTextEdit {
-                background-color: #1f2937;
-                color: #e5e7eb;
-                border: 1px solid #374151;
-                border-radius: 6px;
-                font-size: 13px;
-                font-family: 'Cairo', monospace;
-                padding: 10px;
-            }
-        """)
+        self.pdf_results.setStyleSheet(self._textedit_style)
         self.pdf_results.setReadOnly(True)
         layout.addWidget(self.pdf_results)
 
@@ -507,13 +487,13 @@ class FileManagerWindow(BaseWindow):
         file_layout = QHBoxLayout()
 
         self.image_path = QLineEdit()
-        self.image_path.setStyleSheet(INPUT_STYLE)
+        self.image_path.setStyleSheet(self._input_style)
         self.image_path.setPlaceholderText("اختر صورة...")
         self.image_path.setReadOnly(True)
         file_layout.addWidget(self.image_path)
 
         btn_browse_img = QPushButton("استعراض")
-        btn_browse_img.setStyleSheet(BTN_STYLE)
+        btn_browse_img.setStyleSheet(self._btn_style)
         btn_browse_img.clicked.connect(self._image_browse)
         file_layout.addWidget(btn_browse_img)
 
@@ -521,64 +501,64 @@ class FileManagerWindow(BaseWindow):
 
         # Image info
         self.image_info = QLabel("لم يتم تحميل صورة")
-        self.image_info.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo';")
+        self.image_info.setStyleSheet(f"font-size: 13px; color: {self._p['text_muted']};")
         self.image_info.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.image_info)
 
         # Operations
         ops = QGroupBox("العمليات")
-        ops.setStyleSheet(SECTION_STYLE)
+        ops.setStyleSheet(self._section_style)
         ops_layout = QGridLayout()
         ops.setLayout(ops_layout)
 
         # Resize
         ops_layout.addWidget(QLabel("تغيير الحجم:"), 0, 0)
         self.img_width = QSpinBox()
-        self.img_width.setStyleSheet(INPUT_STYLE)
+        self.img_width.setStyleSheet(self._input_style)
         self.img_width.setRange(1, 10000)
         self.img_width.setValue(800)
         ops_layout.addWidget(self.img_width, 0, 1)
 
         ops_layout.addWidget(QLabel("x"), 0, 2)
         self.img_height = QSpinBox()
-        self.img_height.setStyleSheet(INPUT_STYLE)
+        self.img_height.setStyleSheet(self._input_style)
         self.img_height.setRange(1, 10000)
         self.img_height.setValue(600)
         ops_layout.addWidget(self.img_height, 0, 3)
 
         btn_resize = QPushButton("تطبيق")
-        btn_resize.setStyleSheet(BTN_STYLE)
+        btn_resize.setStyleSheet(self._btn_style)
         btn_resize.clicked.connect(self._image_resize)
         ops_layout.addWidget(btn_resize, 0, 4)
 
         # Convert
         ops_layout.addWidget(QLabel("تحويل إلى:"), 1, 0)
         self.img_format = QComboBox()
-        self.img_format.setStyleSheet(INPUT_STYLE)
+        self.img_format.setStyleSheet(self._input_style)
         self.img_format.addItems(["PNG", "JPEG", "BMP", "WEBP", "TIFF"])
         ops_layout.addWidget(self.img_format, 1, 1, 1, 2)
 
         btn_convert = QPushButton("تحويل")
-        btn_convert.setStyleSheet(BTN_STYLE)
+        btn_convert.setStyleSheet(self._btn_style)
         btn_convert.clicked.connect(self._image_convert)
         ops_layout.addWidget(btn_convert, 1, 4)
 
         # Compress
         ops_layout.addWidget(QLabel("ضغط (جودة):"), 2, 0)
         self.img_quality = QSpinBox()
-        self.img_quality.setStyleSheet(INPUT_STYLE)
+        self.img_quality.setStyleSheet(self._input_style)
         self.img_quality.setRange(1, 100)
         self.img_quality.setValue(85)
         ops_layout.addWidget(self.img_quality, 2, 1, 1, 2)
 
         btn_compress = QPushButton("ضغط")
-        btn_compress.setStyleSheet(BTN_STYLE)
+        btn_compress.setStyleSheet(self._btn_style)
         btn_compress.clicked.connect(self._image_compress)
         ops_layout.addWidget(btn_compress, 2, 4)
 
         # Batch processing
         btn_batch = QPushButton("معالجة دفعية")
-        btn_batch.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_batch.setStyleSheet(self._btn_secondary_style)
         btn_batch.clicked.connect(self._image_batch)
         ops_layout.addWidget(btn_batch, 3, 0, 1, 5)
 
@@ -586,17 +566,7 @@ class FileManagerWindow(BaseWindow):
 
         # Results
         self.image_results = QTextEdit()
-        self.image_results.setStyleSheet("""
-            QTextEdit {
-                background-color: #1f2937;
-                color: #e5e7eb;
-                border: 1px solid #374151;
-                border-radius: 6px;
-                font-size: 13px;
-                font-family: 'Cairo', monospace;
-                padding: 10px;
-            }
-        """)
+        self.image_results.setStyleSheet(self._textedit_style)
         self.image_results.setReadOnly(True)
         layout.addWidget(self.image_results)
 
@@ -616,18 +586,18 @@ class FileManagerWindow(BaseWindow):
         file_layout = QHBoxLayout()
 
         self.word_path = QLineEdit()
-        self.word_path.setStyleSheet(INPUT_STYLE)
+        self.word_path.setStyleSheet(self._input_style)
         self.word_path.setPlaceholderText("اختر ملف Word...")
         self.word_path.setReadOnly(True)
         file_layout.addWidget(self.word_path)
 
         btn_browse_word = QPushButton("استعراض")
-        btn_browse_word.setStyleSheet(BTN_STYLE)
+        btn_browse_word.setStyleSheet(self._btn_style)
         btn_browse_word.clicked.connect(self._word_browse)
         file_layout.addWidget(btn_browse_word)
 
         btn_new_word = QPushButton("مستند جديد")
-        btn_new_word.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_new_word.setStyleSheet(self._btn_secondary_style)
         btn_new_word.clicked.connect(self._word_new)
         file_layout.addWidget(btn_new_word)
 
@@ -635,23 +605,13 @@ class FileManagerWindow(BaseWindow):
 
         # Word info
         self.word_info = QLabel("لم يتم تحميل مستند")
-        self.word_info.setStyleSheet("font-size: 13px; color: #9ca3af; font-family: 'Cairo';")
+        self.word_info.setStyleSheet(f"font-size: 13px; color: {self._p['text_muted']};")
         self.word_info.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.word_info)
 
         # Content display
         self.word_content = QTextEdit()
-        self.word_content.setStyleSheet("""
-            QTextEdit {
-                background-color: #1f2937;
-                color: #e5e7eb;
-                border: 1px solid #374151;
-                border-radius: 6px;
-                font-size: 14px;
-                font-family: 'Cairo', sans-serif;
-                padding: 15px;
-            }
-        """)
+        self.word_content.setStyleSheet(self._textedit_style)
         self.word_content.setReadOnly(True)
         layout.addWidget(self.word_content)
 
@@ -659,22 +619,22 @@ class FileManagerWindow(BaseWindow):
         word_actions = QHBoxLayout()
 
         btn_read = QPushButton("قراءة النص")
-        btn_read.setStyleSheet(BTN_STYLE)
+        btn_read.setStyleSheet(self._btn_style)
         btn_read.clicked.connect(self._word_read)
         word_actions.addWidget(btn_read)
 
         btn_tables = QPushButton("قراءة الجداول")
-        btn_tables.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_tables.setStyleSheet(self._btn_secondary_style)
         btn_tables.clicked.connect(self._word_read_tables)
         word_actions.addWidget(btn_tables)
 
         btn_stats = QPushButton("إحصائيات")
-        btn_stats.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_stats.setStyleSheet(self._btn_secondary_style)
         btn_stats.clicked.connect(self._word_stats)
         word_actions.addWidget(btn_stats)
 
         btn_to_pdf = QPushButton("تحويل إلى PDF")
-        btn_to_pdf.setStyleSheet(BTN_SECONDARY_STYLE)
+        btn_to_pdf.setStyleSheet(self._btn_secondary_style)
         btn_to_pdf.clicked.connect(self._word_to_pdf)
         word_actions.addWidget(btn_to_pdf)
 
@@ -790,7 +750,7 @@ class FileManagerWindow(BaseWindow):
             if success:
                 self.excel_info.setText(msg)
                 self.excel_info.setStyleSheet(
-                    "font-size: 13px; color: #10b981; font-family: 'Cairo';"
+                    f"font-size: 13px; color: {self._p['success']};"
                 )
 
                 # Show preview
@@ -811,7 +771,7 @@ class FileManagerWindow(BaseWindow):
             else:
                 self.excel_info.setText(f"خطأ: {msg}")
                 self.excel_info.setStyleSheet(
-                    "font-size: 13px; color: #ef4444; font-family: 'Cairo';"
+                    f"font-size: 13px; color: {self._p['danger']};"
                 )
         except Exception as e:
             self._set_status(f"خطأ: {e}")
@@ -909,7 +869,7 @@ class FileManagerWindow(BaseWindow):
                 f"مشفر: {'نعم' if info.get('is_encrypted') else 'لا'}"
             )
             self.pdf_info.setStyleSheet(
-                "font-size: 13px; color: #10b981; font-family: 'Cairo';"
+                f"font-size: 13px; color: {self._p['success']};"
             )
 
             self._current_pdf_studio = PDFAIStudio()
@@ -1074,7 +1034,7 @@ class FileManagerWindow(BaseWindow):
                     f"الحجم: {info['file_size_formatted']}"
                 )
                 self.image_info.setStyleSheet(
-                    "font-size: 13px; color: #10b981; font-family: 'Cairo';"
+                    f"font-size: 13px; color: {self._p['success']};"
                 )
                 self.img_width.setValue(info['width'])
                 self.img_height.setValue(info['height'])
@@ -1188,7 +1148,7 @@ class FileManagerWindow(BaseWindow):
                 f"الكلمات: {stats['words']}"
             )
             self.word_info.setStyleSheet(
-                "font-size: 13px; color: #10b981; font-family: 'Cairo';"
+                f"font-size: 13px; color: {self._p['success']};"
             )
         except Exception as e:
             self.word_info.setText(f"خطأ: {e}")

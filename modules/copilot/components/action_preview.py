@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal
 
 from core.logging import app_logger
+from core.themes import get_current_palette, get_font, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_SIZE_TINY
 
 
 class ActionStatus(Enum):
@@ -69,12 +70,13 @@ class ActionPreviewCard(QFrame):
 
     def _setup_ui(self):
         """Setup the card UI."""
-        self.setStyleSheet("""
-            ActionPreviewCard {
-                background-color: white;
-                border: 1px solid #e5e7eb;
+        p = get_current_palette()
+        self.setStyleSheet(f"""
+            ActionPreviewCard {{
+                background-color: {p['bg_card']};
+                border: 1px solid {p['border']};
                 border-radius: 12px;
-            }
+            }}
         """)
 
         layout = QVBoxLayout(self)
@@ -97,25 +99,25 @@ class ActionPreviewCard(QFrame):
         icon = icons.get(self.action.type, "⚡")
 
         icon_label = QLabel(icon)
-        icon_label.setStyleSheet("font-size: 20px;")
+        icon_label.setStyleSheet("font-size: 20px; background: transparent;")
 
         # Title and type
         title_layout = QVBoxLayout()
         title_layout.setSpacing(2)
 
         title = QLabel(self.action.title)
-        title.setStyleSheet("font-size: 14px; font-weight: bold; color: #1f2937;")
+        title.setStyleSheet(f"font-size: 14px; font-weight: bold; color: {p['text_primary']};")
 
         type_labels = {
-            "create": ("إنشاء جديد", "#10b981"),
-            "edit": ("تعديل", "#f59e0b"),
-            "delete": ("حذف", "#ef4444"),
-            "view": ("عرض", "#3b82f6"),
-            "export": ("تصدير", "#6366f1"),
-            "import": ("استيراد", "#8b5cf6"),
-            "send": ("إرسال", "#0ea5e9")
+            "create": ("إنشاء جديد", p['success']),
+            "edit": ("تعديل", p['warning']),
+            "delete": ("حذف", p['danger']),
+            "view": ("عرض", p['info']),
+            "export": ("تصدير", p['accent']),
+            "import": ("استيراد", p['primary']),
+            "send": ("إرسال", p['info'])
         }
-        type_text, type_color = type_labels.get(self.action.type, ("إجراء", "#6b7280"))
+        type_text, type_color = type_labels.get(self.action.type, ("إجراء", p['text_muted']))
 
         type_label = QLabel(type_text)
         type_label.setStyleSheet(f"""
@@ -140,43 +142,43 @@ class ActionPreviewCard(QFrame):
         if self.action.description:
             desc = QLabel(self.action.description)
             desc.setWordWrap(True)
-            desc.setStyleSheet("color: #6b7280; font-size: 12px;")
+            desc.setStyleSheet(f"color: {p['text_muted']}; font-size: 12px;")
             layout.addWidget(desc)
 
         # Target
         target_label = QLabel(f"الهدف: {self.action.target}")
-        target_label.setStyleSheet("color: #9ca3af; font-size: 11px;")
+        target_label.setStyleSheet(f"color: {p['text_muted']}; font-size: 11px;")
         layout.addWidget(target_label)
 
         # Preview data
         if self.action.preview_data:
             preview_frame = QFrame()
-            preview_frame.setStyleSheet("""
-                QFrame {
-                    background-color: #f9fafb;
-                    border: 1px solid #e5e7eb;
+            preview_frame.setStyleSheet(f"""
+                QFrame {{
+                    background-color: {p['bg_main']};
+                    border: 1px solid {p['border']};
                     border-radius: 8px;
-                }
+                }}
             """)
 
             preview_layout = QVBoxLayout(preview_frame)
             preview_layout.setContentsMargins(12, 8, 12, 8)
 
             preview_title = QLabel("معاينة التغييرات:")
-            preview_title.setStyleSheet("color: #374151; font-size: 11px; font-weight: bold;")
+            preview_title.setStyleSheet(f"color: {p['text_primary']}; font-size: 11px; font-weight: bold;")
 
             preview_text = QTextEdit()
             preview_text.setPlainText(self.action.preview_data)
             preview_text.setReadOnly(True)
             preview_text.setMaximumHeight(100)
-            preview_text.setStyleSheet("""
-                QTextEdit {
+            preview_text.setStyleSheet(f"""
+                QTextEdit {{
                     border: none;
                     background: transparent;
-                    color: #4b5563;
+                    color: {p['text_secondary']};
                     font-size: 12px;
                     font-family: monospace;
-                }
+                }}
             """)
 
             preview_layout.addWidget(preview_title)
@@ -188,9 +190,9 @@ class ActionPreviewCard(QFrame):
             changes_text = self._format_changes()
             changes_label = QLabel(changes_text)
             changes_label.setWordWrap(True)
-            changes_label.setStyleSheet("""
-                background-color: #fef3c7;
-                color: #92400e;
+            changes_label.setStyleSheet(f"""
+                background-color: {p['warning']}20;
+                color: {p['warning']};
                 padding: 8px 12px;
                 border-radius: 8px;
                 font-size: 12px;
@@ -203,53 +205,53 @@ class ActionPreviewCard(QFrame):
 
         # Edit button
         edit_btn = QPushButton("تعديل")
-        edit_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #f3f4f6;
-                color: #374151;
+        edit_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['bg_hover']};
+                color: {p['text_primary']};
                 border: none;
                 border-radius: 8px;
                 padding: 8px 16px;
                 font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #e5e7eb;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['border']};
+            }}
         """)
         edit_btn.clicked.connect(self._on_edit)
 
         # Reject button
         reject_btn = QPushButton("رفض")
-        reject_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #fee2e2;
-                color: #dc2626;
+        reject_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['danger']}20;
+                color: {p['danger']};
                 border: none;
                 border-radius: 8px;
                 padding: 8px 16px;
                 font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #fecaca;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['danger']}35;
+            }}
         """)
         reject_btn.clicked.connect(self._on_reject)
 
         # Approve button
         approve_btn = QPushButton("موافقة وتنفيذ")
-        approve_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #10b981;
-                color: white;
+        approve_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {p['success']};
+                color: {p['text_on_primary']};
                 border: none;
                 border-radius: 8px;
                 padding: 8px 16px;
                 font-size: 12px;
                 font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #059669;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {p['success']}dd;
+            }}
         """)
         approve_btn.clicked.connect(self._on_approve)
 
@@ -313,13 +315,15 @@ class ActionPreview(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
+        p = get_current_palette()
+
         # Header
         header = QFrame()
-        header.setStyleSheet("""
-            QFrame {
-                background-color: #fef3c7;
-                border-bottom: 1px solid #fcd34d;
-            }
+        header.setStyleSheet(f"""
+            QFrame {{
+                background-color: {p['warning']}20;
+                border-bottom: 1px solid {p['warning']}50;
+            }}
         """)
 
         header_layout = QHBoxLayout(header)
@@ -329,12 +333,12 @@ class ActionPreview(QWidget):
         icon.setStyleSheet("font-size: 18px;")
 
         title = QLabel("إجراءات معلقة")
-        title.setStyleSheet("font-size: 14px; font-weight: bold; color: #92400e;")
+        title.setStyleSheet(f"font-size: 14px; font-weight: bold; color: {p['warning']};")
 
         self.count_label = QLabel("0")
-        self.count_label.setStyleSheet("""
-            background-color: #f59e0b;
-            color: white;
+        self.count_label.setStyleSheet(f"""
+            background-color: {p['warning']};
+            color: {p['text_on_primary']};
             font-size: 11px;
             padding: 2px 8px;
             border-radius: 10px;
@@ -351,7 +355,7 @@ class ActionPreview(QWidget):
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setStyleSheet("QScrollArea { border: none; background-color: #f9fafb; }")
+        scroll.setStyleSheet(f"QScrollArea {{ border: none; background-color: {p['bg_main']}; }}")
 
         self.cards_container = QWidget()
         self.cards_layout = QVBoxLayout(self.cards_container)
@@ -365,7 +369,7 @@ class ActionPreview(QWidget):
         # Empty state
         self.empty_label = QLabel("لا توجد إجراءات معلقة")
         self.empty_label.setAlignment(Qt.AlignCenter)
-        self.empty_label.setStyleSheet("color: #9ca3af; font-size: 13px; padding: 40px;")
+        self.empty_label.setStyleSheet(f"color: {p['text_muted']}; font-size: 13px; padding: 40px;")
         self.cards_layout.insertWidget(0, self.empty_label)
 
     def add_action(self, action: PreviewAction):

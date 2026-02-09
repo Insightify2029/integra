@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 
+from core.themes import get_current_palette, get_font, FONT_SIZE_SUBTITLE, FONT_WEIGHT_BOLD
 from ..models import CalendarEvent
 from ..widgets.calendar_header import DAY_NAMES_AR, MONTH_NAMES_AR
 from ..widgets.event_item import EventItem
@@ -45,16 +46,17 @@ class HourBlock(QFrame):
     def _setup_ui(self):
         self.setMinimumHeight(60)
         self.setFrameStyle(QFrame.Box | QFrame.Plain)
+        p = get_current_palette()
 
         if self.is_current_hour:
-            bg_color = "#eef7ff"
-            border = "2px solid #3498db"
+            bg_color = p['primary_light']
+            border = f"2px solid {p['primary']}"
         elif self.is_working_hour:
-            bg_color = "#ffffff"
-            border = "1px solid #eee"
+            bg_color = p['bg_card']
+            border = f"1px solid {p['border_light']}"
         else:
-            bg_color = "#f8f9fa"
-            border = "1px solid #eee"
+            bg_color = p['bg_main']
+            border = f"1px solid {p['border_light']}"
 
         self.setStyleSheet(f"""
             HourBlock {{
@@ -62,7 +64,7 @@ class HourBlock(QFrame):
                 border: {border};
             }}
             HourBlock:hover {{
-                background-color: #f0f7ff;
+                background-color: {p['bg_hover']};
             }}
         """)
 
@@ -113,7 +115,8 @@ class DayView(QWidget):
         self._build_day()
 
     def _setup_ui(self):
-        self.setStyleSheet("background-color: white;")
+        p = get_current_palette()
+        self.setStyleSheet(f"background-color: {p['bg_card']};")
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -121,11 +124,11 @@ class DayView(QWidget):
 
         # رأس اليوم
         self.header = QFrame()
-        self.header.setStyleSheet("""
-            QFrame {
-                background-color: #f8f9fa;
-                border-bottom: 1px solid #e0e0e0;
-            }
+        self.header.setStyleSheet(f"""
+            QFrame {{
+                background-color: {p['bg_main']};
+                border-bottom: 1px solid {p['border']};
+            }}
         """)
         header_layout = QVBoxLayout(self.header)
         header_layout.setContentsMargins(16, 12, 16, 12)
@@ -133,10 +136,8 @@ class DayView(QWidget):
 
         # تاريخ اليوم
         self.date_label = QLabel()
-        date_font = QFont("Cairo", 14)
-        date_font.setBold(True)
-        self.date_label.setFont(date_font)
-        self.date_label.setStyleSheet("color: #2c3e50;")
+        self.date_label.setFont(get_font(FONT_SIZE_SUBTITLE, FONT_WEIGHT_BOLD))
+        self.date_label.setStyleSheet(f"color: {p['text_primary']};")
         header_layout.addWidget(self.date_label)
 
         # أحداث طوال اليوم
@@ -196,10 +197,11 @@ class DayView(QWidget):
             f"{day_name}، {self.current_date.day} {month_name} {self.current_date.year}{today_marker}"
         )
 
+        p = get_current_palette()
         if is_today:
-            self.date_label.setStyleSheet("color: #3498db;")
+            self.date_label.setStyleSheet(f"color: {p['primary']};")
         else:
-            self.date_label.setStyleSheet("color: #2c3e50;")
+            self.date_label.setStyleSheet(f"color: {p['text_primary']};")
 
         # مسح أحداث طوال اليوم
         while self.all_day_layout.count():
@@ -211,7 +213,7 @@ class DayView(QWidget):
         # عرض أحداث طوال اليوم
         if self._all_day_events:
             label = QLabel("طوال اليوم:")
-            label.setStyleSheet("color: #7f8c8d; font-size: 10px;")
+            label.setStyleSheet(f"color: {p['text_muted']}; font-size: 10px;")
             self.all_day_layout.addWidget(label)
 
             for event in self._all_day_events:
@@ -242,13 +244,13 @@ class DayView(QWidget):
             time_label = QLabel(f"{hour:02d}:00")
             time_label.setFixedWidth(60)
             time_label.setAlignment(Qt.AlignRight | Qt.AlignTop)
-            time_label.setStyleSheet("""
-                QLabel {
-                    color: #7f8c8d;
+            time_label.setStyleSheet(f"""
+                QLabel {{
+                    color: {p['text_muted']};
                     font-size: 11px;
                     padding-right: 12px;
                     padding-top: 4px;
-                }
+                }}
             """)
             hour_layout.addWidget(time_label)
 

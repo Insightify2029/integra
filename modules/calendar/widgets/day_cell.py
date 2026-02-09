@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal, QSize
 from PyQt5.QtGui import QFont, QColor, QPalette, QCursor
 
+from core.themes import get_current_palette
 from ..models import CalendarEvent, DayEvents
 
 
@@ -43,6 +44,7 @@ class DayCellHeader(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(4, 2, 4, 2)
         layout.setSpacing(4)
+        p = get_current_palette()
 
         # رقم اليوم
         self.day_label = QLabel(str(self.day_number))
@@ -50,21 +52,21 @@ class DayCellHeader(QWidget):
 
         if self.is_today:
             font.setBold(True)
-            self.day_label.setStyleSheet("""
-                QLabel {
-                    background-color: #3498db;
-                    color: white;
+            self.day_label.setStyleSheet(f"""
+                QLabel {{
+                    background-color: {p['primary']};
+                    color: {p['text_on_primary']};
                     border-radius: 12px;
                     padding: 2px 6px;
                     min-width: 24px;
-                }
+                }}
             """)
         elif self.is_other_month:
-            self.day_label.setStyleSheet("QLabel { color: #bdc3c7; }")
+            self.day_label.setStyleSheet(f"QLabel {{ color: {p['disabled_text']}; }}")
         elif self.is_weekend:
-            self.day_label.setStyleSheet("QLabel { color: #e74c3c; }")
+            self.day_label.setStyleSheet(f"QLabel {{ color: {p['danger']}; }}")
         elif self.is_holiday:
-            self.day_label.setStyleSheet("QLabel { color: #e74c3c; font-weight: bold; }")
+            self.day_label.setStyleSheet(f"QLabel {{ color: {p['danger']}; font-weight: bold; }}")
 
         self.day_label.setFont(font)
         self.day_label.setAlignment(Qt.AlignCenter)
@@ -127,12 +129,12 @@ class DayCell(QFrame):
         # اسم العطلة (إن وجد)
         if self.is_holiday and self.holiday_name:
             holiday_label = QLabel(self.holiday_name)
-            holiday_label.setStyleSheet("""
-                QLabel {
-                    color: #e74c3c;
+            holiday_label.setStyleSheet(f"""
+                QLabel {{
+                    color: {p['danger']};
                     font-size: 9px;
                     padding: 0 4px;
-                }
+                }}
             """)
             holiday_label.setWordWrap(True)
             layout.addWidget(holiday_label)
@@ -153,12 +155,12 @@ class DayCell(QFrame):
         if len(self.events) > max_visible:
             more_count = len(self.events) - max_visible
             more_label = QLabel(f"+{more_count} أحداث أخرى")
-            more_label.setStyleSheet("""
-                QLabel {
-                    color: #7f8c8d;
+            more_label.setStyleSheet(f"""
+                QLabel {{
+                    color: {p['text_muted']};
                     font-size: 10px;
                     padding: 2px 4px;
-                }
+                }}
             """)
             events_layout.addWidget(more_label)
 
@@ -195,33 +197,34 @@ class DayCell(QFrame):
 
     def _apply_style(self):
         """تطبيق التنسيق"""
-        base_style = """
-            DayCell {
-                background-color: white;
-                border: 1px solid #e0e0e0;
-            }
+        p = get_current_palette()
+        base_style = f"""
+            DayCell {{
+                background-color: {p['bg_card']};
+                border: 1px solid {p['border']};
+            }}
         """
 
         if self.is_today:
-            base_style = """
-                DayCell {
-                    background-color: #eef7ff;
-                    border: 2px solid #3498db;
-                }
+            base_style = f"""
+                DayCell {{
+                    background-color: {p['primary_light']};
+                    border: 2px solid {p['primary']};
+                }}
             """
         elif self.is_other_month:
-            base_style = """
-                DayCell {
-                    background-color: #f8f9fa;
-                    border: 1px solid #e0e0e0;
-                }
+            base_style = f"""
+                DayCell {{
+                    background-color: {p['bg_main']};
+                    border: 1px solid {p['border']};
+                }}
             """
         elif self.is_weekend:
-            base_style = """
-                DayCell {
-                    background-color: #fff9f9;
-                    border: 1px solid #e0e0e0;
-                }
+            base_style = f"""
+                DayCell {{
+                    background-color: {p['bg_main']};
+                    border: 1px solid {p['border']};
+                }}
             """
 
         self.setStyleSheet(base_style)
@@ -275,11 +278,12 @@ class DayCell(QFrame):
     def highlight(self, enabled: bool = True):
         """تمييز الخلية"""
         if enabled:
-            self.setStyleSheet("""
-                DayCell {
-                    background-color: #fff3cd;
-                    border: 2px solid #ffc107;
-                }
+            p = get_current_palette()
+            self.setStyleSheet(f"""
+                DayCell {{
+                    background-color: {p['warning']}20;
+                    border: 2px solid {p['warning']};
+                }}
             """)
         else:
             self._apply_style()

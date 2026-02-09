@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal, QTime
 from PyQt5.QtGui import QFont, QColor
 
+from core.themes import get_current_palette, get_font, FONT_SIZE_TITLE, FONT_WEIGHT_BOLD
 from ..models import CalendarEvent, PublicHoliday
 from ..widgets.calendar_header import DAY_NAMES_AR, MONTH_NAMES_AR
 
@@ -42,15 +43,16 @@ class TimeSlotWidget(QFrame):
     def _setup_ui(self):
         self.setMinimumHeight(40)
         self.setFrameStyle(QFrame.Box | QFrame.Plain)
+        p = get_current_palette()
 
-        bg_color = "#ffffff" if self.is_working_hour else "#f8f9fa"
+        bg_color = p['bg_card'] if self.is_working_hour else p['bg_main']
         self.setStyleSheet(f"""
             TimeSlotWidget {{
                 background-color: {bg_color};
-                border: 1px solid #eee;
+                border: 1px solid {p['border_light']};
             }}
             TimeSlotWidget:hover {{
-                background-color: #f0f7ff;
+                background-color: {p['bg_hover']};
             }}
         """)
 
@@ -65,7 +67,7 @@ class TimeSlotWidget(QFrame):
 
         if len(self.events) > 2:
             more_label = QLabel(f"+{len(self.events) - 2}")
-            more_label.setStyleSheet("color: #7f8c8d; font-size: 9px;")
+            more_label.setStyleSheet(f"color: {p['text_muted']}; font-size: 9px;")
             more_label.setAlignment(Qt.AlignCenter)
             layout.addWidget(more_label)
 
@@ -124,20 +126,21 @@ class DayColumnHeader(QFrame):
 
     def _setup_ui(self):
         self.setFixedHeight(60)
+        p = get_current_palette()
 
         if self.is_today:
-            self.setStyleSheet("""
-                DayColumnHeader {
-                    background-color: #eef7ff;
-                    border-bottom: 2px solid #3498db;
-                }
+            self.setStyleSheet(f"""
+                DayColumnHeader {{
+                    background-color: {p['primary_light']};
+                    border-bottom: 2px solid {p['primary']};
+                }}
             """)
         else:
-            self.setStyleSheet("""
-                DayColumnHeader {
-                    background-color: #f8f9fa;
-                    border-bottom: 1px solid #e0e0e0;
-                }
+            self.setStyleSheet(f"""
+                DayColumnHeader {{
+                    background-color: {p['bg_main']};
+                    border-bottom: 1px solid {p['border']};
+                }}
             """)
 
         layout = QVBoxLayout(self)
@@ -150,33 +153,31 @@ class DayColumnHeader(QFrame):
         name_label = QLabel(day_name)
         name_label.setAlignment(Qt.AlignCenter)
 
-        color = "#e74c3c" if self.is_weekend else "#7f8c8d"
+        color = p['danger'] if self.is_weekend else p['text_muted']
         name_label.setStyleSheet(f"color: {color}; font-size: 10px;")
         layout.addWidget(name_label)
 
         # رقم اليوم
         day_label = QLabel(str(self.day_date.day))
-        day_font = QFont("Cairo", 16)
-        day_font.setBold(True)
-        day_label.setFont(day_font)
+        day_label.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
         day_label.setAlignment(Qt.AlignCenter)
 
         if self.is_today:
-            day_label.setStyleSheet("""
-                QLabel {
-                    background-color: #3498db;
-                    color: white;
+            day_label.setStyleSheet(f"""
+                QLabel {{
+                    background-color: {p['primary']};
+                    color: {p['text_on_primary']};
                     border-radius: 16px;
                     min-width: 32px;
                     max-width: 32px;
                     min-height: 32px;
                     max-height: 32px;
-                }
+                }}
             """)
         elif self.is_weekend:
-            day_label.setStyleSheet("color: #e74c3c;")
+            day_label.setStyleSheet(f"color: {p['danger']};")
         else:
-            day_label.setStyleSheet("color: #2c3e50;")
+            day_label.setStyleSheet(f"color: {p['text_primary']};")
 
         layout.addWidget(day_label, alignment=Qt.AlignCenter)
 
@@ -209,7 +210,8 @@ class WeekView(QWidget):
         self._build_week()
 
     def _setup_ui(self):
-        self.setStyleSheet("background-color: white;")
+        p = get_current_palette()
+        self.setStyleSheet(f"background-color: {p['bg_card']};")
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -288,13 +290,14 @@ class WeekView(QWidget):
             time_label = QLabel(f"{hour:02d}:00")
             time_label.setFixedWidth(60)
             time_label.setAlignment(Qt.AlignRight | Qt.AlignTop)
-            time_label.setStyleSheet("""
-                QLabel {
-                    color: #7f8c8d;
+            p_ref = get_current_palette()
+            time_label.setStyleSheet(f"""
+                QLabel {{
+                    color: {p_ref['text_muted']};
                     font-size: 10px;
                     padding-right: 8px;
                     padding-top: 2px;
-                }
+                }}
             """)
             self.grid_layout.addWidget(time_label, row, 0)
 
