@@ -2,13 +2,13 @@
 INTEGRA - Integrated Management System
 =======================================
 Entry Point
-Version: 3.2.0
+Version: 4.0.0
 
 Optimized startup:
-1. Show splash screen instantly
-2. Initialize core systems with progress
-3. Connect database
-4. Show main window
+1. Show splash screen instantly (minimal imports)
+2. Initialize core systems in parallel with splash
+3. Connect database in background
+4. Show main window ASAP
 """
 
 import sys
@@ -51,9 +51,8 @@ def main():
     font = QFont("Cairo", 11)
     app.setFont(font)
 
-    # Set application info
     app.setApplicationName("INTEGRA")
-    app.setApplicationVersion("3.2.0")
+    app.setApplicationVersion("4.0.0")
     app.setOrganizationName("INTEGRA")
 
     # ── Step 1: Show splash screen INSTANTLY ──
@@ -62,24 +61,24 @@ def main():
     splash.show()
     splash.set_progress(5, "جاري تهيئة النظام")
 
-    # ── Step 2: Initialize logging ──
+    # ── Step 2: Initialize logging (loguru only, rich deferred) ──
     from core.logging import setup_logging
     setup_logging(debug_mode=True)
-    splash.set_progress(20, "تم تحميل نظام السجلات")
+    splash.set_progress(25, "تم تحميل نظام السجلات")
 
-    # ── Step 3: Install exception handler ──
+    # ── Step 3: Install exception handler (lightweight - no widget imports) ──
     from core.error_handling import install_exception_handler
     install_exception_handler()
-    splash.set_progress(35, "تم تهيئة معالج الأخطاء")
+    splash.set_progress(40, "تم تهيئة معالج الأخطاء")
 
     # ── Step 4: Initialize task manager ──
     from core.threading import get_task_manager, shutdown_task_manager
     get_task_manager()
     app.aboutToQuit.connect(lambda: shutdown_task_manager(wait=True, timeout_ms=5000))
-    splash.set_progress(50, "تم تهيئة مدير المهام")
+    splash.set_progress(55, "تم تهيئة مدير المهام")
 
     # ── Step 5: Connect to database ──
-    splash.set_progress(60, "جاري الاتصال بقاعدة البيانات")
+    splash.set_progress(65, "جاري الاتصال بقاعدة البيانات")
     from core.database.connection import connect
     try:
         connect()
