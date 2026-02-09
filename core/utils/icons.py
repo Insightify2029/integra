@@ -20,14 +20,23 @@ Usage:
 
 from typing import Optional, Dict, Any
 from PyQt5.QtGui import QIcon
+import importlib.util
 
-try:
-    import qtawesome as qta
-    QTAWESOME_AVAILABLE = True
-except ImportError:
-    QTAWESOME_AVAILABLE = False
 
-from core.logging import app_logger
+# Fast check if qtawesome is installed (~1ms) without importing it (~300ms)
+QTAWESOME_AVAILABLE = importlib.util.find_spec("qtawesome") is not None
+
+# Actual module loaded lazily on first icon() call
+_qta = None
+
+
+def _ensure_qta():
+    """Lazy-load qtawesome on first actual use."""
+    global _qta
+    if _qta is None and QTAWESOME_AVAILABLE:
+        import qtawesome as qta
+        _qta = qta
+    return _qta
 
 
 # Default colors for INTEGRA theme
@@ -71,15 +80,14 @@ def icon(name: str, color: Optional[str] = None, scale: float = 1.0,
         icon('fa5s.user', color='#3498db')   # Colored icon
         icon('mdi.loading', animation='spin') # Animated icon
     """
+    qta = _ensure_qta()
     if not QTAWESOME_AVAILABLE:
-        app_logger.warning(f"QtAwesome not available. Icon '{name}' not loaded.")
         return QIcon()
 
     try:
         options: Dict[str, Any] = {}
 
         if color:
-            # Check if it's a named color
             if color in COLORS:
                 options['color'] = COLORS[color]
             else:
@@ -98,6 +106,7 @@ def icon(name: str, color: Optional[str] = None, scale: float = 1.0,
         return qta.icon(name, **options)
 
     except Exception as e:
+        from core.logging import app_logger
         app_logger.error(f"Failed to load icon '{name}': {e}")
         return QIcon()
 

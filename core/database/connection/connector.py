@@ -10,8 +10,7 @@ while using SQLAlchemy connection pool internally for:
 - Better performance
 """
 
-import psycopg2
-from .connection_config import get_connection_params
+# Heavy imports (psycopg2, sqlalchemy) deferred to connect() for faster startup
 from .pool import (
     get_pool,
     get_connection_from_pool,
@@ -21,7 +20,6 @@ from .pool import (
     get_pool_status,
     check_pool_health
 )
-from core.logging import app_logger
 
 
 # Use pool by default, fallback to single connection if pool fails
@@ -38,30 +36,29 @@ def connect():
     Returns connection object or None if failed.
     """
     global _connection
+    from core.logging import app_logger
 
     if USE_POOL:
         try:
             pool = get_pool()
             if pool is not None:
-                # Test the pool with a quick connection
                 if check_pool_health():
                     app_logger.info("Database connected (using pool)")
-                    print("✅ Database connected successfully (pool)")
                     return True
         except Exception as e:
             app_logger.warning(f"Pool init failed, falling back: {e}")
 
     # Fallback to single connection
     try:
+        import psycopg2
+        from .connection_config import get_connection_params
         params = get_connection_params()
         _connection = psycopg2.connect(**params)
         _connection.autocommit = False
         app_logger.info("Database connected (single connection)")
-        print("✅ Database connected successfully")
         return True
     except Exception as e:
         app_logger.error(f"Database connection error: {e}")
-        print(f"❌ Database connection error: {e}")
         _connection = None
         return None
 
@@ -85,6 +82,7 @@ def get_connection():
     if _connection is None or _connection.closed:
         connect()
     if _connection is None:
+        from core.logging import app_logger
         app_logger.warning("Database connection unavailable")
     return _connection
 

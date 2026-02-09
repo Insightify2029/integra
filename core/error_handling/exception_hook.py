@@ -20,43 +20,37 @@ import sys
 import traceback
 from datetime import datetime
 from PyQt5.QtCore import QObject, pyqtSignal, Qt
-from PyQt5.QtWidgets import QApplication, QMessageBox, QTextEdit, QVBoxLayout, QDialog, QPushButton, QHBoxLayout, QLabel
+from PyQt5.QtWidgets import QApplication
 
-
-# محاولة استيراد الـ logger (لو A1 مركّب)
-try:
-    from core.logging.app_logger import app_logger as logger
-    _has_logger = True
-except ImportError:
-    _has_logger = False
+# Heavy widget imports (QDialog, QTextEdit, QPushButton, etc.)
+# deferred to _show_error_dialog() - only loaded when error occurs
 
 
 def _log_error(message):
     """تسجيل الخطأ - في اللوج لو متاح، أو print"""
-    if _has_logger:
-        logger.critical(message)
-    else:
+    try:
+        from core.logging.app_logger import app_logger
+        app_logger.critical(message)
+    except ImportError:
         print(f"[CRITICAL] {message}", file=sys.stderr)
 
 
-class ErrorDialog(QDialog):
-    """
-    نافذة عرض الخطأ للمستخدم
-    - رسالة مختصرة واضحة
-    - زر "التفاصيل" لعرض المعلومات التقنية
-    - زر "نسخ" لنسخ التفاصيل
-    """
+def _show_error_dialog_impl(error_type, error_message, full_traceback):
+    """عرض نافذة الخطأ - widget imports happen here (lazy)."""
+    from PyQt5.QtWidgets import (
+        QDialog, QVBoxLayout, QHBoxLayout, QLabel,
+        QPushButton, QTextEdit, QMessageBox
+    )
 
-    def __init__(self, error_type, error_message, full_traceback, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("خطأ في البرنامج")
-        self.setMinimumWidth(500)
-        self.setMinimumHeight(200)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+    try:
+        dialog = QDialog()
+        dialog.setWindowTitle("خطأ في البرنامج")
+        dialog.setMinimumWidth(500)
+        dialog.setMinimumHeight(200)
+        dialog.setWindowFlags(dialog.windowFlags() | Qt.WindowStaysOnTopHint)
 
-        layout = QVBoxLayout(self)
+        layout = QVBoxLayout(dialog)
 
-        # ─── الرسالة المختصرة ───
         icon_label = QLabel("⚠️  حدث خطأ غير متوقع")
         icon_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #e74c3c; padding: 5px;")
         layout.addWidget(icon_label)
@@ -71,55 +65,58 @@ class ErrorDialog(QDialog):
         note.setStyleSheet("font-size: 11px; color: #888; padding: 3px;")
         layout.addWidget(note)
 
-        # ─── التفاصيل التقنية (مخفية افتراضياً) ───
-        self.details_text = QTextEdit()
-        self.details_text.setPlainText(full_traceback)
-        self.details_text.setReadOnly(True)
-        self.details_text.setStyleSheet(
+        details_text = QTextEdit()
+        details_text.setPlainText(full_traceback)
+        details_text.setReadOnly(True)
+        details_text.setStyleSheet(
             "font-family: Consolas, monospace; font-size: 10px; "
             "background: #1e1e1e; color: #ccc; padding: 5px;"
         )
-        self.details_text.setMaximumHeight(200)
-        self.details_text.hide()
-        layout.addWidget(self.details_text)
+        details_text.setMaximumHeight(200)
+        details_text.hide()
+        layout.addWidget(details_text)
 
-        # ─── الأزرار ───
         btn_layout = QHBoxLayout()
 
-        self.toggle_btn = QPushButton("عرض التفاصيل ▼")
-        self.toggle_btn.clicked.connect(self._toggle_details)
-        self.toggle_btn.setStyleSheet("padding: 6px 12px;")
-        btn_layout.addWidget(self.toggle_btn)
+        toggle_btn = QPushButton("عرض التفاصيل ▼")
+
+        def _toggle():
+            if details_text.isVisible():
+                details_text.hide()
+                toggle_btn.setText("عرض التفاصيل ▼")
+            else:
+                details_text.show()
+                toggle_btn.setText("إخفاء التفاصيل ▲")
+
+        toggle_btn.clicked.connect(_toggle)
+        toggle_btn.setStyleSheet("padding: 6px 12px;")
+        btn_layout.addWidget(toggle_btn)
 
         copy_btn = QPushButton("نسخ التفاصيل")
-        copy_btn.clicked.connect(self._copy_details)
+        copy_btn.clicked.connect(
+            lambda: (QApplication.clipboard().setText(full_traceback),
+                     toggle_btn.setText("✅ تم النسخ!"))
+        )
         copy_btn.setStyleSheet("padding: 6px 12px;")
         btn_layout.addWidget(copy_btn)
 
         btn_layout.addStretch()
 
         ok_btn = QPushButton("موافق")
-        ok_btn.clicked.connect(self.accept)
+        ok_btn.clicked.connect(dialog.accept)
         ok_btn.setStyleSheet("padding: 6px 20px; font-weight: bold;")
         ok_btn.setDefault(True)
         btn_layout.addWidget(ok_btn)
 
         layout.addLayout(btn_layout)
 
-        self._full_traceback = full_traceback
-
-    def _toggle_details(self):
-        if self.details_text.isVisible():
-            self.details_text.hide()
-            self.toggle_btn.setText("عرض التفاصيل ▼")
-        else:
-            self.details_text.show()
-            self.toggle_btn.setText("إخفاء التفاصيل ▲")
-
-    def _copy_details(self):
-        clipboard = QApplication.clipboard()
-        clipboard.setText(self._full_traceback)
-        self.toggle_btn.setText("✅ تم النسخ!")
+        dialog.exec_()
+    except Exception:
+        QMessageBox.critical(
+            None,
+            "خطأ",
+            f"{error_type}: {error_message}\n\nالتفاصيل في ملف اللوج."
+        )
 
 
 class ExceptionHandler(QObject):
@@ -138,8 +135,11 @@ class ExceptionHandler(QObject):
     def install(self):
         """تركيب المعالج - يمسك كل الأخطاء غير المعالجة"""
         sys.excepthook = self._handle_exception
-        if _has_logger:
-            logger.info("معالج الأخطاء الشامل - تم التركيب ✅")
+        try:
+            from core.logging.app_logger import app_logger
+            app_logger.info("معالج الأخطاء الشامل - تم التركيب ✅")
+        except ImportError:
+            pass
 
     def _handle_exception(self, exc_type, exc_value, exc_traceback):
         """يتنادى تلقائياً لما يحصل أي خطأ غير معالج"""
@@ -149,12 +149,10 @@ class ExceptionHandler(QObject):
             sys.__excepthook__(exc_type, exc_value, exc_traceback)
             return
 
-        # تجميع التفاصيل
         error_type = exc_type.__name__
         error_message = str(exc_value)
         full_traceback = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
 
-        # إضافة timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         full_report = (
             f"═══ INTEGRA Error Report ═══\n"
@@ -165,29 +163,17 @@ class ExceptionHandler(QObject):
             f"{full_traceback}"
         )
 
-        # 1) تسجيل في اللوج
         _log_error(f"خطأ غير معالج: {error_type}: {error_message}\n{full_traceback}")
 
-        # 2) عرض للمستخدم (عبر signal عشان نكون في الـ main thread)
         try:
             if QApplication.instance():
                 self._exception_signal.emit(error_type, error_message, full_report)
         except Exception:
-            # لو حتى عرض الرسالة فشل، على الأقل الخطأ متسجل في اللوج
             print(f"[CRITICAL] {full_report}", file=sys.stderr)
 
     def _show_error_dialog(self, error_type, error_message, full_traceback):
         """عرض نافذة الخطأ"""
-        try:
-            dialog = ErrorDialog(error_type, error_message, full_traceback)
-            dialog.exec_()
-        except Exception:
-            # Fallback لو الـ dialog نفسه فشل
-            QMessageBox.critical(
-                None,
-                "خطأ",
-                f"{error_type}: {error_message}\n\nالتفاصيل في ملف اللوج."
-            )
+        _show_error_dialog_impl(error_type, error_message, full_traceback)
 
 
 # ──────────────────────────────────────────────

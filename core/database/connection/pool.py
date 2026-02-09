@@ -21,12 +21,8 @@ Usage:
 """
 
 from contextlib import contextmanager
-from urllib.parse import quote_plus
-from sqlalchemy import create_engine, event, text
-from sqlalchemy.pool import QueuePool
-from sqlalchemy.exc import DisconnectionError
-from core.logging import app_logger
-from .connection_config import get_connection_params
+
+# Heavy imports deferred to _create_engine() for faster startup
 
 
 # Pool configuration
@@ -49,6 +45,12 @@ def _create_engine():
         return _engine
 
     try:
+        from urllib.parse import quote_plus
+        from sqlalchemy import create_engine, event
+        from sqlalchemy.pool import QueuePool
+        from .connection_config import get_connection_params
+        from core.logging import app_logger
+
         # Get connection params and URL-encode password for special characters
         params = get_connection_params()
         encoded_password = quote_plus(str(params['password']))
@@ -181,6 +183,7 @@ def get_connection_from_pool():
     try:
         return engine.raw_connection()
     except Exception as e:
+        from core.logging import app_logger
         app_logger.error(f"Failed to get connection from pool: {e}")
         return None
 
@@ -190,6 +193,7 @@ def dispose_pool():
     global _engine, _pool_initialized
 
     if _engine is not None:
+        from core.logging import app_logger
         try:
             _engine.dispose()
             app_logger.info("Connection pool disposed")
@@ -220,5 +224,6 @@ def check_pool_health():
             cursor.close()
         return True
     except Exception as e:
+        from core.logging import app_logger
         app_logger.error(f"Pool health check failed: {e}")
         return False
