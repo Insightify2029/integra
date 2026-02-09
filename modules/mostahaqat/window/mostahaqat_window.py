@@ -17,7 +17,10 @@ from ui.windows.base import BaseWindow
 from ui.components.notifications import toast_info
 
 # Import new screens
-from modules.mostahaqat.screens import EmployeesListScreen, EmployeeProfileScreen, EditEmployeeScreen
+from modules.mostahaqat.screens import (
+    EmployeesListScreen, EmployeeProfileScreen, EditEmployeeScreen,
+    MasterDataWindow
+)
 
 
 class MostahaqatWindow(BaseWindow):
@@ -25,16 +28,19 @@ class MostahaqatWindow(BaseWindow):
     Mostahaqat module main window.
     Clean professional interface - data accessed via menus/tools.
     """
-    
+
     def __init__(self):
         super().__init__(title_suffix="مستحقات العاملين")
-        
+
         # Stack widget to switch between screens
         self._stack = None
         self._welcome_screen = None
         self._employees_list_screen = None
         self._employee_profile_screen = None
         self._edit_employee_screen = None
+
+        # Master data windows (keep references to prevent garbage collection)
+        self._master_data_windows = {}
         
         self._setup_menubar()
         self._setup_toolbar()
@@ -513,20 +519,39 @@ class MostahaqatWindow(BaseWindow):
     def _custom_report(self):
         toast_info(self, "التقارير", "تقرير مخصص - قيد التطوير")
     
+    def _open_master_data(self, entity_key: str):
+        """Open master data management window for an entity."""
+        # Close existing window for this entity if open
+        existing = self._master_data_windows.get(entity_key)
+        if existing and existing.isVisible():
+            existing.raise_()
+            existing.activateWindow()
+            return
+
+        window = MasterDataWindow(entity_key, parent=None)
+        window.data_changed.connect(self._on_master_data_changed)
+        window.show_maximized()
+        self._master_data_windows[entity_key] = window
+
+    def _on_master_data_changed(self):
+        """Refresh employees list when master data changes."""
+        if self._employees_list_screen:
+            self._employees_list_screen.refresh()
+
     def _manage_nationalities(self):
-        toast_info(self, "الإعدادات", "إدارة الجنسيات - قيد التطوير")
-    
+        self._open_master_data('nationalities')
+
     def _manage_departments(self):
-        toast_info(self, "الإعدادات", "إدارة الأقسام - قيد التطوير")
-    
+        self._open_master_data('departments')
+
     def _manage_jobs(self):
-        toast_info(self, "الإعدادات", "إدارة الوظائف - قيد التطوير")
-    
+        self._open_master_data('job_titles')
+
     def _manage_banks(self):
-        toast_info(self, "الإعدادات", "إدارة البنوك - قيد التطوير")
-    
+        self._open_master_data('banks')
+
     def _manage_companies(self):
-        toast_info(self, "الإعدادات", "إدارة الشركات - قيد التطوير")
+        self._open_master_data('companies')
     
     def _module_settings(self):
         toast_info(self, "الإعدادات", "إعدادات الموديول - قيد التطوير")
