@@ -19,6 +19,7 @@ from enum import Enum
 from datetime import datetime
 
 from core.logging import app_logger
+from core.device_manager.subprocess_utils import HIDDEN_STARTUPINFO
 
 
 class PrinterType(Enum):
@@ -270,7 +271,8 @@ class PrinterDiscovery:
         try:
             cmd = 'powershell -Command "Get-Printer | Select-Object Name, DriverName, PortName, PrinterStatus, Type, Shared | ConvertTo-Json"'
             result = subprocess.run(
-                cmd, shell=True, capture_output=True, text=True, timeout=15
+                cmd, shell=True, capture_output=True, text=True, timeout=15,
+                startupinfo=HIDDEN_STARTUPINFO,
             )
             if result.returncode == 0 and result.stdout.strip():
                 import json
@@ -281,7 +283,8 @@ class PrinterDiscovery:
                 # Get default printer
                 default_cmd = 'powershell -Command "(Get-WmiObject -Query \\"SELECT * FROM Win32_Printer WHERE Default=True\\").Name"'
                 default_result = subprocess.run(
-                    default_cmd, shell=True, capture_output=True, text=True, timeout=10
+                    default_cmd, shell=True, capture_output=True, text=True, timeout=10,
+                    startupinfo=HIDDEN_STARTUPINFO,
                 )
                 default_name = default_result.stdout.strip() if default_result.returncode == 0 else ""
 

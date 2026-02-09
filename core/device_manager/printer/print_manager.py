@@ -21,6 +21,7 @@ from datetime import datetime
 from pathlib import Path
 
 from core.logging import app_logger
+from core.device_manager.subprocess_utils import HIDDEN_STARTUPINFO
 
 
 class PaperSize(Enum):
@@ -468,7 +469,7 @@ class PrintManager:
                 f'Start-Process -FilePath "{job.file_path}" -Verb Print'
             ]
 
-        subprocess.run(cmd, capture_output=True, timeout=30)
+        subprocess.run(cmd, capture_output=True, timeout=30, startupinfo=HIDDEN_STARTUPINFO)
 
     def _print_linux(self, job: PrintJob):
         """Print on Linux using CUPS/lp."""
