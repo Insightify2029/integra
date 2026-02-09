@@ -11,7 +11,9 @@ from PyQt5.QtWidgets import (
     QMenu, QSizePolicy, QGraphicsDropShadowEffect
 )
 from PyQt5.QtCore import Qt, QSize, QTimer
-from PyQt5.QtGui import QFont, QColor, QCursor
+from PyQt5.QtGui import QFont, QColor, QCursor, QPixmap
+
+import os
 
 from ui.windows.base import BaseWindow
 from ui.dialogs import SettingsDialog, ThemesDialog
@@ -124,24 +126,34 @@ class LauncherWindow(BaseWindow):
         )
         root.addWidget(accent)
 
-        # 3) Scrollable main content
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.NoFrame)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setStyleSheet("QScrollArea { border: none; }")
+        # 3) Center area - Logo only
+        center_widget = QWidget()
+        center_layout = QVBoxLayout(center_widget)
+        center_layout.setContentsMargins(0, 0, 0, 0)
+        center_layout.setAlignment(Qt.AlignCenter)
 
-        content = QWidget()
-        self._content_layout = QVBoxLayout(content)
-        self._content_layout.setContentsMargins(50, 35, 50, 35)
-        self._content_layout.setSpacing(30)
+        logo_label = QLabel()
+        logo_label.setAlignment(Qt.AlignCenter)
+        logo_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            '..', '..', '..', 'resources', 'icons', 'integra.png'
+        )
+        pixmap = QPixmap(logo_path)
+        if not pixmap.isNull():
+            scaled = pixmap.scaled(
+                int(280), int(280),
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation,
+            )
+            logo_label.setPixmap(scaled)
+        else:
+            logo_label.setText("INTEGRA")
+            logo_label.setFont(QFont("Cairo", 48, QFont.Bold))
+            logo_label.setStyleSheet("color: #2563eb;")
+        logo_label.setStyleSheet("background: transparent;")
+        center_layout.addWidget(logo_label)
 
-        self._build_welcome_section(self._content_layout)
-        self._build_module_grid(self._content_layout)
-        self._content_layout.addStretch()
-
-        scroll.setWidget(content)
-        root.addWidget(scroll, 1)
+        root.addWidget(center_widget, 1)
 
         # 4) Status bar
         self.status_bar = LauncherStatusBar()
