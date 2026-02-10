@@ -29,7 +29,6 @@ Follows all 13 mandatory INTEGRA rules:
 from __future__ import annotations
 
 import copy
-import json
 from typing import Any, Optional
 
 from PyQt5.QtCore import Qt, pyqtSignal
@@ -45,8 +44,6 @@ from PyQt5.QtWidgets import (
     QFrame,
     QSizePolicy,
 )
-from PyQt5.QtGui import QFont
-
 from core.logging import app_logger
 from core.themes import (
     get_current_palette,
@@ -478,7 +475,16 @@ class FormRenderer(QWidget):
 
         settings = self._form_def.get("settings", {})
         merged_settings = copy.deepcopy(DEFAULT_FORM_SETTINGS)
-        merged_settings.update(settings)
+        # Deep merge: preserve nested dict defaults (e.g. margins)
+        for key, value in settings.items():
+            if (
+                key in merged_settings
+                and isinstance(merged_settings[key], dict)
+                and isinstance(value, dict)
+            ):
+                merged_settings[key].update(value)
+            else:
+                merged_settings[key] = value
 
         direction = merged_settings.get("direction", "rtl")
         if direction == "rtl":

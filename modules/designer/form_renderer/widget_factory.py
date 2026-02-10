@@ -76,10 +76,12 @@ def _is_safe_color(value: str) -> bool:
 
 
 def _sanitize_qss(qss: str) -> str:
-    """Basic sanitization: remove any line that looks like it contains
-    injection attempts (e.g., expressions, url() with non-image targets)."""
-    # Remove characters that could break out of QSS context
+    """Sanitize custom QSS: remove potentially dangerous constructs."""
     sanitized = qss.replace("\\", "").replace("\x00", "")
+    # Reject url() references (could load external resources)
+    sanitized = _re.sub(r"url\s*\([^)]*\)", "", sanitized)
+    # Reject expression() constructs
+    sanitized = _re.sub(r"expression\s*\([^)]*\)", "", sanitized)
     return sanitized
 
 
@@ -658,7 +660,14 @@ class WidgetFactory:
 
         font_weight = style.get("font_weight")
         if font_weight is not None:
-            parts.append(f"font-weight: {font_weight};")
+            # Validate font_weight against allowed values to prevent QSS injection
+            _ALLOWED_WEIGHTS = {"normal", "bold", "100", "200", "300", "400",
+                                "500", "600", "700", "800", "900"}
+            weight_str = str(font_weight).strip().lower()
+            if weight_str in _ALLOWED_WEIGHTS:
+                parts.append(f"font-weight: {weight_str};")
+            else:
+                app_logger.warning(f"Rejected unsafe font_weight value: {font_weight!r}")
 
         text_color = style.get("text_color")
         if text_color and _is_safe_color(str(text_color)):

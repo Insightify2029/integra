@@ -64,7 +64,16 @@ class LayoutEngine:
     def __init__(self, settings: Optional[dict[str, Any]] = None) -> None:
         self._settings = copy.deepcopy(DEFAULT_FORM_SETTINGS)
         if settings:
-            self._settings.update(settings)
+            # Deep merge: preserve nested dict defaults (e.g. margins)
+            for key, value in settings.items():
+                if (
+                    key in self._settings
+                    and isinstance(self._settings[key], dict)
+                    and isinstance(value, dict)
+                ):
+                    self._settings[key].update(value)
+                else:
+                    self._settings[key] = value
 
         self._section_frames: dict[str, QFrame] = {}
         self._section_content_widgets: dict[str, QWidget] = {}
@@ -612,7 +621,7 @@ class _FlowLayout(QLayout):
 
     def __init__(self, parent: Optional[QWidget] = None, rtl: bool = False) -> None:
         super().__init__(parent)
-        self._items: list = []
+        self._items: list[Any] = []
         self._rtl = rtl
         self._spacing_val = 10
 
