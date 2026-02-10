@@ -16,6 +16,56 @@
 
 ---
 
+## الجلسة: 10 فبراير 2026 - خطة نظام تصميم الفورمز المتقدم (Form Designer Master Plan)
+
+### ملخص الجلسة:
+
+**تم إنشاء خطة شاملة لتحويل نظام الفورمز من كود Python صلب إلى نظام JSON قابل للتصميم المرئي.**
+
+### المشكلة:
+- الفورمز مكتوبة بكود Python صلب - أي تغيير في الشكل يحتاج تعديل كود
+- المبرمج (Claude) بيعمل تصميمات مش جمالية
+- المستخدم مش يقدر يتحكم في شكل الفورمز بدون تعديل Python
+
+### الحل المعتمد: JSON Config System + Visual Editor + Live Edit Mode
+
+### ما تم إنجازه:
+
+1. **دراسة شاملة** للكود الموجود:
+   - Form Builder الحالي في `modules/designer/form_builder/` (2,500 سطر)
+   - جميع الشاشات الحالية (edit_employee, employee_profile, employees_list, audit_log, master_data)
+   - نظام الثيمات (24 palette + 10 styles)
+   - مكونات UI المتاحة
+
+2. **اكتشاف مهم:** Form Builder موجود لكن مفيش **FormRenderer** يحول JSON لفورمز شغالة!
+
+3. **إنشاء الخطة الشاملة** في `claude/FORM_DESIGNER_MASTER_PLAN.md`:
+   - Phase 1: FormRenderer Engine (7 ملفات جديدة)
+   - Phase 2: Enhanced Form Designer (تحسين 5 ملفات + 3 جديدة)
+   - Phase 3: Live Edit Mode (4 ملفات جديدة)
+   - Phase 4: Migration (تحويل الفورمز الحالية)
+
+4. **تعريف JSON Schema v2.0** الشامل مع:
+   - Sections/Cards
+   - Fields مع layout, properties, style_override, data_binding, validation
+   - Combo source (query/static)
+   - Actions (buttons) مع positions
+   - Conditional rules
+   - Events
+
+5. **إعداد prompts** لكل جلسة قادمة
+
+### الملفات الجديدة:
+- `claude/FORM_DESIGNER_MASTER_PLAN.md` - الخطة الشاملة
+
+### الخطوات القادمة:
+- **جلسة 1:** تنفيذ Phase 1 - FormRenderer Engine
+- **جلسة 2:** تنفيذ Phase 2 - Enhanced Form Designer
+- **جلسة 3:** تنفيذ Phase 3 - Live Edit Mode
+- **جلسة 4:** تنفيذ Phase 4 - Migration
+
+---
+
 ## الجلسة: 9 فبراير 2026 - إعادة هيكلة كاملة لنظام الثيمات (Centralized Theme Module)
 
 ### ملخص الجلسة:
