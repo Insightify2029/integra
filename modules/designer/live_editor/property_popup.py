@@ -37,8 +37,6 @@ from PyQt5.QtWidgets import (
     QFrame,
     QApplication,
 )
-from PyQt5.QtGui import QFont
-
 from core.logging import app_logger
 from core.themes import (
     get_current_palette,

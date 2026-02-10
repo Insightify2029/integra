@@ -32,24 +32,20 @@ Follows all 13 INTEGRA mandatory rules:
 from __future__ import annotations
 
 import copy
-import json
 import os
 import shutil
 from datetime import datetime
 from typing import Any, Optional
 
-from PyQt5.QtCore import Qt, QPoint, QRect, QSize, QEvent, pyqtSignal, QTimer
-from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QKeySequence
+from PyQt5.QtCore import Qt, QPoint, QRect, QEvent, pyqtSignal, QTimer
+from PyQt5.QtGui import QPainter, QPen, QColor, QKeySequence
 from PyQt5.QtWidgets import (
     QWidget,
-    QVBoxLayout,
     QHBoxLayout,
     QLabel,
     QPushButton,
-    QScrollArea,
     QFrame,
     QApplication,
-    QShortcut,
     QMessageBox,
 )
 
@@ -72,7 +68,7 @@ from modules.designer.live_editor.snap_guides import (
     SnapResult,
 )
 from modules.designer.live_editor.property_popup import PropertyPopup
-from modules.designer.shared.form_schema import save_form_file
+from modules.designer.shared.form_schema import save_form_file, validate_form_schema
 
 
 # ---------------------------------------------------------------------------
@@ -314,10 +310,8 @@ class LiveEditOverlay(QWidget):
         # Re-entrance guard for mouse events
         self._processing_event = False
 
-        # Timer for delayed popup show (prevents flicker)
-        self._popup_timer = QTimer(self)
-        self._popup_timer.setSingleShot(True)
-        self._popup_timer.setInterval(300)
+        # Save-in-progress guard (prevents double Ctrl+S)
+        self._saving = False
 
     # -----------------------------------------------------------------------
     # Activation / Deactivation
@@ -1045,7 +1039,7 @@ class LiveEditOverlay(QWidget):
         result = QMessageBox.question(
             self,
             "تأكيد الحذف",
-            f"هل تريد حذف هذا الحقل؟",
+            "هل تريد حذف هذا الحقل؟\n(الحذف لا يمكن التراجع عنه)",
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No,
         )
@@ -1281,6 +1275,11 @@ class LiveEditOverlay(QWidget):
         if not self._form_def:
             return
 
+        if self._saving:
+            app_logger.debug("Save already in progress, ignoring duplicate request")
+            return
+        self._saving = True
+
         # Update all field layouts from current widget geometries
         for field_id, widget in self._editable_widgets.items():
             if widget.isVisible():
@@ -1288,9 +1287,9 @@ class LiveEditOverlay(QWidget):
 
         if self._form_path:
             # Validate schema before background save to get immediate feedback
-            from modules.designer.shared.form_schema import validate_form_schema
             is_valid, errors = validate_form_schema(self._form_def)
             if not is_valid:
+                self._saving = False
                 msg = "خطأ في هيكل النموذج:\n" + "\n".join(f"- {e}" for e in errors)
                 app_logger.error(f"Cannot save invalid form: {msg}")
                 QMessageBox.critical(self, "خطأ في الحفظ", msg)
@@ -1308,12 +1307,14 @@ class LiveEditOverlay(QWidget):
                 return True
 
             def _on_save_done(result: bool) -> None:
+                self._saving = False
                 app_logger.info(f"Live edit changes saved to {form_path}")
-                self.form_modified.emit(self._form_def)
+                self.form_modified.emit(form_data_copy)
                 self.edit_saved.emit()
                 self.deactivate()
 
             def _on_save_error(exc_type, message, traceback) -> None:
+                self._saving = False
                 app_logger.error(f"Failed to save live edit changes: {message}")
                 QMessageBox.critical(
                     self,

@@ -27,11 +27,9 @@ from __future__ import annotations
 from enum import Enum, auto
 from typing import Optional
 
-from PyQt5.QtCore import Qt, QRect, QPoint, QSize
-from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QCursor
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import Qt, QRect, QPoint
+from PyQt5.QtGui import QPainter, QPen, QBrush, QColor
 
-from core.logging import app_logger
 from core.themes import get_current_palette
 
 
