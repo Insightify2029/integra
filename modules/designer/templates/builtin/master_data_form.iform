@@ -24,7 +24,7 @@
   },
   "sections": [
     {
-      "section_id": "data",
+      "id": "data",
       "title_ar": "البيانات",
       "title_en": "Data",
       "collapsible": false,

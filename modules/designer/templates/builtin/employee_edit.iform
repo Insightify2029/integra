@@ -24,7 +24,7 @@
   },
   "sections": [
     {
-      "section_id": "basic_info",
+      "id": "basic_info",
       "title_ar": "البيانات الأساسية",
       "title_en": "Basic Information",
       "collapsible": false,
@@ -212,7 +212,7 @@
       ]
     },
     {
-      "section_id": "work_info",
+      "id": "work_info",
       "title_ar": "البيانات الوظيفية",
       "title_en": "Work Information",
       "collapsible": false,
@@ -307,7 +307,7 @@
       ]
     },
     {
-      "section_id": "bank_info",
+      "id": "bank_info",
       "title_ar": "البيانات البنكية",
       "title_en": "Bank Information",
       "collapsible": false,

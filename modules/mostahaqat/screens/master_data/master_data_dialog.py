@@ -11,12 +11,14 @@ Maintains same public API as the original.
 Features:
 - Add new / Edit existing records
 - Field validation via FormRenderer's ValidationEngine
-- Duplicate detection
+- Duplicate detection (using parameterized queries)
 - Dark/Light theme support
 - RTL Arabic layout
 """
 
 from typing import Optional, Dict, Any
+
+from psycopg2 import sql as psycopg2_sql
 
 from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel,
@@ -24,7 +26,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 
-from core.database.queries import insert_returning_id, update, get_count
+from core.database.queries import insert_returning_id, update, get_scalar
 from core.themes import (
     get_current_palette, get_font,
     FONT_SIZE_TITLE, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_WEIGHT_BOLD,
@@ -33,6 +35,18 @@ from core.logging import app_logger
 from ui.components.notifications import toast_error, toast_warning
 
 from modules.designer.form_renderer import FormRenderer
+
+
+# Allowed table names for master data (whitelist for SQL safety)
+_ALLOWED_TABLES = frozenset({
+    'nationalities', 'departments', 'job_titles', 'banks', 'companies',
+    'employee_statuses',
+})
+
+# Allowed column names for master data fields (whitelist for SQL safety)
+_ALLOWED_COLUMNS = frozenset({
+    'name_ar', 'name_en', 'code', 'id',
+})
 
 
 class MasterDataDialog(QDialog):
@@ -80,7 +94,7 @@ class MasterDataDialog(QDialog):
         if mode == 'edit' and record_data:
             self._populate_fields(record_data)
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:
         """Setup dialog UI with FormRenderer."""
         icon = self._config['icon']
         title_ar = self._config['title_ar']
@@ -223,7 +237,7 @@ class MasterDataDialog(QDialog):
             },
             "sections": [
                 {
-                    "section_id": "data",
+                    "id": "data",
                     "title_ar": "",
                     "title_en": "",
                     "collapsible": False,
@@ -235,7 +249,7 @@ class MasterDataDialog(QDialog):
             "events": {},
         }
 
-    def _populate_fields(self, data: Dict):
+    def _populate_fields(self, data: Dict) -> None:
         """Populate fields with existing data."""
         self._renderer.set_data(data)
 
@@ -246,89 +260,118 @@ class MasterDataDialog(QDialog):
         if not is_valid:
             return False
 
-        # Additional duplicate checks
-        if 'name_ar' in self._renderer._input_widgets:
-            name_ar = self._renderer.get_field_value('name_ar')
-            if name_ar and isinstance(name_ar, str) and name_ar.strip():
-                if self._is_duplicate('name_ar', name_ar.strip()):
-                    toast_warning(self, "تنبيه", "هذا الاسم موجود بالفعل!")
-                    return False
+        # Additional duplicate checks using public API (get_field_value returns
+        # None for unknown fields, so no need to check _input_widgets)
+        name_ar = self._renderer.get_field_value('name_ar')
+        if name_ar and isinstance(name_ar, str) and name_ar.strip():
+            if self._is_duplicate('name_ar', name_ar.strip()):
+                toast_warning(self, "تنبيه", "هذا الاسم موجود بالفعل!")
+                return False
 
-        if 'name_en' in self._renderer._input_widgets:
-            name_en = self._renderer.get_field_value('name_en')
-            if name_en and isinstance(name_en, str) and name_en.strip():
-                if self._is_duplicate('name_en', name_en.strip()):
-                    toast_warning(self, "تنبيه", "هذا الاسم الإنجليزي موجود بالفعل!")
-                    return False
+        name_en = self._renderer.get_field_value('name_en')
+        if name_en and isinstance(name_en, str) and name_en.strip():
+            if self._is_duplicate('name_en', name_en.strip()):
+                toast_warning(self, "تنبيه", "هذا الاسم الإنجليزي موجود بالفعل!")
+                return False
 
-        if 'code' in self._renderer._input_widgets:
-            code = self._renderer.get_field_value('code')
-            if code and isinstance(code, str) and code.strip():
-                if self._is_duplicate('code', code.strip()):
-                    toast_warning(self, "تنبيه", "هذا الكود موجود بالفعل!")
-                    return False
+        code = self._renderer.get_field_value('code')
+        if code and isinstance(code, str) and code.strip():
+            if self._is_duplicate('code', code.strip()):
+                toast_warning(self, "تنبيه", "هذا الكود موجود بالفعل!")
+                return False
 
         return True
 
     def _is_duplicate(self, column: str, value: str) -> bool:
-        """Check if value already exists in the table."""
+        """Check if value already exists in the table using parameterized queries."""
         try:
             table = self._config['table']
+
+            # Whitelist validation for SQL identifiers
+            if table not in _ALLOWED_TABLES:
+                app_logger.error(f"Table '{table}' not in allowed tables whitelist")
+                return True  # Block save when we can't verify
+            if column not in _ALLOWED_COLUMNS:
+                app_logger.error(f"Column '{column}' not in allowed columns whitelist")
+                return True
+
             if self._mode == 'edit':
                 record_id = self._record.get('id')
-                count = get_count(
-                    f"SELECT COUNT(*) FROM {table} WHERE {column} = %s AND id != %s",
-                    (value, record_id)
+                if record_id is None:
+                    app_logger.error("Edit mode but record has no id")
+                    return True
+                query = psycopg2_sql.SQL(
+                    "SELECT COUNT(*) FROM {} WHERE {} = %s AND id != %s"
+                ).format(
+                    psycopg2_sql.Identifier(table),
+                    psycopg2_sql.Identifier(column),
                 )
+                count = get_scalar(query, (value, record_id))
             else:
-                count = get_count(
-                    f"SELECT COUNT(*) FROM {table} WHERE {column} = %s",
-                    (value,)
+                query = psycopg2_sql.SQL(
+                    "SELECT COUNT(*) FROM {} WHERE {} = %s"
+                ).format(
+                    psycopg2_sql.Identifier(table),
+                    psycopg2_sql.Identifier(column),
                 )
+                count = get_scalar(query, (value,))
+
             return count is not None and count > 0
         except Exception as e:
             app_logger.error(f"Duplicate check error: {e}", exc_info=True)
-            return False
+            return True  # Block save when we can't verify
 
-    def _on_save(self):
+    def _on_save(self) -> None:
         """Handle save button click."""
         if not self._validate():
             return
 
         try:
             if self._mode == 'add':
-                self._insert_record()
+                success = self._insert_record()
             else:
-                self._update_record()
-            self.accept()
+                success = self._update_record()
+            if success:
+                self.accept()
         except Exception as e:
             app_logger.error(f"Save error: {e}", exc_info=True)
-            toast_error(self, "خطأ", f"فشل الحفظ: {e}")
+            toast_error(self, "خطأ", "فشل الحفظ. يرجى المحاولة مرة أخرى.")
 
-    def _insert_record(self):
-        """Insert new record using FormRenderer data."""
-        fields = []
+    def _insert_record(self) -> bool:
+        """Insert new record using FormRenderer data with parameterized SQL."""
+        table = self._config['table']
+        if table not in _ALLOWED_TABLES:
+            app_logger.error(f"Table '{table}' not in allowed tables whitelist")
+            return False
+
+        field_keys = []
         values = []
-        placeholders = []
 
         for field_def in self._config['fields']:
             key = field_def['key']
+            if key not in _ALLOWED_COLUMNS:
+                continue
             value = self._renderer.get_field_value(key)
-            str_value = str(value).strip() if value else ""
+            str_value = str(value).strip() if value is not None else ""
             if str_value:
-                fields.append(key)
+                field_keys.append(key)
                 values.append(str_value)
-                placeholders.append('%s')
 
-        if not fields:
+        if not field_keys:
             toast_warning(self, "تنبيه", "يرجى إدخال بيانات!")
-            return
+            return False
 
-        columns_str = ', '.join(fields)
-        placeholders_str = ', '.join(placeholders)
-        table = self._config['table']
-
-        query = f"INSERT INTO {table} ({columns_str}) VALUES ({placeholders_str}) RETURNING id"
+        query = psycopg2_sql.SQL(
+            "INSERT INTO {} ({}) VALUES ({}) RETURNING id"
+        ).format(
+            psycopg2_sql.Identifier(table),
+            psycopg2_sql.SQL(', ').join(
+                psycopg2_sql.Identifier(k) for k in field_keys
+            ),
+            psycopg2_sql.SQL(', ').join(
+                psycopg2_sql.Placeholder() for _ in field_keys
+            ),
+        )
         new_id = insert_returning_id(query, tuple(values))
 
         if not new_id:
@@ -337,28 +380,41 @@ class MasterDataDialog(QDialog):
         app_logger.info(
             f"Master data: Added {self._entity_key} id={new_id}"
         )
+        return True
 
-    def _update_record(self):
-        """Update existing record using FormRenderer data."""
+    def _update_record(self) -> bool:
+        """Update existing record using FormRenderer data with parameterized SQL."""
         record_id = self._record.get('id')
         if not record_id:
             raise Exception("لم يتم تحديد السجل!")
 
-        set_parts = []
+        table = self._config['table']
+        if table not in _ALLOWED_TABLES:
+            app_logger.error(f"Table '{table}' not in allowed tables whitelist")
+            return False
+
+        field_keys = []
         values = []
 
         for field_def in self._config['fields']:
             key = field_def['key']
+            if key not in _ALLOWED_COLUMNS:
+                continue
             value = self._renderer.get_field_value(key)
-            str_value = str(value).strip() if value else ""
-            set_parts.append(f"{key} = %s")
+            str_value = str(value).strip() if value is not None else ""
+            field_keys.append(key)
             values.append(str_value if str_value else None)
 
         values.append(record_id)
-        table = self._config['table']
-        set_str = ', '.join(set_parts)
 
-        query = f"UPDATE {table} SET {set_str} WHERE id = %s"
+        set_clause = psycopg2_sql.SQL(', ').join(
+            psycopg2_sql.SQL("{} = %s").format(psycopg2_sql.Identifier(k))
+            for k in field_keys
+        )
+        query = psycopg2_sql.SQL("UPDATE {} SET {} WHERE id = %s").format(
+            psycopg2_sql.Identifier(table),
+            set_clause,
+        )
         success = update(query, tuple(values))
 
         if not success:
@@ -367,8 +423,9 @@ class MasterDataDialog(QDialog):
         app_logger.info(
             f"Master data: Updated {self._entity_key} id={record_id}"
         )
+        return True
 
-    def _apply_theme(self):
+    def _apply_theme(self) -> None:
         """Apply current theme using palette."""
         p = get_current_palette()
         self.setStyleSheet(f"""
