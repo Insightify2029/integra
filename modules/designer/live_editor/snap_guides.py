@@ -23,11 +23,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
-from PyQt5.QtCore import Qt, QPoint, QRect
+from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtGui import QPainter, QPen, QColor
-from PyQt5.QtWidgets import QWidget
 
-from core.logging import app_logger
 from core.themes import get_current_palette, get_font, FONT_SIZE_TINY
 
 
@@ -364,7 +362,6 @@ class SnapGuideEngine:
                 if dragging_rect.left() > ref_rect.right():
                     gap = dragging_rect.left() - ref_rect.right()
                     if gap < 200:
-                        mid_x = int(ref_rect.right() + gap / 2)
                         mid_y = max(dragging_rect.top(), ref_rect.top())
                         guide = SnapGuide(
                             orientation="horizontal",
