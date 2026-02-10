@@ -174,7 +174,7 @@ class DraggableWidgetButton(QToolButton):
         # Draw icon
         p = self._p
         icon = self._definition.get("icon", "?")
-        painter.setFont(QFont("Segoe UI Emoji", 16))
+        painter.setFont(QFont("Noto Color Emoji", 16))
         painter.setPen(QColor(p['primary']))
         painter.drawText(self.rect().adjusted(0, -8, 0, 0), Qt.AlignHCenter | Qt.AlignVCenter, icon)
 
@@ -215,7 +215,7 @@ class DraggableWidgetButton(QToolButton):
             painter.drawRoundedRect(2, 2, 56, 46, 6, 6)
 
             icon = self._definition.get("icon", "?")
-            painter.setFont(QFont("Segoe UI Emoji", 18))
+            painter.setFont(QFont("Noto Color Emoji", 18))
             painter.drawText(pixmap.rect(), Qt.AlignCenter, icon)
             painter.end()
 

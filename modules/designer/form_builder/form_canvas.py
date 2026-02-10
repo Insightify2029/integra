@@ -336,6 +336,7 @@ class DesignWidgetItem(QFrame):
         self._start_y = 0
         self._start_w = 0
         self._start_h = 0
+        self._zoom = 1.0
 
         self._setup_ui()
 
@@ -553,17 +554,19 @@ class DesignWidgetItem(QFrame):
             delta = event.pos() - self._drag_start
             new_pos = self.pos() + delta
 
-            # Snap to grid
-            grid = 10
-            new_x = round(new_pos.x() / grid) * grid
-            new_y = round(new_pos.y() / grid) * grid
+            # Snap to visual grid (scaled by zoom)
+            visual_grid = max(1, int(10 * self._zoom))
+            new_x = round(new_pos.x() / visual_grid) * visual_grid
+            new_y = round(new_pos.y() / visual_grid) * visual_grid
 
             self.move(new_x, new_y)
 
-            self.widget.x = new_x
-            self.widget.y = new_y
+            # Store logical coordinates (divide by zoom)
+            zoom = self._zoom if self._zoom > 0 else 1.0
+            self.widget.x = int(new_x / zoom)
+            self.widget.y = int(new_y / zoom)
 
-            self.moved.emit(self.widget, new_x, new_y)
+            self.moved.emit(self.widget, self.widget.x, self.widget.y)
 
         elif self._resizing:
             delta = event.pos() - self._drag_start
@@ -583,10 +586,12 @@ class DesignWidgetItem(QFrame):
             self.resize(new_width, new_height)
             self._drag_start = event.pos()
 
-            self.widget.width = new_width
-            self.widget.height = new_height
+            # Store logical dimensions (divide by zoom)
+            zoom = self._zoom if self._zoom > 0 else 1.0
+            self.widget.width = int(new_width / zoom)
+            self.widget.height = int(new_height / zoom)
 
-            self.resized.emit(self.widget, new_width, new_height)
+            self.resized.emit(self.widget, self.widget.width, self.widget.height)
 
         else:
             # Update cursor
@@ -766,6 +771,7 @@ class FormCanvas(QScrollArea):
         for widget_id, widget in self._widgets.items():
             item = self._widget_items.get(widget_id)
             if item:
+                item._zoom = level
                 item.setGeometry(
                     int(widget.x * level),
                     int(widget.y * level),
@@ -949,11 +955,12 @@ class FormCanvas(QScrollArea):
     # -----------------------------------------------------------------------
 
     def _compute_snap_guides(self, moving_widget_id: str, x: int, y: int, w: int, h: int) -> Tuple[int, int]:
-        """Compute alignment guides and snapped position."""
+        """Compute alignment guides and snapped position (all in logical coords)."""
         self._guide_lines.clear()
 
         snapped_x = x
         snapped_y = y
+        z = self._zoom_level  # For converting guide lines to screen coords
 
         for wid, other in self._widgets.items():
             if wid == moving_widget_id:
@@ -964,41 +971,48 @@ class FormCanvas(QScrollArea):
             # Horizontal alignment: left edges
             if abs(x - ox) < self._snap_threshold:
                 snapped_x = ox
-                self._guide_lines.append((QPoint(ox, 0), QPoint(ox, self._canvas.height())))
+                gx = int(ox * z)
+                self._guide_lines.append((QPoint(gx, 0), QPoint(gx, self._canvas.height())))
 
             # Right edges
             if abs(x + w - (ox + ow)) < self._snap_threshold:
                 snapped_x = ox + ow - w
-                self._guide_lines.append((QPoint(ox + ow, 0), QPoint(ox + ow, self._canvas.height())))
+                gx = int((ox + ow) * z)
+                self._guide_lines.append((QPoint(gx, 0), QPoint(gx, self._canvas.height())))
 
             # Left to right
             if abs(x - (ox + ow)) < self._snap_threshold:
                 snapped_x = ox + ow
-                self._guide_lines.append((QPoint(ox + ow, 0), QPoint(ox + ow, self._canvas.height())))
+                gx = int((ox + ow) * z)
+                self._guide_lines.append((QPoint(gx, 0), QPoint(gx, self._canvas.height())))
 
             # Vertical alignment: top edges
             if abs(y - oy) < self._snap_threshold:
                 snapped_y = oy
-                self._guide_lines.append((QPoint(0, oy), QPoint(self._canvas.width(), oy)))
+                gy = int(oy * z)
+                self._guide_lines.append((QPoint(0, gy), QPoint(self._canvas.width(), gy)))
 
             # Bottom edges
             if abs(y + h - (oy + oh)) < self._snap_threshold:
                 snapped_y = oy + oh - h
-                self._guide_lines.append((QPoint(0, oy + oh), QPoint(self._canvas.width(), oy + oh)))
+                gy = int((oy + oh) * z)
+                self._guide_lines.append((QPoint(0, gy), QPoint(self._canvas.width(), gy)))
 
             # Center horizontal
             cx = x + w // 2
             ocx = ox + ow // 2
             if abs(cx - ocx) < self._snap_threshold:
                 snapped_x = ocx - w // 2
-                self._guide_lines.append((QPoint(ocx, 0), QPoint(ocx, self._canvas.height())))
+                gx = int(ocx * z)
+                self._guide_lines.append((QPoint(gx, 0), QPoint(gx, self._canvas.height())))
 
             # Center vertical
             cy = y + h // 2
             ocy = oy + oh // 2
             if abs(cy - ocy) < self._snap_threshold:
                 snapped_y = ocy - h // 2
-                self._guide_lines.append((QPoint(0, ocy), QPoint(self._canvas.width(), ocy)))
+                gy = int(ocy * z)
+                self._guide_lines.append((QPoint(0, gy), QPoint(self._canvas.width(), gy)))
 
         return snapped_x, snapped_y
 
@@ -1074,8 +1088,12 @@ class FormCanvas(QScrollArea):
                 widget_type = WidgetType.LABEL
 
             pos = event.pos()
-            x = round(pos.x() / self._grid_size) * self._grid_size
-            y = round(pos.y() / self._grid_size) * self._grid_size
+            # Convert screen position to logical, then snap to grid
+            zoom = self._zoom_level if self._zoom_level > 0 else 1.0
+            logical_x = pos.x() / zoom
+            logical_y = pos.y() / zoom
+            x = round(logical_x / self._grid_size) * self._grid_size
+            y = round(logical_y / self._grid_size) * self._grid_size
 
             self.add_widget(widget_type, x, y)
             event.acceptProposedAction()
@@ -1245,6 +1263,16 @@ class FormCanvas(QScrollArea):
         item.move_finished.connect(self._on_move_finished)
         item.resize_started.connect(self._on_resize_started)
         item.resize_finished.connect(self._on_resize_finished)
+
+        # Apply current zoom level
+        item._zoom = self._zoom_level
+        if self._zoom_level != 1.0:
+            item.setGeometry(
+                int(widget.x * self._zoom_level),
+                int(widget.y * self._zoom_level),
+                int(widget.width * self._zoom_level),
+                int(widget.height * self._zoom_level)
+            )
         item.show()
 
         self._widgets[widget.id] = widget
@@ -1381,7 +1409,8 @@ class FormCanvas(QScrollArea):
             widget.y = snapped_y
             item = self._widget_items.get(widget.id)
             if item:
-                item.move(snapped_x, snapped_y)
+                # Move in screen coordinates (logical * zoom)
+                item.move(int(snapped_x * self._zoom_level), int(snapped_y * self._zoom_level))
                 item.widget.x = snapped_x
                 item.widget.y = snapped_y
 
