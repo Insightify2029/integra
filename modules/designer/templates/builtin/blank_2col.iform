@@ -1,0 +1,84 @@
+{
+  "version": "2.0",
+  "form_id": "blank_2col",
+  "form_name_ar": "نموذج فارغ 2 أعمدة",
+  "form_name_en": "Blank 2 Columns",
+  "target_table": null,
+  "settings": {
+    "direction": "rtl",
+    "layout_mode": "smart_grid",
+    "columns": 2,
+    "column_gap": 20,
+    "row_gap": 15,
+    "margins": {
+      "top": 20,
+      "right": 25,
+      "bottom": 20,
+      "left": 25
+    },
+    "min_width": 600,
+    "max_width": 1200,
+    "scrollable": true,
+    "show_required_indicator": true,
+    "save_button_position": "bottom_left"
+  },
+  "sections": [
+    {
+      "section_id": "main",
+      "title_ar": "القسم الرئيسي",
+      "title_en": "Main Section",
+      "collapsible": false,
+      "fields": [
+        {
+          "id": "placeholder_label",
+          "widget_type": "label",
+          "label_ar": "أضف الحقول هنا",
+          "label_en": "Add fields here",
+          "placeholder_ar": "",
+          "placeholder_en": "",
+          "layout": {
+            "row": 0,
+            "col": 0,
+            "colspan": 2,
+            "rowspan": 1
+          },
+          "properties": {
+            "alignment": "center",
+            "font_size": 14,
+            "color": "#94a3b8"
+          },
+          "validation": {
+            "required": false
+          }
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "action_id": "save",
+      "label_ar": "حفظ",
+      "label_en": "Save",
+      "type": "primary",
+      "icon": "save",
+      "shortcut": "Ctrl+S",
+      "handler": "save_record"
+    },
+    {
+      "action_id": "cancel",
+      "label_ar": "إلغاء",
+      "label_en": "Cancel",
+      "type": "danger",
+      "icon": "close",
+      "shortcut": "Escape",
+      "handler": "cancel_edit"
+    }
+  ],
+  "rules": [],
+  "events": {
+    "on_load": null,
+    "on_save": null,
+    "on_validate": null,
+    "on_close": null
+  }
+}

@@ -1,0 +1,216 @@
+{
+  "version": "2.0",
+  "form_id": "report_form",
+  "form_name_ar": "تقرير",
+  "form_name_en": "Report Form",
+  "target_table": null,
+  "settings": {
+    "direction": "rtl",
+    "layout_mode": "smart_grid",
+    "columns": 2,
+    "column_gap": 20,
+    "row_gap": 15,
+    "margins": {
+      "top": 20,
+      "right": 25,
+      "bottom": 20,
+      "left": 25
+    },
+    "min_width": 600,
+    "max_width": 1200,
+    "scrollable": true,
+    "show_required_indicator": true,
+    "save_button_position": "bottom_left"
+  },
+  "sections": [
+    {
+      "section_id": "filters",
+      "title_ar": "معايير التقرير",
+      "title_en": "Report Filters",
+      "collapsible": false,
+      "fields": [
+        {
+          "id": "date_from",
+          "widget_type": "date_picker",
+          "label_ar": "من تاريخ",
+          "label_en": "Date From",
+          "placeholder_ar": "تاريخ البداية",
+          "placeholder_en": "Start date",
+          "layout": {
+            "row": 0,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "format": "yyyy-MM-dd",
+            "editable": true
+          },
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "id": "date_to",
+          "widget_type": "date_picker",
+          "label_ar": "إلى تاريخ",
+          "label_en": "Date To",
+          "placeholder_ar": "تاريخ النهاية",
+          "placeholder_en": "End date",
+          "layout": {
+            "row": 0,
+            "col": 1,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "format": "yyyy-MM-dd",
+            "editable": true
+          },
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "id": "department",
+          "widget_type": "combo_box",
+          "label_ar": "الإدارة",
+          "label_en": "Department",
+          "placeholder_ar": "الكل",
+          "placeholder_en": "All",
+          "layout": {
+            "row": 1,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "editable": false,
+            "allow_empty": true,
+            "empty_text_ar": "الكل",
+            "empty_text_en": "All",
+            "data_source": {
+              "table": "departments",
+              "value_column": "id",
+              "display_column_ar": "name_ar",
+              "display_column_en": "name_en"
+            }
+          },
+          "validation": {
+            "required": false
+          }
+        },
+        {
+          "id": "status",
+          "widget_type": "combo_box",
+          "label_ar": "الحالة",
+          "label_en": "Status",
+          "placeholder_ar": "الكل",
+          "placeholder_en": "All",
+          "layout": {
+            "row": 1,
+            "col": 1,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "editable": false,
+            "allow_empty": true,
+            "empty_text_ar": "الكل",
+            "empty_text_en": "All",
+            "data_source": {
+              "table": "employee_statuses",
+              "value_column": "id",
+              "display_column_ar": "name_ar",
+              "display_column_en": "name_en"
+            }
+          },
+          "validation": {
+            "required": false
+          }
+        }
+      ]
+    },
+    {
+      "section_id": "output",
+      "title_ar": "خيارات الإخراج",
+      "title_en": "Output Options",
+      "collapsible": false,
+      "fields": [
+        {
+          "id": "format",
+          "widget_type": "combo_box",
+          "label_ar": "صيغة التقرير",
+          "label_en": "Report Format",
+          "placeholder_ar": "اختر الصيغة",
+          "placeholder_en": "Select format",
+          "layout": {
+            "row": 0,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "editable": false,
+            "items": [
+              {"value": "pdf", "text_ar": "PDF", "text_en": "PDF"},
+              {"value": "excel", "text_ar": "Excel", "text_en": "Excel"},
+              {"value": "print", "text_ar": "طباعة", "text_en": "Print"}
+            ]
+          },
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "id": "include_charts",
+          "widget_type": "check_box",
+          "label_ar": "تضمين الرسوم البيانية",
+          "label_en": "Include Charts",
+          "placeholder_ar": "",
+          "placeholder_en": "",
+          "layout": {
+            "row": 0,
+            "col": 1,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "default_value": true,
+            "editable": true
+          },
+          "validation": {
+            "required": false
+          }
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "action_id": "generate",
+      "label_ar": "إنشاء التقرير",
+      "label_en": "Generate Report",
+      "type": "primary",
+      "icon": "print",
+      "shortcut": "Ctrl+G",
+      "handler": "generate_report"
+    },
+    {
+      "action_id": "cancel",
+      "label_ar": "إلغاء",
+      "label_en": "Cancel",
+      "type": "secondary",
+      "icon": "close",
+      "shortcut": "Escape",
+      "handler": "cancel_report"
+    }
+  ],
+  "rules": [],
+  "events": {
+    "on_load": null,
+    "on_save": null,
+    "on_validate": null,
+    "on_close": null
+  }
+}

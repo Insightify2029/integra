@@ -1,0 +1,190 @@
+{
+  "version": "2.0",
+  "form_id": "master_data_form",
+  "form_name_ar": "بيانات رئيسية",
+  "form_name_en": "Master Data",
+  "target_table": null,
+  "settings": {
+    "direction": "rtl",
+    "layout_mode": "smart_grid",
+    "columns": 1,
+    "column_gap": 20,
+    "row_gap": 15,
+    "margins": {
+      "top": 20,
+      "right": 25,
+      "bottom": 20,
+      "left": 25
+    },
+    "min_width": 600,
+    "max_width": 1200,
+    "scrollable": true,
+    "show_required_indicator": true,
+    "save_button_position": "bottom_left"
+  },
+  "sections": [
+    {
+      "section_id": "data",
+      "title_ar": "البيانات",
+      "title_en": "Data",
+      "collapsible": false,
+      "fields": [
+        {
+          "id": "name_ar",
+          "widget_type": "text_input",
+          "label_ar": "الاسم بالعربية",
+          "label_en": "Name (Arabic)",
+          "placeholder_ar": "أدخل الاسم بالعربية",
+          "placeholder_en": "Enter name in Arabic",
+          "layout": {
+            "row": 0,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "max_length": 200,
+            "editable": true
+          },
+          "validation": {
+            "required": true,
+            "min_length": 2
+          },
+          "data_binding": {
+            "column": "name_ar",
+            "type": "string"
+          }
+        },
+        {
+          "id": "name_en",
+          "widget_type": "text_input",
+          "label_ar": "الاسم بالإنجليزية",
+          "label_en": "Name (English)",
+          "placeholder_ar": "أدخل الاسم بالإنجليزية",
+          "placeholder_en": "Enter name in English",
+          "layout": {
+            "row": 1,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "max_length": 200,
+            "editable": true
+          },
+          "validation": {
+            "required": true,
+            "min_length": 2
+          },
+          "data_binding": {
+            "column": "name_en",
+            "type": "string"
+          }
+        },
+        {
+          "id": "code",
+          "widget_type": "text_input",
+          "label_ar": "الكود",
+          "label_en": "Code",
+          "placeholder_ar": "أدخل الكود",
+          "placeholder_en": "Enter code",
+          "layout": {
+            "row": 2,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "max_length": 50,
+            "editable": true
+          },
+          "validation": {
+            "required": false
+          },
+          "data_binding": {
+            "column": "code",
+            "type": "string"
+          }
+        },
+        {
+          "id": "description",
+          "widget_type": "text_area",
+          "label_ar": "الوصف",
+          "label_en": "Description",
+          "placeholder_ar": "أدخل وصفاً اختيارياً",
+          "placeholder_en": "Enter an optional description",
+          "layout": {
+            "row": 3,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "max_length": 500,
+            "min_height": 80,
+            "editable": true
+          },
+          "validation": {
+            "required": false
+          },
+          "data_binding": {
+            "column": "description",
+            "type": "string"
+          }
+        },
+        {
+          "id": "active",
+          "widget_type": "check_box",
+          "label_ar": "نشط",
+          "label_en": "Active",
+          "placeholder_ar": "",
+          "placeholder_en": "",
+          "layout": {
+            "row": 4,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "default_value": true,
+            "editable": true
+          },
+          "validation": {
+            "required": false
+          },
+          "data_binding": {
+            "column": "is_active",
+            "type": "boolean"
+          }
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "action_id": "save",
+      "label_ar": "حفظ",
+      "label_en": "Save",
+      "type": "primary",
+      "icon": "save",
+      "shortcut": "Ctrl+S",
+      "handler": "save_record"
+    },
+    {
+      "action_id": "cancel",
+      "label_ar": "إلغاء",
+      "label_en": "Cancel",
+      "type": "danger",
+      "icon": "close",
+      "shortcut": "Escape",
+      "handler": "cancel_edit"
+    }
+  ],
+  "rules": [],
+  "events": {
+    "on_load": null,
+    "on_save": null,
+    "on_validate": null,
+    "on_close": null
+  }
+}
