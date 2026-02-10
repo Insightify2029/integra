@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-Master Data Dialog
-==================
-ديالوج إضافة وتعديل البيانات الأساسية
+Master Data Dialog (FormRenderer-based)
+=======================================
+ديالوج إضافة وتعديل البيانات الأساسية - مبني على FormRenderer
+
+Migrated from hardcoded Python layout to JSON-configurable FormRenderer.
+Dynamically builds form definition from ENTITY_CONFIGS.
+Maintains same public API as the original.
 
 Features:
 - Add new / Edit existing records
-- Field validation (required, max length, duplicates)
+- Field validation via FormRenderer's ValidationEngine
+- Duplicate detection
 - Dark/Light theme support
 - RTL Arabic layout
 """
@@ -15,15 +20,19 @@ from typing import Optional, Dict, Any
 
 from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel,
-    QPushButton, QLineEdit, QFrame, QGridLayout
+    QPushButton, QFrame,
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
 
-from core.database.queries import select_all, insert_returning_id, update, get_count
-from core.themes import get_current_palette, get_font, FONT_SIZE_TITLE, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_WEIGHT_BOLD
+from core.database.queries import insert_returning_id, update, get_count
+from core.themes import (
+    get_current_palette, get_font,
+    FONT_SIZE_TITLE, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_WEIGHT_BOLD,
+)
 from core.logging import app_logger
 from ui.components.notifications import toast_error, toast_warning
+
+from modules.designer.form_renderer import FormRenderer
 
 
 class MasterDataDialog(QDialog):
@@ -33,7 +42,7 @@ class MasterDataDialog(QDialog):
     Supports:
     - Add mode: creates a new record
     - Edit mode: updates an existing record
-    - Field validation with error feedback
+    - Field validation via FormRenderer
     - Duplicate detection
     """
 
@@ -64,8 +73,6 @@ class MasterDataDialog(QDialog):
         self._config = ENTITY_CONFIGS[entity_key]
         self._mode = mode
         self._record = record_data or {}
-        self._inputs: Dict[str, QLineEdit] = {}
-        self._error_labels: Dict[str, QLabel] = {}
 
         self._setup_ui()
         self._apply_theme()
@@ -74,7 +81,7 @@ class MasterDataDialog(QDialog):
             self._populate_fields(record_data)
 
     def _setup_ui(self):
-        """Setup dialog UI."""
+        """Setup dialog UI with FormRenderer."""
         icon = self._config['icon']
         title_ar = self._config['title_ar']
 
@@ -105,47 +112,11 @@ class MasterDataDialog(QDialog):
         sep.setObjectName("dialogSeparator")
         layout.addWidget(sep)
 
-        # Fields Card
-        card = QFrame()
-        card.setObjectName("fieldsCard")
-        card_layout = QVBoxLayout(card)
-        card_layout.setContentsMargins(20, 20, 20, 20)
-        card_layout.setSpacing(15)
-
-        # Build fields from config
-        for field_def in self._config['fields']:
-            field_key = field_def['key']
-            field_label = field_def['label']
-            is_required = field_def.get('required', False)
-
-            # Label
-            label_text = f"{field_label}{'  *' if is_required else ''}:"
-            lbl = QLabel(label_text)
-            lbl.setFont(get_font(FONT_SIZE_BODY))
-            lbl.setObjectName("fieldLabel")
-            card_layout.addWidget(lbl)
-
-            # Input
-            inp = QLineEdit()
-            inp.setFont(get_font(FONT_SIZE_BODY))
-            inp.setMinimumHeight(42)
-            inp.setObjectName("fieldInput")
-            inp.setPlaceholderText(f"أدخل {field_label}")
-            max_len = field_def.get('max_length')
-            if max_len:
-                inp.setMaxLength(max_len)
-            card_layout.addWidget(inp)
-            self._inputs[field_key] = inp
-
-            # Error label (hidden by default)
-            err = QLabel("")
-            err.setFont(get_font(FONT_SIZE_SMALL))
-            err.setObjectName("fieldError")
-            err.setVisible(False)
-            card_layout.addWidget(err)
-            self._error_labels[field_key] = err
-
-        layout.addWidget(card)
+        # Build form definition from entity config and render with FormRenderer
+        form_dict = self._build_form_dict()
+        self._renderer = FormRenderer(self)
+        self._renderer.load_form_dict(form_dict)
+        layout.addWidget(self._renderer)
 
         # Show record ID in edit mode
         if self._mode == 'edit':
@@ -156,7 +127,7 @@ class MasterDataDialog(QDialog):
             id_label.setAlignment(Qt.AlignCenter)
             layout.addWidget(id_label)
 
-        # Buttons
+        # Buttons (custom buttons outside FormRenderer for dialog control)
         buttons_layout = QHBoxLayout()
         buttons_layout.setSpacing(15)
         buttons_layout.addStretch()
@@ -185,67 +156,119 @@ class MasterDataDialog(QDialog):
         buttons_layout.addStretch()
         layout.addLayout(buttons_layout)
 
+    def _build_form_dict(self) -> dict:
+        """Build a FormRenderer-compatible form definition from entity config."""
+        fields = []
+        for i, field_def in enumerate(self._config['fields']):
+            key = field_def['key']
+            label = field_def['label']
+            is_required = field_def.get('required', False)
+            max_length = field_def.get('max_length')
+
+            validation_rules = []
+            if is_required:
+                validation_rules.append({
+                    "rule": "required",
+                    "message_ar": f"{label} مطلوب",
+                })
+            if max_length:
+                validation_rules.append({
+                    "rule": "max_length",
+                    "value": max_length,
+                    "message_ar": f"الحد الأقصى {max_length} حرف",
+                })
+
+            fields.append({
+                "id": key,
+                "widget_type": "text_input",
+                "label_ar": label,
+                "label_en": key,
+                "placeholder_ar": f"أدخل {label}",
+                "layout": {
+                    "row": i,
+                    "col": 0,
+                    "colspan": 1,
+                    "rowspan": 1,
+                },
+                "properties": {
+                    "readonly": False,
+                    "enabled": True,
+                    "visible": True,
+                },
+                "validation": validation_rules,
+                "data_binding": {
+                    "column": key,
+                    "type": "string",
+                },
+            })
+
+        return {
+            "version": "2.0",
+            "form_id": f"master_data_{self._entity_key}",
+            "form_name_ar": "",
+            "form_name_en": "",
+            "target_table": self._config['table'],
+            "settings": {
+                "direction": "rtl",
+                "layout_mode": "smart_grid",
+                "columns": 1,
+                "column_gap": 20,
+                "row_gap": 10,
+                "margins": {"top": 10, "right": 15, "bottom": 10, "left": 15},
+                "min_width": 400,
+                "max_width": 500,
+                "scrollable": False,
+                "show_required_indicator": True,
+                "save_button_position": "bottom_left",
+            },
+            "sections": [
+                {
+                    "section_id": "data",
+                    "title_ar": "",
+                    "title_en": "",
+                    "collapsible": False,
+                    "fields": fields,
+                }
+            ],
+            "actions": [],
+            "rules": [],
+            "events": {},
+        }
+
     def _populate_fields(self, data: Dict):
         """Populate fields with existing data."""
-        for field_def in self._config['fields']:
-            key = field_def['key']
-            if key in self._inputs and key in data:
-                value = data[key]
-                self._inputs[key].setText(str(value) if value else '')
+        self._renderer.set_data(data)
 
     def _validate(self) -> bool:
-        """
-        Validate all fields.
+        """Validate all fields including duplicate checks."""
+        # Use FormRenderer's built-in validation first
+        is_valid, errors = self._renderer.validate()
+        if not is_valid:
+            return False
 
-        Returns:
-            True if valid, False otherwise
-        """
-        is_valid = True
+        # Additional duplicate checks
+        if 'name_ar' in self._renderer._input_widgets:
+            name_ar = self._renderer.get_field_value('name_ar')
+            if name_ar and isinstance(name_ar, str) and name_ar.strip():
+                if self._is_duplicate('name_ar', name_ar.strip()):
+                    toast_warning(self, "تنبيه", "هذا الاسم موجود بالفعل!")
+                    return False
 
-        # Clear previous errors
-        for err in self._error_labels.values():
-            err.setVisible(False)
+        if 'name_en' in self._renderer._input_widgets:
+            name_en = self._renderer.get_field_value('name_en')
+            if name_en and isinstance(name_en, str) and name_en.strip():
+                if self._is_duplicate('name_en', name_en.strip()):
+                    toast_warning(self, "تنبيه", "هذا الاسم الإنجليزي موجود بالفعل!")
+                    return False
 
-        for field_def in self._config['fields']:
-            key = field_def['key']
-            value = self._inputs[key].text().strip()
-            is_required = field_def.get('required', False)
+        if 'code' in self._renderer._input_widgets:
+            code = self._renderer.get_field_value('code')
+            if code and isinstance(code, str) and code.strip():
+                if self._is_duplicate('code', code.strip()):
+                    toast_warning(self, "تنبيه", "هذا الكود موجود بالفعل!")
+                    return False
 
-            # Required check
-            if is_required and not value:
-                self._show_field_error(key, f"{field_def['label']} مطلوب")
-                is_valid = False
-                continue
-
-            # Max length check
-            max_len = field_def.get('max_length')
-            if value and max_len and len(value) > max_len:
-                self._show_field_error(key, f"الحد الأقصى {max_len} حرف")
-                is_valid = False
-                continue
-
-        # Duplicate check (name_ar must be unique)
-        if is_valid and 'name_ar' in self._inputs:
-            name_ar = self._inputs['name_ar'].text().strip()
-            if name_ar and self._is_duplicate('name_ar', name_ar):
-                self._show_field_error('name_ar', "هذا الاسم موجود بالفعل!")
-                is_valid = False
-
-        # Duplicate check for name_en
-        if is_valid and 'name_en' in self._inputs:
-            name_en = self._inputs['name_en'].text().strip()
-            if name_en and self._is_duplicate('name_en', name_en):
-                self._show_field_error('name_en', "هذا الاسم الإنجليزي موجود بالفعل!")
-                is_valid = False
-
-        # Duplicate check for code (companies)
-        if is_valid and 'code' in self._inputs:
-            code = self._inputs['code'].text().strip()
-            if code and self._is_duplicate('code', code):
-                self._show_field_error('code', "هذا الكود موجود بالفعل!")
-                is_valid = False
-
-        return is_valid
+        return True
 
     def _is_duplicate(self, column: str, value: str) -> bool:
         """Check if value already exists in the table."""
@@ -267,12 +290,6 @@ class MasterDataDialog(QDialog):
             app_logger.error(f"Duplicate check error: {e}", exc_info=True)
             return False
 
-    def _show_field_error(self, key: str, message: str):
-        """Show error message for a field."""
-        if key in self._error_labels:
-            self._error_labels[key].setText(f"⚠️ {message}")
-            self._error_labels[key].setVisible(True)
-
     def _on_save(self):
         """Handle save button click."""
         if not self._validate():
@@ -289,17 +306,18 @@ class MasterDataDialog(QDialog):
             toast_error(self, "خطأ", f"فشل الحفظ: {e}")
 
     def _insert_record(self):
-        """Insert new record."""
+        """Insert new record using FormRenderer data."""
         fields = []
         values = []
         placeholders = []
 
         for field_def in self._config['fields']:
             key = field_def['key']
-            value = self._inputs[key].text().strip()
-            if value:
+            value = self._renderer.get_field_value(key)
+            str_value = str(value).strip() if value else ""
+            if str_value:
                 fields.append(key)
-                values.append(value)
+                values.append(str_value)
                 placeholders.append('%s')
 
         if not fields:
@@ -321,7 +339,7 @@ class MasterDataDialog(QDialog):
         )
 
     def _update_record(self):
-        """Update existing record."""
+        """Update existing record using FormRenderer data."""
         record_id = self._record.get('id')
         if not record_id:
             raise Exception("لم يتم تحديد السجل!")
@@ -331,9 +349,10 @@ class MasterDataDialog(QDialog):
 
         for field_def in self._config['fields']:
             key = field_def['key']
-            value = self._inputs[key].text().strip()
+            value = self._renderer.get_field_value(key)
+            str_value = str(value).strip() if value else ""
             set_parts.append(f"{key} = %s")
-            values.append(value if value else None)
+            values.append(str_value if str_value else None)
 
         values.append(record_id)
         table = self._config['table']
@@ -362,21 +381,6 @@ class MasterDataDialog(QDialog):
             QLabel#recordIdLabel {{ color: {p['text_muted']}; }}
 
             QFrame#dialogSeparator {{ background-color: {p['border']}; }}
-            QFrame#fieldsCard {{
-                background-color: {p['bg_main']};
-                border: 1px solid {p['border']};
-                border-radius: 12px;
-            }}
-
-            QLineEdit#fieldInput {{
-                background-color: {p['bg_input']};
-                color: {p['text_primary']};
-                border: 2px solid {p['border']};
-                border-radius: 8px;
-                padding: 8px 12px;
-                font-size: 13px;
-            }}
-            QLineEdit#fieldInput:focus {{ border-color: {p['border_focus']}; }}
 
             QPushButton {{
                 background-color: {p['bg_card']};

@@ -16,6 +16,70 @@
 
 ---
 
+## الجلسة: 10 فبراير 2026 - Phase 4: Migration (تحويل الشاشات لـ FormRenderer)
+
+### ملخص الجلسة:
+
+**تم تنفيذ Phase 4 من خطة Form Designer: تحويل 3 شاشات من كود Python صلب إلى FormRenderer + .iform JSON.**
+
+### ما تم إنجازه:
+
+1. **إصلاح 3 ملفات .iform (تصحيح format mismatches):**
+
+| الملف | الإصلاحات |
+|-------|-----------|
+| `employee_edit.iform` | `properties.data_source` → `combo_source`, flat validation → array, `action_id` → `id` |
+| `employee_profile.iform` | نفس الإصلاحات + جعل كل الحقول readonly + إزالة action buttons |
+| `master_data_form.iform` | تصحيح validation format + action id format |
+
+2. **تحويل 3 شاشات إلى FormRenderer:**
+
+| الملف | من | إلى | ملاحظات |
+|-------|-----|------|---------|
+| `edit_employee_screen.py` | ~393 سطر hardcoded | ~219 سطر FormRenderer | نفس signals + API, combo display names للتوافق |
+| `employee_profile_screen.py` | ~318 سطر hardcoded | ~290 سطر FormRenderer | read-only + 5 ActionButtons خارج FormRenderer |
+| `master_data_dialog.py` | ~395 سطر hardcoded | ~399 سطر FormRenderer | Dynamic form_dict من ENTITY_CONFIGS + duplicate detection |
+
+3. **إصلاح التنقل في MostahaqatWindow:**
+   - `_edit_employee_data()` الآن ينقل لشاشة التعديل (stack index 3)
+   - بدلاً من عرض toast "قيد التطوير"
+
+### التفاصيل التقنية:
+
+**Format Mismatches المكتشفة والمصلحة:**
+- Templates كانت تستخدم `properties.data_source` لكن FormRenderer يتوقع `combo_source` على مستوى الحقل
+- Templates كانت تستخدم validation كـ flat dict `{"required": true}` لكن ValidationEngine يتوقع array `[{"rule": "required"}]`
+- Templates كانت تستخدم `action_id` لكن LayoutEngine يستخدم `action_def.get("id", "")`
+
+**Backward Compatibility:**
+- `EditEmployeeScreen.saved` signal يرسل dict مع IDs + display names (يستخرج نص الكومبو من `_widget_map`)
+- `EmployeeProfileScreen` يحافظ على نفس 6 signals
+- `MasterDataDialog` يبني form_dict ديناميكياً من ENTITY_CONFIGS عبر `load_form_dict()`
+
+### الملفات المعدلة:
+
+```
+modules/designer/templates/builtin/employee_edit.iform     ← إصلاح format
+modules/designer/templates/builtin/employee_profile.iform  ← إصلاح format
+modules/designer/templates/builtin/master_data_form.iform  ← إصلاح format
+modules/mostahaqat/screens/edit_employee/edit_employee_screen.py    ← rewrite
+modules/mostahaqat/screens/employee_profile/employee_profile_screen.py ← rewrite
+modules/mostahaqat/screens/master_data/master_data_dialog.py       ← rewrite
+modules/mostahaqat/window/mostahaqat_window.py             ← fix navigation
+claude/FORM_DESIGNER_MASTER_PLAN.md                        ← Phase 4 ✅
+```
+
+### الحالة النهائية لخطة Form Designer:
+
+| المرحلة | الحالة |
+|---------|--------|
+| Phase 1: FormRenderer Engine | ✅ مكتمل + مراجعة |
+| Phase 2: Designer Enhancement | ✅ مكتمل |
+| Phase 3: Live Edit Mode | ✅ مكتمل + مراجعة |
+| Phase 4: Migration | ✅ مكتمل |
+
+---
+
 ## الجلسة: 10 فبراير 2026 - Phase 3: Live Edit Mode (التعديل المباشر)
 
 ### ملخص الجلسة:

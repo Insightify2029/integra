@@ -1,392 +1,218 @@
 # -*- coding: utf-8 -*-
 """
-Edit Employee Screen
-====================
-\u0634\u0627\u0634\u0629 \u062a\u0639\u062f\u064a\u0644 \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0645\u0648\u0638\u0641
+Edit Employee Screen (FormRenderer-based)
+==========================================
+شاشة تعديل بيانات الموظف - مبنية على FormRenderer
+
+Migrated from hardcoded Python layout to JSON-configurable FormRenderer.
+Uses employee_edit.iform for form definition.
+Maintains same signals and public API as the original.
 """
+
+import os
+from typing import Optional
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-    QPushButton, QFrame, QGridLayout, QScrollArea,
-    QLineEdit, QComboBox, QDateEdit
+    QPushButton, QComboBox,
 )
-from PyQt5.QtCore import Qt, pyqtSignal, QDate
-from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt, pyqtSignal
 
-from core.themes import get_current_palette, get_font, FONT_SIZE_TITLE, FONT_SIZE_SUBTITLE, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_WEIGHT_BOLD
-from core.database.queries import select_all, update
+from core.themes import (
+    get_current_palette, get_font,
+    FONT_SIZE_TITLE, FONT_SIZE_BODY, FONT_WEIGHT_BOLD,
+)
+from core.logging import app_logger
 from ui.components.notifications import toast_success, toast_error, toast_warning
+
+from modules.designer.form_renderer import FormRenderer
+
+
+# Path to the .iform template (resolved at module load)
+_IFORM_DIR = os.path.normpath(os.path.join(
+    os.path.dirname(__file__),
+    "..", "..", "..", "designer", "templates", "builtin",
+))
+_IFORM_PATH = os.path.join(_IFORM_DIR, "employee_edit.iform")
 
 
 class EditEmployeeScreen(QWidget):
-    """Edit Employee Screen."""
-    
+    """
+    Edit Employee Screen using FormRenderer.
+
+    Provides the same public API as the original hardcoded version:
+    - Signals: saved(dict), cancelled()
+    - Methods: set_employee(data)
+
+    Internally renders the form from employee_edit.iform via FormRenderer.
+    """
+
     saved = pyqtSignal(dict)
     cancelled = pyqtSignal()
-    
-    def __init__(self, employee_data: dict = None, parent=None):
+
+    def __init__(
+        self,
+        employee_data: Optional[dict] = None,
+        parent: Optional[QWidget] = None,
+    ):
         super().__init__(parent)
-        self._employee = employee_data or {}
-        self._dropdowns_data = {}
-        self._inputs = {}
-        
+        self._employee: dict = employee_data or {}
+
         self._setup_ui()
         self._apply_theme()
-        self._load_dropdowns()
-        
+
         if employee_data:
             self.set_employee(employee_data)
-    
-    def _setup_ui(self):
+
+    # ------------------------------------------------------------------
+    # UI Setup
+    # ------------------------------------------------------------------
+
+    def _setup_ui(self) -> None:
+        """Build the screen: header + FormRenderer."""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(15)
-        
-        # Header
+
+        # Header bar: [Back] --- Title --- [Spacer]
         header = QHBoxLayout()
-        
-        self._back_btn = QPushButton("\u2192 \u0631\u062c\u0648\u0639")
+
+        self._back_btn = QPushButton("→ رجوع")
         self._back_btn.setCursor(Qt.PointingHandCursor)
         self._back_btn.setFont(get_font(FONT_SIZE_BODY))
         self._back_btn.setObjectName("backButton")
         self._back_btn.clicked.connect(self._on_cancel)
         header.addWidget(self._back_btn)
-        
-        self._title_label = QLabel("\U0001f4dd \u062a\u0639\u062f\u064a\u0644 \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0645\u0648\u0638\u0641")
+
+        self._title_label = QLabel("تعديل بيانات الموظف")
         self._title_label.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
         self._title_label.setAlignment(Qt.AlignCenter)
         self._title_label.setObjectName("screenTitle")
         header.addWidget(self._title_label, 1)
-        
+
         spacer = QWidget()
         spacer.setFixedWidth(80)
         header.addWidget(spacer)
-        
-        layout.addLayout(header)
-        
-        # Scroll Area
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.NoFrame)
-        scroll.setObjectName("editScroll")
-        
-        scroll_content = QWidget()
-        scroll_layout = QVBoxLayout(scroll_content)
-        scroll_layout.setContentsMargins(0, 0, 0, 0)
-        scroll_layout.setSpacing(20)
-        
-        # Basic Info Card
-        basic_card = self._create_card("\U0001f4cb \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0623\u0633\u0627\u0633\u064a\u0629")
-        basic_grid = QGridLayout()
-        basic_grid.setSpacing(15)
-        basic_grid.setColumnStretch(1, 1)
-        basic_grid.setColumnStretch(3, 1)
-        
-        self._inputs['employee_code'] = self._add_input(basic_grid, "\u0643\u0648\u062f \u0627\u0644\u0645\u0648\u0638\u0641", 0, 0, readonly=True)
-        self._inputs['status_id'] = self._add_combo(basic_grid, "\u0627\u0644\u062d\u0627\u0644\u0629", 0, 1)
-        self._inputs['name_ar'] = self._add_input(basic_grid, "\u0627\u0644\u0627\u0633\u0645 \u0628\u0627\u0644\u0639\u0631\u0628\u064a", 1, 0)
-        self._inputs['name_en'] = self._add_input(basic_grid, "\u0627\u0644\u0627\u0633\u0645 \u0628\u0627\u0644\u0625\u0646\u062c\u0644\u064a\u0632\u064a", 1, 1)
-        self._inputs['national_id'] = self._add_input(basic_grid, "\u0631\u0642\u0645 \u0627\u0644\u0647\u0648\u064a\u0629", 2, 0)
-        self._inputs['nationality_id'] = self._add_combo(basic_grid, "\u0627\u0644\u062c\u0646\u0633\u064a\u0629", 2, 1)
-        self._inputs['hire_date'] = self._add_date(basic_grid, "\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062a\u0639\u064a\u064a\u0646", 3, 0)
-        
-        basic_card.layout().addLayout(basic_grid)
-        scroll_layout.addWidget(basic_card)
-        
-        # Job Info Card
-        job_card = self._create_card("\U0001f4bc \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0648\u0638\u064a\u0641\u064a\u0629")
-        job_grid = QGridLayout()
-        job_grid.setSpacing(15)
-        job_grid.setColumnStretch(1, 1)
-        job_grid.setColumnStretch(3, 1)
-        
-        self._inputs['company_id'] = self._add_combo(job_grid, "\u0627\u0644\u0634\u0631\u0643\u0629", 0, 0)
-        self._inputs['department_id'] = self._add_combo(job_grid, "\u0627\u0644\u0642\u0633\u0645", 0, 1)
-        self._inputs['job_title_id'] = self._add_combo(job_grid, "\u0627\u0644\u0648\u0638\u064a\u0641\u0629", 1, 0)
-        
-        job_card.layout().addLayout(job_grid)
-        scroll_layout.addWidget(job_card)
-        
-        # Bank Info Card
-        bank_card = self._create_card("\U0001f3e6 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0628\u0646\u0643\u064a\u0629")
-        bank_grid = QGridLayout()
-        bank_grid.setSpacing(15)
-        bank_grid.setColumnStretch(1, 1)
-        bank_grid.setColumnStretch(3, 1)
-        
-        self._inputs['bank_id'] = self._add_combo(bank_grid, "\u0627\u0644\u0628\u0646\u0643", 0, 0)
-        self._inputs['iban'] = self._add_input(bank_grid, "IBAN", 0, 1)
-        
-        bank_card.layout().addLayout(bank_grid)
-        scroll_layout.addWidget(bank_card)
-        
-        # Save/Cancel Buttons
-        buttons_frame = QFrame()
-        buttons_frame.setObjectName("buttonsFrame")
-        buttons_layout = QHBoxLayout(buttons_frame)
-        buttons_layout.setContentsMargins(20, 15, 20, 15)
-        buttons_layout.setSpacing(15)
-        
-        buttons_layout.addStretch()
-        
-        self._cancel_btn = QPushButton("\u274c \u0625\u0644\u063a\u0627\u0621")
-        self._cancel_btn.setCursor(Qt.PointingHandCursor)
-        self._cancel_btn.setFont(get_font(FONT_SIZE_BODY))
-        self._cancel_btn.setMinimumHeight(50)
-        self._cancel_btn.setMinimumWidth(160)
-        self._cancel_btn.setProperty("buttonColor", "danger")
-        self._cancel_btn.clicked.connect(self._on_cancel)
-        buttons_layout.addWidget(self._cancel_btn)
-        
-        self._save_btn = QPushButton("\u2705 \u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644\u0627\u062a")
-        self._save_btn.setCursor(Qt.PointingHandCursor)
-        self._save_btn.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
-        self._save_btn.setMinimumHeight(50)
-        self._save_btn.setMinimumWidth(200)
-        self._save_btn.setProperty("buttonColor", "success")
-        self._save_btn.clicked.connect(self._on_save)
-        buttons_layout.addWidget(self._save_btn)
-        
-        buttons_layout.addStretch()
-        
-        scroll_layout.addWidget(buttons_frame)
-        scroll_layout.addStretch()
-        
-        scroll.setWidget(scroll_content)
-        layout.addWidget(scroll)
-    
-    def _create_card(self, title):
-        card = QFrame()
-        card.setObjectName("editCard")
-        layout = QVBoxLayout(card)
-        layout.setContentsMargins(20, 15, 20, 20)
-        layout.setSpacing(15)
-        
-        title_label = QLabel(title)
-        title_label.setFont(get_font(FONT_SIZE_SUBTITLE, FONT_WEIGHT_BOLD))
-        title_label.setObjectName("cardTitle")
-        layout.addWidget(title_label)
-        
-        sep = QFrame()
-        sep.setFrameShape(QFrame.HLine)
-        sep.setObjectName("cardSeparator")
-        layout.addWidget(sep)
-        
-        return card
-    
-    def _add_input(self, grid, label, row, col, readonly=False):
-        lbl = QLabel(f"{label}:")
-        lbl.setFont(get_font(FONT_SIZE_SMALL))
-        lbl.setObjectName("fieldLabel")
-        lbl.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        
-        inp = QLineEdit()
-        inp.setFont(get_font(FONT_SIZE_BODY))
-        inp.setMinimumHeight(40)
-        inp.setObjectName("fieldInput")
-        inp.setPlaceholderText(f"\u0623\u062f\u062e\u0644 {label}")
-        
-        if readonly:
-            inp.setReadOnly(True)
-            inp.setObjectName("fieldInputReadonly")
-        
-        col_offset = col * 2
-        grid.addWidget(lbl, row, col_offset)
-        grid.addWidget(inp, row, col_offset + 1)
-        return inp
-    
-    def _add_combo(self, grid, label, row, col):
-        lbl = QLabel(f"{label}:")
-        lbl.setFont(get_font(FONT_SIZE_SMALL))
-        lbl.setObjectName("fieldLabel")
-        lbl.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        
-        combo = QComboBox()
-        combo.setFont(get_font(FONT_SIZE_BODY))
-        combo.setMinimumHeight(40)
-        combo.setObjectName("fieldCombo")
-        
-        col_offset = col * 2
-        grid.addWidget(lbl, row, col_offset)
-        grid.addWidget(combo, row, col_offset + 1)
-        return combo
-    
-    def _add_date(self, grid, label, row, col):
-        lbl = QLabel(f"{label}:")
-        lbl.setFont(get_font(FONT_SIZE_SMALL))
-        lbl.setObjectName("fieldLabel")
-        lbl.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        
-        date_edit = QDateEdit()
-        date_edit.setFont(get_font(FONT_SIZE_BODY))
-        date_edit.setMinimumHeight(40)
-        date_edit.setObjectName("fieldDate")
-        date_edit.setCalendarPopup(True)
-        date_edit.setDisplayFormat("yyyy-MM-dd")
-        date_edit.setDate(QDate.currentDate())
-        
-        col_offset = col * 2
-        grid.addWidget(lbl, row, col_offset)
-        grid.addWidget(date_edit, row, col_offset + 1)
-        return date_edit
-    
-    def _load_dropdowns(self):
-        self._load_combo(self._inputs['nationality_id'], "SELECT id, name_ar FROM nationalities ORDER BY name_ar", 'nationalities')
-        self._load_combo(self._inputs['department_id'], "SELECT id, name_en FROM departments ORDER BY name_en", 'departments')
-        self._load_combo(self._inputs['job_title_id'], "SELECT id, name_ar FROM job_titles ORDER BY name_ar", 'job_titles')
-        self._load_combo(self._inputs['bank_id'], "SELECT id, name_en FROM banks ORDER BY name_en", 'banks')
-        self._load_combo(self._inputs['company_id'], "SELECT id, name_en FROM companies ORDER BY name_en", 'companies')
-        self._load_combo(self._inputs['status_id'], "SELECT id, name_ar FROM employee_statuses ORDER BY id", 'statuses')
-    
-    def _load_combo(self, combo, query, key):
-        try:
-            columns, rows = select_all(query)
-            self._dropdowns_data[key] = {}
-            combo.clear()
-            combo.addItem("-- \u0627\u062e\u062a\u0631 --", 0)
-            for row in rows:
-                item_id = row[0]
-                item_name = str(row[1]) if row[1] else ""
-                combo.addItem(item_name, item_id)
-                self._dropdowns_data[key][item_id] = item_name
-        except Exception as e:
-            print(f"Error loading {key}: {e}")
-    
-    def set_employee(self, data):
-        self._employee = data
-        name = data.get('name_ar', data.get('name_en', ''))
-        self._title_label.setText(f"\U0001f4dd \u062a\u0639\u062f\u064a\u0644 \u0628\u064a\u0627\u0646\u0627\u062a: {name}")
-        
-        self._inputs['employee_code'].setText(str(data.get('employee_code', '')))
-        self._inputs['name_ar'].setText(str(data.get('name_ar', '')))
-        self._inputs['name_en'].setText(str(data.get('name_en', '')))
-        self._inputs['national_id'].setText(str(data.get('national_id', '')))
-        self._inputs['iban'].setText(str(data.get('iban', '')))
-        
-        hire_date = data.get('hire_date')
-        if hire_date:
-            try:
-                date_str = str(hire_date)
-                if '-' in date_str:
-                    parts = date_str.split('-')
-                    self._inputs['hire_date'].setDate(QDate(int(parts[0]), int(parts[1]), int(parts[2][:2])))
-            except Exception:
-                pass
-        
-        self._select_combo_by_text(self._inputs['nationality_id'], data.get('nationality', ''))
-        self._select_combo_by_text(self._inputs['department_id'], data.get('department', ''))
-        self._select_combo_by_text(self._inputs['job_title_id'], data.get('job_title', ''))
-        self._select_combo_by_text(self._inputs['bank_id'], data.get('bank', ''))
-        self._select_combo_by_text(self._inputs['company_id'], data.get('company', ''))
-        self._select_combo_by_text(self._inputs['status_id'], data.get('status', ''))
-    
-    def _select_combo_by_text(self, combo, text):
-        if not text:
-            return
-        text = str(text)
-        for i in range(combo.count()):
-            if combo.itemText(i) == text:
-                combo.setCurrentIndex(i)
-                return
-    
-    def _on_save(self):
-        name_ar = self._inputs['name_ar'].text().strip()
-        name_en = self._inputs['name_en'].text().strip()
-        
-        if not name_ar and not name_en:
-            toast_warning(self, "تنبيه", "يجب إدخال اسم الموظف!")
-            return
 
-        employee_id = self._employee.get('id')
-        if not employee_id:
-            toast_error(self, "خطأ", "لم يتم تحديد الموظف!")
-            return
-        
-        nationality_id = self._inputs['nationality_id'].currentData()
-        department_id = self._inputs['department_id'].currentData()
-        job_title_id = self._inputs['job_title_id'].currentData()
-        bank_id = self._inputs['bank_id'].currentData()
-        company_id = self._inputs['company_id'].currentData()
-        status_id = self._inputs['status_id'].currentData()
-        national_id = self._inputs['national_id'].text().strip()
-        iban = self._inputs['iban'].text().strip()
-        hire_date = self._inputs['hire_date'].date().toString("yyyy-MM-dd")
-        
-        query = """
-        UPDATE employees SET
-            name_ar = %s, name_en = %s, national_id = %s,
-            nationality_id = %s, department_id = %s, job_title_id = %s,
-            bank_id = %s, iban = %s, company_id = %s,
-            status_id = %s, hire_date = %s,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = %s
+        layout.addLayout(header)
+
+        # FormRenderer for the form body
+        self._renderer = FormRenderer(self)
+        self._renderer.saved.connect(self._on_form_saved)
+        self._renderer.cancelled.connect(self._on_cancel)
+        self._renderer.validation_failed.connect(self._on_validation_failed)
+
+        loaded = self._renderer.load_form(_IFORM_PATH)
+        if not loaded:
+            app_logger.error(f"Failed to load employee edit form: {_IFORM_PATH}")
+
+        layout.addWidget(self._renderer, 1)
+
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
+
+    def set_employee(self, data: dict) -> None:
         """
-        
-        params = (
-            name_ar if name_ar else None,
-            name_en if name_en else None,
-            national_id if national_id else None,
-            nationality_id if nationality_id and nationality_id != 0 else None,
-            department_id if department_id and department_id != 0 else None,
-            job_title_id if job_title_id and job_title_id != 0 else None,
-            bank_id if bank_id and bank_id != 0 else None,
-            iban if iban else None,
-            company_id if company_id and company_id != 0 else None,
-            status_id if status_id and status_id != 0 else None,
-            hire_date,
-            employee_id
-        )
-        
-        success = update(query, params)
-        
-        if success:
-            toast_success(self, "تم", "تم حفظ التعديلات بنجاح!")
-            updated_data = dict(self._employee)
-            updated_data['name_ar'] = name_ar
-            updated_data['name_en'] = name_en
-            updated_data['national_id'] = national_id
-            updated_data['iban'] = iban
-            updated_data['hire_date'] = hire_date
-            updated_data['nationality'] = self._inputs['nationality_id'].currentText()
-            updated_data['department'] = self._inputs['department_id'].currentText()
-            updated_data['job_title'] = self._inputs['job_title_id'].currentText()
-            updated_data['bank'] = self._inputs['bank_id'].currentText()
-            updated_data['company'] = self._inputs['company_id'].currentText()
-            updated_data['status'] = self._inputs['status_id'].currentText()
-            self.saved.emit(updated_data)
-        else:
-            toast_error(self, "خطأ", "فشل حفظ التعديلات!")
-    
-    def _on_cancel(self):
+        Populate the form with employee data.
+
+        Args:
+            data: Employee data dict (from employees list / profile screen).
+                  Contains keys like: id, employee_code, name_ar, name_en,
+                  national_id, nationality_id, department_id, job_title_id,
+                  bank_id, company_id, status_id, hire_date, iban, etc.
+        """
+        self._employee = data
+
+        name = data.get('name_ar', data.get('name_en', ''))
+        self._title_label.setText(f"تعديل بيانات: {name}")
+
+        # Store the employee ID and target table for save operations
+        employee_id = data.get('id')
+        if employee_id is not None:
+            self._renderer._record_id = int(employee_id)
+            self._renderer._target_table = "employees"
+
+        # Pass data directly to FormRenderer – it maps via data_binding.column
+        self._renderer.set_data(data)
+
+    # ------------------------------------------------------------------
+    # Signal handlers
+    # ------------------------------------------------------------------
+
+    def _on_form_saved(self, saved_data: dict) -> None:
+        """Handle FormRenderer save completion."""
+        # Build updated_data dict that includes both IDs and display names
+        # (matches the format the original screen emitted)
+        updated_data = dict(self._employee)
+
+        # Update text fields from saved data
+        for key in ('name_ar', 'name_en', 'national_id', 'iban',
+                     'employee_code', 'hire_date'):
+            if key in saved_data:
+                updated_data[key] = saved_data[key]
+
+        # Update ID fields
+        for key in ('nationality_id', 'department_id', 'job_title_id',
+                     'bank_id', 'company_id', 'status_id'):
+            if key in saved_data:
+                updated_data[key] = saved_data[key]
+
+        # Extract display names from combo boxes for backward compat
+        combo_display_map = {
+            'nationality_id': 'nationality',
+            'department_id': 'department',
+            'job_title_id': 'job_title',
+            'bank_id': 'bank',
+            'company_id': 'company',
+            'status_id': 'status',
+        }
+        for field_id, display_key in combo_display_map.items():
+            entry = self._renderer._widget_map.get(field_id)
+            if entry:
+                _, widget, _ = entry
+                if isinstance(widget, QComboBox):
+                    text = widget.currentText()
+                    if text and not text.startswith("--"):
+                        updated_data[display_key] = text
+
+        # Get hire_date as string
+        hire_date_val = self._renderer.get_field_value('hire_date')
+        if hire_date_val is not None:
+            updated_data['hire_date'] = str(hire_date_val)
+
+        toast_success(self, "تم", "تم حفظ التعديلات بنجاح!")
+        self.saved.emit(updated_data)
+
+    def _on_cancel(self) -> None:
+        """Handle cancel/back."""
         self.cancelled.emit()
-    
-    def _apply_theme(self):
+
+    def _on_validation_failed(self, errors: list) -> None:
+        """Handle validation errors from FormRenderer."""
+        if errors:
+            toast_warning(self, "تنبيه", errors[0])
+
+    # ------------------------------------------------------------------
+    # Theme
+    # ------------------------------------------------------------------
+
+    def _apply_theme(self) -> None:
+        """Apply theme to the header area. FormRenderer handles its own theming."""
         p = get_current_palette()
         self.setStyleSheet(f"""
             QWidget {{ background-color: {p['bg_main']}; }}
             QLabel {{ color: {p['text_primary']}; background: transparent; }}
-            QLabel#fieldLabel {{ color: {p['text_secondary']}; }}
             QLabel#screenTitle {{ color: {p['accent']}; }}
-            QLabel#cardTitle {{ color: {p['accent']}; }}
-            QFrame#editCard {{ background-color: {p['bg_card']}; border: 1px solid {p['border']}; border-radius: 12px; }}
-            QFrame#cardSeparator {{ background-color: {p['border']}; }}
-            QFrame#buttonsFrame {{ background-color: {p['bg_card']}; border: 1px solid {p['border']}; border-radius: 12px; }}
-            QLineEdit, QLineEdit#fieldInput {{ background-color: {p['bg_input']}; color: {p['text_primary']}; border: 2px solid {p['border']}; border-radius: 8px; padding: 8px 12px; font-size: 13px; }}
-            QLineEdit:focus {{ border-color: {p['border_focus']}; }}
-            QLineEdit#fieldInputReadonly {{ background-color: {p['bg_card']}; color: {p['text_muted']}; border: 2px solid {p['bg_card']}; }}
-            QComboBox {{ background-color: {p['bg_input']}; color: {p['text_primary']}; border: 2px solid {p['border']}; border-radius: 8px; padding: 8px 12px; font-size: 13px; }}
-            QComboBox:focus {{ border-color: {p['border_focus']}; }}
-            QComboBox::drop-down {{ border: none; width: 30px; }}
-            QComboBox QAbstractItemView {{ background-color: {p['bg_card']}; color: {p['text_primary']}; border: 1px solid {p['border']}; selection-background-color: {p['selection_bg']}; }}
-            QDateEdit {{ background-color: {p['bg_input']}; color: {p['text_primary']}; border: 2px solid {p['border']}; border-radius: 8px; padding: 8px 12px; font-size: 13px; }}
-            QDateEdit:focus {{ border-color: {p['border_focus']}; }}
-            QPushButton {{ background-color: {p['bg_card']}; color: {p['text_primary']}; border: none; border-radius: 8px; padding: 12px 24px; font-weight: bold; }}
-            QPushButton:hover {{ background-color: {p['bg_hover']}; }}
-            QPushButton#backButton {{ background-color: transparent; color: {p['text_secondary']}; border: 1px solid {p['border']}; }}
-            QPushButton#backButton:hover {{ background-color: {p['bg_card']}; color: {p['text_primary']}; }}
-            QPushButton[buttonColor="success"] {{ background-color: {p['success']}; color: {p['text_on_primary']}; }}
-            QPushButton[buttonColor="success"]:hover {{ background-color: {p['success']}; }}
-            QPushButton[buttonColor="danger"] {{ background-color: {p['danger']}; color: {p['text_on_primary']}; }}
-            QPushButton[buttonColor="danger"]:hover {{ background-color: {p['danger']}; }}
-            QScrollArea {{ background: transparent; border: none; }}
+            QPushButton#backButton {{
+                background-color: transparent;
+                color: {p['text_secondary']};
+                border: 1px solid {p['border']};
+                border-radius: 8px;
+                padding: 8px 16px;
+            }}
+            QPushButton#backButton:hover {{
+                background-color: {p['bg_card']};
+                color: {p['text_primary']};
+            }}
         """)
