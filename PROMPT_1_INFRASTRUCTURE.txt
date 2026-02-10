@@ -1,0 +1,113 @@
+═══════════════════════════════════════════════════════════════
+المحادثة 1: بناء البنية التحتية للـ Web UI في INTEGRA
+═══════════════════════════════════════════════════════════════
+
+السياق:
+INTEGRA هو Desktop ERP مبني بـ Python 3.11.9 + PyQt5 + PostgreSQL 16
+المسار: D:\Projects\Integra
+قاعدة البيانات: integra على localhost:5432
+
+═══════════════════════════════════════════════════════════════
+القرار الاستراتيجي الجديد:
+═══════════════════════════════════════════════════════════════
+
+قررنا نحول واجهة INTEGRA من PyQt5 widgets إلى 
+HTML/CSS/JS معروضة داخل QWebEngineView.
+
+السبب: Python أقوى في الـ Backend، وتقنيات الويب أقوى 
+في الواجهات. النتيجة = أفضل ما في العالمين.
+
+البرنامج يفضل Desktop - مفيش سيرفر خارجي.
+Python = Backend + Data + PostgreSQL
+HTML/CSS/JS = الواجهة (معروضة داخل QWebEngineView)
+QWebChannel = الجسر بينهم
+
+═══════════════════════════════════════════════════════════════
+المطلوب في المحادثة دي (البنية التحتية فقط):
+═══════════════════════════════════════════════════════════════
+
+أولاً - اقرأ ملف CLAUDE.md في جذر المشروع (فيه كل التفاصيل).
+
+ثانياً - أنشئ الملفات التالية:
+
+1. core/web_engine/__init__.py
+
+2. core/web_engine/web_view_manager.py
+   كلاس WebViewManager:
+   - create_view(parent) → QWebEngineView جاهز
+   - load_screen(view, template_name, initial_data={})
+   - يحمل الـ Engine مرة واحدة عند بداية البرنامج (pre-load)
+   - يدعم Dark/Light theme
+
+3. core/web_engine/data_bridge.py
+   كلاس DataBridge(QObject):
+   - معرض لـ JavaScript عبر QWebChannel
+   - Methods بـ @pyqtSlot:
+     * get_employee(emp_id) → JSON
+     * get_employee_list(search, filters) → JSON
+     * save_employee(json_data) → JSON result
+     * get_dropdown_data(table_name) → JSON
+       (departments, nationalities, job_titles)
+     * get_employee_salary(emp_id) → JSON
+     * get_employee_documents(emp_id) → JSON
+   - يستخدم PostgreSQL connection الموجود في المشروع
+
+4. core/web_engine/screen_loader.py
+   - يحمل HTML templates من مجلد templates/
+   - يحقن QWebChannel JavaScript bridge تلقائياً
+   - يحقن CSS theme variables
+   - يتعامل مع المسارات (file:/// protocol)
+
+5. templates/base.html
+   قالب أساسي فيه:
+   - Cairo font (Google Fonts)
+   - JetBrains Mono font
+   - RTL direction
+   - CSS variables للـ Dark theme:
+     --bg-primary: #0a0e17
+     --bg-secondary: #111827
+     --bg-card: #1a2235
+     --border: #2a3550
+     --accent-blue: #3b82f6
+     --text-primary: #f1f5f9
+     --text-secondary: #94a3b8
+   - QWebChannel bridge initialization script
+   - Shared CSS (buttons, inputs, tables, cards, tabs)
+
+6. static/js/integra-bridge.js
+   - Initialize QWebChannel
+   - Provide helper functions:
+     * callBridge(method, params) → Promise
+     * showToast(message, type)
+     * formatNumber(num)
+     * formatDate(date)
+
+═══════════════════════════════════════════════════════════════
+قواعد مهمة:
+═══════════════════════════════════════════════════════════════
+
+- SRP: ملف واحد = وظيفة واحدة
+- تعليقات بالعربي في الكود
+- لا تمسح أي ملفات PyQt5 موجودة
+- لا تعدل أي شاشات موجودة
+- ركز بس على إنشاء البنية التحتية
+- اختبر إن QWebEngineView بيفتح ويعرض HTML بسيط
+- لو PyQtWebEngine مش مثبت، ثبته:
+  pip install PyQtWebEngine
+
+═══════════════════════════════════════════════════════════════
+بعد ما تخلص:
+═══════════════════════════════════════════════════════════════
+
+اعمل اختبار بسيط:
+- افتح نافذة QWebEngineView
+- اعرض فيها HTML بسيط فيه "INTEGRA Web UI Ready ✅"
+- تأكد إن QWebChannel bridge شغال
+- تأكد إن DataBridge يقدر يجيب بيانات من PostgreSQL
+
+لو كل حاجة شغالة → commit:
+git add --all
+git commit -m "web-ui: infrastructure - web engine + data bridge + templates"
+git push
+
+═══════════════════════════════════════════════════════════════

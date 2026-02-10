@@ -1,0 +1,51 @@
+═══════════════════════════════════════════════════════════════
+المحادثة 4: تكامل وتنظيف - Final Integration
+═══════════════════════════════════════════════════════════════
+
+السياق:
+- اقرأ CLAUDE.md
+- كل الشاشات محولة للـ Web UI
+- محتاج تكامل نهائي وتنظيف
+
+═══════════════════════════════════════════════════════════════
+المطلوب:
+═══════════════════════════════════════════════════════════════
+
+1. Navigation Flow:
+   - تأكد إن كل الشاشات مربوطة ببعض
+   - Launcher → Dashboard → Employee List → Employee Profile
+   - زرار الرجوع يشتغل في كل شاشة
+   - Breadcrumbs أو navigation path
+
+2. Theme System:
+   - تأكد Dark/Light theme يشتغل على كل الشاشات
+   - Toggle button في الـ header
+
+3. Performance:
+   - تأكد QWebEngineView بيتحمل مرة واحدة
+   - الشاشات بتفتح بسرعة
+   - مفيش memory leaks
+
+4. Error Handling:
+   - لو الـ database مش متصل يظهر رسالة واضحة
+   - لو البيانات فشلت يظهر toast error
+   - Loading indicators وقت جلب البيانات
+
+5. Keyboard Shortcuts:
+   - Ctrl+S = حفظ
+   - Escape = رجوع
+   - Ctrl+F = بحث (في قائمة الموظفين)
+
+6. Testing:
+   - افتح البرنامج من main.py
+   - تنقل بين كل الشاشات
+   - جرب حفظ وتعديل
+   - جرب البحث والفلترة
+   - تأكد مفيش أخطاء في الـ console
+
+═══════════════════════════════════════════════════════════════
+Final commit:
+git add --all
+git commit -m "web-ui: final integration, navigation, theme, shortcuts"
+git push
+═══════════════════════════════════════════════════════════════
