@@ -21,15 +21,14 @@ from PyQt5.QtWidgets import (
     QLabel, QLineEdit, QTextEdit, QSpinBox, QDoubleSpinBox,
     QComboBox, QCheckBox, QRadioButton, QDateEdit, QTimeEdit,
     QPushButton, QGroupBox, QFrame, QMenu, QAction,
-    QRubberBand, QApplication, QUndoStack, QUndoCommand,
-    QGraphicsView, QGraphicsScene
+    QRubberBand, QApplication, QUndoStack, QUndoCommand
 )
 from PyQt5.QtCore import (
-    Qt, QRect, QPoint, QSize, pyqtSignal, QMimeData, QRectF, QPointF
+    Qt, QRect, QPoint, QSize, pyqtSignal, QMimeData
 )
 from PyQt5.QtGui import (
     QPainter, QPen, QBrush, QColor, QDrag, QCursor,
-    QKeySequence, QTransform
+    QKeySequence
 )
 
 from core.logging import app_logger
@@ -1234,7 +1233,11 @@ class FormCanvas(QScrollArea):
         """Update widget appearance (with undo support for property changes)."""
         if widget.id in self._widget_items:
             item = self._widget_items[widget.id]
-            item.setGeometry(widget.x, widget.y, widget.width, widget.height)
+            z = self._zoom_level
+            item.setGeometry(
+                int(widget.x * z), int(widget.y * z),
+                int(widget.width * z), int(widget.height * z)
+            )
             item._update_style()
             item.update()
 
@@ -1364,7 +1367,11 @@ class FormCanvas(QScrollArea):
 
         item = self._widget_items.get(widget_id)
         if item:
-            item.setGeometry(widget.x, widget.y, widget.width, widget.height)
+            z = self._zoom_level
+            item.setGeometry(
+                int(widget.x * z), int(widget.y * z),
+                int(widget.width * z), int(widget.height * z)
+            )
             item._update_style()
             item.update()
 
