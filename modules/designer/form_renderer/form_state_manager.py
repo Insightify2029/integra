@@ -155,10 +155,10 @@ class FormStateManager(QObject):
             field_id: The field that changed.
             new_value: The new value.
         """
-        if self._suppress_tracking:
-            return
-
         with self._lock:
+            if self._suppress_tracking:
+                return
+
             old_value = self._current_values.get(field_id)
 
             # Avoid duplicate entries for same value
@@ -188,16 +188,17 @@ class FormStateManager(QObject):
 
             is_now_dirty = field_id in self._dirty_fields
             any_dirty = len(self._dirty_fields) > 0
+            current_state = self._state
 
         # Emit signals outside the lock
         if was_dirty != is_now_dirty:
             self.field_dirty_changed.emit(field_id, is_now_dirty)
 
-        # Update form state
-        if any_dirty and self._state not in (FormState.SAVING,):
+        # Update form state (use captured state snapshot, not self._state)
+        if any_dirty and current_state not in (FormState.SAVING,):
             self.set_state(FormState.DIRTY)
             self.dirty_changed.emit(True)
-        elif not any_dirty and self._state == FormState.DIRTY:
+        elif not any_dirty and current_state == FormState.DIRTY:
             self.set_state(FormState.READY)
             self.dirty_changed.emit(False)
 
@@ -309,11 +310,13 @@ class FormStateManager(QObject):
 
     def suppress_tracking(self) -> None:
         """Temporarily suppress dirty tracking (e.g., during data load)."""
-        self._suppress_tracking = True
+        with self._lock:
+            self._suppress_tracking = True
 
     def resume_tracking(self) -> None:
         """Resume dirty tracking."""
-        self._suppress_tracking = False
+        with self._lock:
+            self._suppress_tracking = False
 
     # -----------------------------------------------------------------------
     # Save lifecycle helpers

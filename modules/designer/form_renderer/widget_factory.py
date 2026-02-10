@@ -44,6 +44,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont, QPixmap, QColor, QIntValidator, QDoubleValidator
 
+import re as _re
+
 from core.logging import app_logger
 from core.themes import (
     get_current_palette,
@@ -59,6 +61,28 @@ from modules.designer.shared.form_schema import (
     DEFAULT_FIELD_PROPERTIES,
     merge_with_defaults,
 )
+
+
+# Regex to validate CSS color values (hex, named, rgb, rgba)
+_COLOR_RE = _re.compile(
+    r"^(#[0-9a-fA-F]{3,8}|[a-zA-Z]+|rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)"
+    r"|rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*[\d.]+\s*\))$"
+)
+
+
+def _is_safe_color(value: str) -> bool:
+    """Validate that a string is a safe CSS color value."""
+    return bool(_COLOR_RE.match(value.strip()))
+
+
+def _sanitize_qss(qss: str) -> str:
+    """Sanitize custom QSS: remove potentially dangerous constructs."""
+    sanitized = qss.replace("\\", "").replace("\x00", "")
+    # Reject url() references (could load external resources)
+    sanitized = _re.sub(r"url\s*\([^)]*\)", "", sanitized)
+    # Reject expression() constructs
+    sanitized = _re.sub(r"expression\s*\([^)]*\)", "", sanitized)
+    return sanitized
 
 
 class WidgetFactory:
@@ -418,7 +442,9 @@ class WidgetFactory:
                 )
         else:
             widget.setText("(no image)")
-            widget.setStyleSheet("border: 1px dashed gray; padding: 10px;")
+            palette = get_current_palette()
+            border = palette.get("border", "#64748b")
+            widget.setStyleSheet(f"border: 1px dashed {border}; padding: 10px;")
 
         return widget
 
@@ -485,10 +511,13 @@ class WidgetFactory:
         widget.setFixedHeight(35)
         widget.setText(field_def.get("label_ar", "اختر لون"))
 
+        palette = get_current_palette()
+        border_color = palette.get("border", "#64748b")
         current_color = "#ffffff"
         widget.setProperty("selected_color", current_color)
+        widget.setProperty("_border_color", border_color)
         widget.setStyleSheet(
-            f"background-color: {current_color}; border: 1px solid #ccc;"
+            f"background-color: {current_color}; border: 1px solid {border_color};"
         )
 
         def _pick_color() -> None:
@@ -499,9 +528,10 @@ class WidgetFactory:
             )
             if color.isValid():
                 hex_color = color.name()
+                border_c = widget.property("_border_color") or "#64748b"
                 widget.setProperty("selected_color", hex_color)
                 widget.setStyleSheet(
-                    f"background-color: {hex_color}; border: 1px solid #ccc;"
+                    f"background-color: {hex_color}; border: 1px solid {border_c};"
                 )
 
         widget.clicked.connect(_pick_color)
@@ -630,19 +660,32 @@ class WidgetFactory:
 
         font_weight = style.get("font_weight")
         if font_weight is not None:
-            parts.append(f"font-weight: {font_weight};")
+            # Validate font_weight against allowed values to prevent QSS injection
+            _ALLOWED_WEIGHTS = {"normal", "bold", "100", "200", "300", "400",
+                                "500", "600", "700", "800", "900"}
+            weight_str = str(font_weight).strip().lower()
+            if weight_str in _ALLOWED_WEIGHTS:
+                parts.append(f"font-weight: {weight_str};")
+            else:
+                app_logger.warning(f"Rejected unsafe font_weight value: {font_weight!r}")
 
         text_color = style.get("text_color")
-        if text_color:
+        if text_color and _is_safe_color(str(text_color)):
             parts.append(f"color: {text_color};")
+        elif text_color:
+            app_logger.warning(f"Rejected unsafe text_color value: {text_color!r}")
 
         background = style.get("background")
-        if background:
+        if background and _is_safe_color(str(background)):
             parts.append(f"background-color: {background};")
+        elif background:
+            app_logger.warning(f"Rejected unsafe background value: {background!r}")
 
         border_color = style.get("border_color")
-        if border_color:
+        if border_color and _is_safe_color(str(border_color)):
             parts.append(f"border-color: {border_color};")
+        elif border_color:
+            app_logger.warning(f"Rejected unsafe border_color value: {border_color!r}")
 
         border_radius = style.get("border_radius")
         if border_radius is not None:
@@ -650,7 +693,8 @@ class WidgetFactory:
 
         custom_css = style.get("custom_css")
         if custom_css:
-            parts.append(custom_css)
+            app_logger.debug(f"Applying custom_css override for widget")
+            parts.append(_sanitize_qss(str(custom_css)))
 
         if parts:
             class_name = type(widget).__name__
@@ -781,9 +825,11 @@ def set_widget_value(widget: QWidget, widget_type: str, value: Any) -> None:
             widget.setValue(int(value))
 
         elif widget_type == "color_picker" and isinstance(widget, QPushButton):
-            widget.setProperty("selected_color", str(value))
+            border_c = widget.property("_border_color") or "#64748b"
+            safe_val = str(value) if _is_safe_color(str(value)) else "#ffffff"
+            widget.setProperty("selected_color", safe_val)
             widget.setStyleSheet(
-                f"background-color: {value}; border: 1px solid #ccc;"
+                f"background-color: {safe_val}; border: 1px solid {border_c};"
             )
 
         elif widget_type == "file_picker":
