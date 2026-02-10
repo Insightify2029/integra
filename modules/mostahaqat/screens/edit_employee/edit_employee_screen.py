@@ -14,7 +14,7 @@ from typing import Optional
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-    QPushButton, QComboBox,
+    QPushButton,
 )
 from PyQt5.QtCore import Qt, pyqtSignal
 
@@ -87,6 +87,7 @@ class EditEmployeeScreen(QWidget):
         self._title_label = QLabel("تعديل بيانات الموظف")
         self._title_label.setFont(get_font(FONT_SIZE_TITLE, FONT_WEIGHT_BOLD))
         self._title_label.setAlignment(Qt.AlignCenter)
+        self._title_label.setTextFormat(Qt.PlainText)
         self._title_label.setObjectName("screenTitle")
         header.addWidget(self._title_label, 1)
 
@@ -105,6 +106,10 @@ class EditEmployeeScreen(QWidget):
         loaded = self._renderer.load_form(_IFORM_PATH)
         if not loaded:
             app_logger.error(f"Failed to load employee edit form: {_IFORM_PATH}")
+            err_label = QLabel("فشل تحميل نموذج التعديل")
+            err_label.setAlignment(Qt.AlignCenter)
+            err_label.setStyleSheet("color: red; font-size: 16px;")
+            layout.addWidget(err_label)
 
         layout.addWidget(self._renderer, 1)
 
@@ -122,16 +127,18 @@ class EditEmployeeScreen(QWidget):
                   national_id, nationality_id, department_id, job_title_id,
                   bank_id, company_id, status_id, hire_date, iban, etc.
         """
+        if not isinstance(data, dict) or not data:
+            return
+
         self._employee = data
 
         name = data.get('name_ar', data.get('name_en', ''))
         self._title_label.setText(f"تعديل بيانات: {name}")
 
-        # Store the employee ID and target table for save operations
+        # Set record identity for save operations (public API, no DB load)
         employee_id = data.get('id')
         if employee_id is not None:
-            self._renderer._record_id = int(employee_id)
-            self._renderer._target_table = "employees"
+            self._renderer.set_record_identity("employees", int(employee_id))
 
         # Pass data directly to FormRenderer – it maps via data_binding.column
         self._renderer.set_data(data)
@@ -146,9 +153,10 @@ class EditEmployeeScreen(QWidget):
         # (matches the format the original screen emitted)
         updated_data = dict(self._employee)
 
-        # Update text fields from saved data
+        # Update all fields from saved data (saved_data keys match both
+        # field_ids and data_binding.column names in employee_edit.iform)
         for key in ('name_ar', 'name_en', 'national_id', 'iban',
-                     'employee_code', 'hire_date'):
+                     'employee_code'):
             if key in saved_data:
                 updated_data[key] = saved_data[key]
 
@@ -159,6 +167,7 @@ class EditEmployeeScreen(QWidget):
                 updated_data[key] = saved_data[key]
 
         # Extract display names from combo boxes for backward compat
+        # Uses FormRenderer's public get_combo_display_text() API
         combo_display_map = {
             'nationality_id': 'nationality',
             'department_id': 'department',
@@ -168,18 +177,17 @@ class EditEmployeeScreen(QWidget):
             'status_id': 'status',
         }
         for field_id, display_key in combo_display_map.items():
-            entry = self._renderer._widget_map.get(field_id)
-            if entry:
-                _, widget, _ = entry
-                if isinstance(widget, QComboBox):
-                    text = widget.currentText()
-                    if text and not text.startswith("--"):
-                        updated_data[display_key] = text
+            text = self._renderer.get_combo_display_text(field_id)
+            if text:
+                updated_data[display_key] = text
 
-        # Get hire_date as string
+        # Get hire_date as string (single source of truth)
         hire_date_val = self._renderer.get_field_value('hire_date')
         if hire_date_val is not None:
             updated_data['hire_date'] = str(hire_date_val)
+
+        # Update internal state for subsequent saves
+        self._employee = updated_data
 
         toast_success(self, "تم", "تم حفظ التعديلات بنجاح!")
         self.saved.emit(updated_data)

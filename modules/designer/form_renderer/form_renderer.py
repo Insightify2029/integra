@@ -258,6 +258,41 @@ class FormRenderer(QWidget):
         self._state_manager.set_state(FormState.LOADING)
         self._data_bridge.load_record(table, record_id)
 
+    def set_record_identity(self, table: str, record_id: int) -> None:
+        """
+        Set the target table and record ID without loading from DB.
+
+        Use this when you already have the data in memory and just need
+        to set the identity for subsequent save operations.
+
+        Args:
+            table: Database table name.
+            record_id: Primary key value.
+        """
+        self._target_table = table
+        self._record_id = record_id
+
+    def get_combo_display_text(self, field_id: str) -> Optional[str]:
+        """
+        Get the display text of a combo box field.
+
+        Args:
+            field_id: The field identifier.
+
+        Returns:
+            The currently displayed text, or None if field not found
+            or not a combo box.
+        """
+        entry = self._widget_map.get(field_id)
+        if not entry:
+            return None
+        _, widget, _ = entry
+        if hasattr(widget, 'currentText'):
+            text = widget.currentText()
+            if text and not text.startswith("--"):
+                return text
+        return None
+
     def set_data(self, data: dict[str, Any]) -> None:
         """
         Populate the form with data from a dictionary.
