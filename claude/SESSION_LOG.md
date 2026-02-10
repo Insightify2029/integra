@@ -16,6 +16,85 @@
 
 ---
 
+## الجلسة: 10 فبراير 2026 - Phase 3: Live Edit Mode (التعديل المباشر)
+
+### ملخص الجلسة:
+
+**تم تنفيذ Phase 3 من خطة Form Designer: وضع التعديل المباشر (Live Edit Mode) مع مراجعة شاملة وإصلاح 15 مشكلة.**
+
+### ما تم إنجازه:
+
+1. **5 ملفات جديدة في `modules/designer/live_editor/`:**
+
+| الملف | الوظيفة | عدد الأسطر |
+|-------|---------|------------|
+| `snap_guides.py` | خطوط محاذاة ذكية أثناء السحب (edge/center/spacing) | ~340 |
+| `selection_handles.py` | 8 مقابض resize حول العنصر المحدد | ~340 |
+| `property_popup.py` | نافذة خصائص سريعة (عرض/ارتفاع/نص/للقراءة فقط) | ~310 |
+| `live_edit_overlay.py` | المتحكم الرئيسي: overlay شفاف فوق الفورم | ~1,415 |
+| `__init__.py` | تصدير المكونات | ~45 |
+
+2. **تكامل مع FormRenderer:**
+   - إضافة `enable_live_edit()` / `disable_live_edit()` / `toggle_live_edit()`
+   - زرار "تعديل التصميم" في header الفورم
+   - اختصار `Ctrl+Shift+E` للتبديل
+   - تنظيف تلقائي عند إغلاق الفورم
+
+3. **تحديث `modules/designer/__init__.py`:**
+   - تصدير LiveEditOverlay, SelectionHandles, HandlePosition, SnapGuideEngine, PropertyPopup
+
+4. **مراجعة شاملة (Audit) + إصلاح 15 مشكلة:**
+
+#### HIGH (6):
+- Thread-safe lazy import (`_get_overlay_class` مع Lock) - Rule #4
+- Widget lifecycle: إزالة toolbar من layout قبل `deleteLater()` - Rule #6
+- PropertyPopup: تنظيف عند deactivate بـ `deleteLater()` - Rule #6
+- Backup في background thread عبر `run_in_background()` - Rule #13
+- Save في background thread عبر `run_in_background()` - Rule #13
+- Deep copy عند تحديث `_form_def` من live editor - Rule #3
+
+#### MEDIUM (5):
+- تسجيل فشل حذف backup القديم (Rule #9)
+- focusOutEvent يخفي popup فعلياً بـ QTimer - UX
+- استخدام `get_font()` بدل `QFont("Cairo")` - Rule #12
+- إزالة local import لـ QEvent (أداء) - Performance
+- Schema validation قبل الحفظ (feedback فوري) - UX
+
+#### LOW (4):
+- تحديث ألوان عند تبديل الثيم - Rule #11
+- توثيق كامل بالـ docstrings
+- إعادة إنشاء popup عند كل تفعيل (بدل إعادة الاستخدام)
+- حماية من re-entrance في mouse events
+
+### الميزات الرئيسية:
+- **سحب وإفلات:** اسحب أي عنصر لمكان جديد
+- **تغيير الحجم:** 8 مقابض في الأركان والأضلاع
+- **خطوط محاذاة ذكية:** edge + center + spacing مع labels
+- **Snapping تلقائي:** يلتصق بالعناصر القريبة (8px)
+- **نافذة خصائص سريعة:** double-click لتعديل العرض/الارتفاع/النص
+- **شريط أدوات:** save/cancel/undo/redo/reset
+- **اختصارات لوحة المفاتيح:** Delete, Ctrl+Z, Ctrl+Y, Ctrl+S, arrows, Escape
+- **تحريك دقيق:** أسهم لوحة المفاتيح (1px عادي، 5px مع Shift)
+- **نسخة احتياطية تلقائية:** backup قبل كل تعديل
+- **حفظ آمن:** validation + background I/O
+- **تأكيد قبل الإلغاء:** عند وجود تغييرات غير محفوظة
+
+### كيفية الاستخدام:
+```python
+# عبر FormRenderer
+from modules.designer.form_renderer import FormRenderer
+renderer = FormRenderer()
+renderer.load_form("forms/employee_edit.iform")
+renderer.enable_live_edit()  # أو Ctrl+Shift+E
+
+# عبر الـ overlay مباشرة
+from modules.designer.live_editor import LiveEditOverlay
+overlay = LiveEditOverlay(form_renderer)
+overlay.activate(form_def, form_path, widget_map, scroll_area, content_widget)
+```
+
+---
+
 ## الجلسة: 10 فبراير 2026 - مراجعة شاملة لـ Phase 1: FormRenderer (Audit + Fix)
 
 ### ملخص الجلسة:

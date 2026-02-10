@@ -32,6 +32,7 @@ import copy
 from typing import Any, Optional
 
 from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -43,6 +44,7 @@ from PyQt5.QtWidgets import (
     QMessageBox,
     QFrame,
     QSizePolicy,
+    QShortcut,
 )
 from core.logging import app_logger
 from core.themes import (
@@ -74,6 +76,22 @@ from modules.designer.form_renderer.form_state_manager import (
     FormStateManager,
     FormState,
 )
+
+# Lazy import guard for LiveEditOverlay to avoid circular imports (Rule #4: thread-safe)
+import threading as _threading
+
+_overlay_lock = _threading.Lock()
+_LiveEditOverlay = None
+
+
+def _get_overlay_class():
+    """Lazy import of LiveEditOverlay to avoid circular dependency. Thread-safe (Rule #4)."""
+    global _LiveEditOverlay
+    with _overlay_lock:
+        if _LiveEditOverlay is None:
+            from modules.designer.live_editor.live_edit_overlay import LiveEditOverlay
+            _LiveEditOverlay = LiveEditOverlay
+    return _LiveEditOverlay
 
 
 class FormRenderer(QWidget):
@@ -133,6 +151,10 @@ class FormRenderer(QWidget):
         self._action_bar: Optional[QWidget] = None
         self._header_widget: Optional[QWidget] = None
         self._main_layout: Optional[QVBoxLayout] = None
+
+        # Live edit overlay (Phase 3)
+        self._live_edit_overlay = None  # Created lazily
+        self._live_edit_active = False
 
         # Connect internal signals
         self._state_manager.dirty_changed.connect(self.dirty_changed)
@@ -454,12 +476,89 @@ class FormRenderer(QWidget):
         return self._action_buttons.get(action_id)
 
     # -----------------------------------------------------------------------
-    # Public API: Live edit (Phase 3 placeholder)
+    # Public API: Live edit (Phase 3)
     # -----------------------------------------------------------------------
 
     def enable_live_edit(self) -> None:
-        """Enable live editing mode (Phase 3 feature)."""
-        app_logger.info("Live edit mode not yet implemented (Phase 3)")
+        """
+        Enable live editing mode.
+
+        Activates a transparent overlay on top of the form that allows
+        visual drag, resize, and property editing of form widgets.
+        Changes are saved back to the .iform JSON file.
+
+        Toggle with Ctrl+Shift+E or the toolbar button.
+        """
+        if self._live_edit_active:
+            app_logger.debug("Live edit already active")
+            return
+
+        if not self._form_def:
+            app_logger.warning("Cannot enable live edit: no form loaded")
+            return
+
+        try:
+            OverlayClass = _get_overlay_class()
+
+            if self._live_edit_overlay is None:
+                self._live_edit_overlay = OverlayClass(self)
+                self._live_edit_overlay.edit_saved.connect(self._on_live_edit_saved)
+                self._live_edit_overlay.edit_cancelled.connect(self._on_live_edit_cancelled)
+                self._live_edit_overlay.form_modified.connect(self._on_live_edit_modified)
+
+            self._live_edit_overlay.activate(
+                form_def=self._form_def,
+                form_path=self._form_path,
+                widget_map=self._widget_map,
+                scroll_area=self._scroll_area,
+                content_widget=self._content_widget,
+            )
+            self._live_edit_active = True
+            app_logger.info("Live edit mode enabled")
+
+        except Exception:
+            app_logger.error("Failed to enable live edit mode", exc_info=True)
+            self._show_error("فشل تفعيل وضع التعديل المباشر")
+
+    def disable_live_edit(self) -> None:
+        """
+        Disable live editing mode.
+
+        If there are unsaved changes, the overlay will prompt the user.
+        """
+        if not self._live_edit_active or not self._live_edit_overlay:
+            return
+
+        self._live_edit_overlay.deactivate()
+        self._live_edit_active = False
+        app_logger.info("Live edit mode disabled")
+
+    def toggle_live_edit(self) -> None:
+        """Toggle live editing mode on/off."""
+        if self._live_edit_active:
+            self.disable_live_edit()
+        else:
+            self.enable_live_edit()
+
+    @property
+    def is_live_edit_active(self) -> bool:
+        """Whether live editing mode is currently active."""
+        return self._live_edit_active
+
+    def _on_live_edit_saved(self) -> None:
+        """Handle live edit save completion."""
+        self._live_edit_active = False
+        app_logger.info("Live edit changes saved successfully")
+
+    def _on_live_edit_cancelled(self) -> None:
+        """Handle live edit cancellation."""
+        self._live_edit_active = False
+        app_logger.info("Live edit cancelled")
+
+    def _on_live_edit_modified(self, new_form_def: dict) -> None:
+        """Handle form definition modified by live editor."""
+        self._form_def = copy.deepcopy(new_form_def)
+        app_logger.info("Form definition updated from live editor")
 
     # -----------------------------------------------------------------------
     # Internal: UI building
@@ -537,7 +636,7 @@ class FormRenderer(QWidget):
         self._apply_rules()
 
     def _build_header(self) -> Optional[QWidget]:
-        """Build the form header with title."""
+        """Build the form header with title and live edit toggle button."""
         if not self._form_def:
             return None
 
@@ -556,6 +655,37 @@ class FormRenderer(QWidget):
         title_label.setFont(get_font(size=FONT_SIZE_TITLE, weight=FONT_WEIGHT_BOLD))
         layout.addWidget(title_label)
         layout.addStretch(1)
+
+        # Live edit toggle button
+        live_edit_btn = QPushButton("تعديل التصميم", header)
+        live_edit_btn.setObjectName("live_edit_toggle")
+        live_edit_btn.setFont(get_font(size=FONT_SIZE_BODY))
+        live_edit_btn.setCursor(Qt.PointingHandCursor)
+        live_edit_btn.setToolTip("تعديل تصميم النموذج مباشرة (Ctrl+Shift+E)")
+        live_edit_btn.clicked.connect(lambda: self.toggle_live_edit())
+
+        palette = get_current_palette()
+        primary = palette.get("primary", "#3b82f6")
+        border = palette.get("border", "#334155")
+        text_color = palette.get("text", palette.get("foreground", "#e2e8f0"))
+        live_edit_btn.setStyleSheet(
+            f"QPushButton {{"
+            f"  color: {primary};"
+            f"  background: transparent;"
+            f"  border: 1px solid {primary};"
+            f"  border-radius: 4px;"
+            f"  padding: 4px 12px;"
+            f"}}"
+            f"QPushButton:hover {{"
+            f"  background-color: {primary};"
+            f"  color: white;"
+            f"}}"
+        )
+        layout.addWidget(live_edit_btn)
+
+        # Keyboard shortcut: Ctrl+Shift+E
+        shortcut = QShortcut(QKeySequence("Ctrl+Shift+E"), self)
+        shortcut.activated.connect(self.toggle_live_edit)
 
         return header
 
@@ -896,6 +1026,11 @@ class FormRenderer(QWidget):
         Remove all widgets from the form layout.
         Follows Rule #6: proper widget lifecycle cleanup.
         """
+        # Deactivate live edit if active
+        if self._live_edit_active and self._live_edit_overlay:
+            self._live_edit_overlay.deactivate()
+            self._live_edit_active = False
+
         self._validation_engine.clear_all_errors()
 
         # Clear widget map references first, then delete
@@ -918,6 +1053,11 @@ class FormRenderer(QWidget):
 
     def closeEvent(self, event) -> None:  # noqa: N802
         """Handle close with unsaved changes check."""
+        # Disable live edit first if active
+        if self._live_edit_active and self._live_edit_overlay:
+            self._live_edit_overlay.deactivate()
+            self._live_edit_active = False
+
         if self._state_manager.is_dirty:
             result = QMessageBox.question(
                 self,
@@ -929,6 +1069,11 @@ class FormRenderer(QWidget):
             if result != QMessageBox.Yes:
                 event.ignore()
                 return
+
+        # Clean up live edit overlay
+        if self._live_edit_overlay:
+            self._live_edit_overlay.deleteLater()
+            self._live_edit_overlay = None
 
         self._clear_ui()
         super().closeEvent(event)
