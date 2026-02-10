@@ -17,9 +17,10 @@ The engine handles:
 
 from __future__ import annotations
 
+import copy
 from typing import Any, Optional
 
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, QRect
 from PyQt5.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -61,7 +62,7 @@ class LayoutEngine:
     """
 
     def __init__(self, settings: Optional[dict[str, Any]] = None) -> None:
-        self._settings = dict(DEFAULT_FORM_SETTINGS)
+        self._settings = copy.deepcopy(DEFAULT_FORM_SETTINGS)
         if settings:
             self._settings.update(settings)
 
@@ -529,25 +530,29 @@ class LayoutEngine:
     @staticmethod
     def _get_action_button_style(action_type: str, palette: dict) -> str:
         """Generate QSS for an action button based on its type."""
+        button_fg = palette.get("button_fg", "#ffffff")
+        disabled_bg = palette.get("disabled_bg", palette.get("surface", "#555"))
+        disabled_fg = palette.get("disabled_fg", palette.get("text_muted", "#999"))
+
         color_map = {
             "primary": {
                 "bg": palette.get("primary", "#2563eb"),
-                "fg": "#ffffff",
+                "fg": button_fg,
                 "hover_bg": palette.get("primary_hover", "#1d4ed8"),
             },
             "secondary": {
                 "bg": palette.get("secondary", "#64748b"),
-                "fg": "#ffffff",
+                "fg": button_fg,
                 "hover_bg": palette.get("secondary_hover", "#475569"),
             },
             "danger": {
                 "bg": palette.get("danger", "#ef4444"),
-                "fg": "#ffffff",
+                "fg": button_fg,
                 "hover_bg": palette.get("danger_hover", "#dc2626"),
             },
             "success": {
                 "bg": palette.get("success", "#22c55e"),
-                "fg": "#ffffff",
+                "fg": button_fg,
                 "hover_bg": palette.get("success_hover", "#16a34a"),
             },
         }
@@ -565,8 +570,8 @@ class LayoutEngine:
             f"  background-color: {colors['hover_bg']};"
             f"}}"
             f"QPushButton:disabled {{"
-            f"  background-color: #555;"
-            f"  color: #999;"
+            f"  background-color: {disabled_bg};"
+            f"  color: {disabled_fg};"
             f"}}"
         )
 
@@ -679,9 +684,7 @@ class _FlowLayout(QLayout):
 
                 if not test_only:
                     item.setGeometry(
-                        __import__("PyQt5.QtCore", fromlist=["QRect"]).QRect(
-                            int(next_x), int(y), int(item_w), int(item_h)
-                        )
+                        QRect(int(next_x), int(y), int(item_w), int(item_h))
                     )
                 x = next_x - spacing
             else:
@@ -693,7 +696,6 @@ class _FlowLayout(QLayout):
                     next_x = x + item_w
 
                 if not test_only:
-                    from PyQt5.QtCore import QRect
                     item.setGeometry(QRect(int(x), int(y), int(item_w), int(item_h)))
                 x = next_x + spacing
 

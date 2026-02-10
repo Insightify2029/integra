@@ -28,6 +28,7 @@ Follows all 13 mandatory INTEGRA rules:
 
 from __future__ import annotations
 
+import copy
 import json
 from typing import Any, Optional
 
@@ -271,6 +272,10 @@ class FormRenderer(QWidget):
         """
         Validate all form fields.
 
+        Skips async rules (e.g. unique checks) to avoid blocking the
+        main Qt thread (Rule #13). Unique checks are performed
+        asynchronously during the save operation.
+
         Returns:
             Tuple of (is_valid, error_messages).
         """
@@ -280,7 +285,8 @@ class FormRenderer(QWidget):
         all_fields = self._get_all_field_defs()
         values = self._collect_values()
         errors = self._validation_engine.validate_all(
-            all_fields, values, self._record_id
+            all_fields, values, self._record_id,
+            skip_async_rules=True,
         )
 
         if errors:
@@ -471,7 +477,7 @@ class FormRenderer(QWidget):
         self._clear_ui()
 
         settings = self._form_def.get("settings", {})
-        merged_settings = dict(DEFAULT_FORM_SETTINGS)
+        merged_settings = copy.deepcopy(DEFAULT_FORM_SETTINGS)
         merged_settings.update(settings)
 
         direction = merged_settings.get("direction", "rtl")
@@ -604,6 +610,12 @@ class FormRenderer(QWidget):
             elif action_type == "delete":
                 btn.clicked.connect(lambda checked=False: self._confirm_delete())
 
+            elif action_type in ("navigate", "print"):
+                app_logger.info(
+                    f"Action type '{action_type}' for button '{action_id}' "
+                    f"- connect via get_action_button()"
+                )
+
             # Custom actions are handled by the caller via get_action_button()
 
     def _load_all_combo_data(self) -> None:
@@ -633,27 +645,8 @@ class FormRenderer(QWidget):
         rules = self._form_def.get("rules", [])
         for rule in rules:
             trigger_field = rule.get("trigger_field", "")
-            trigger_value = rule.get("trigger_value")
-            action = rule.get("action", "")
-            target = rule.get("target", "")
-
-            # Get current value of trigger field
             current_value = self.get_field_value(trigger_field)
-
-            should_apply = (current_value == trigger_value)
-
-            if action == "hide_field":
-                self.set_field_visible(target, not should_apply)
-            elif action == "show_field":
-                self.set_field_visible(target, should_apply)
-            elif action == "hide_section":
-                self.set_section_visible(target, not should_apply)
-            elif action == "show_section":
-                self.set_section_visible(target, should_apply)
-            elif action == "enable_field":
-                self.set_field_enabled(target, should_apply)
-            elif action == "disable_field":
-                self.set_field_enabled(target, not should_apply)
+            self._execute_rule(rule, current_value)
 
     # -----------------------------------------------------------------------
     # Internal: Signal handlers
@@ -668,12 +661,13 @@ class FormRenderer(QWidget):
         # Re-evaluate rules that depend on this field
         self._apply_rules_for_field(field_id)
 
-        # Real-time validation
+        # Real-time validation (skip async rules to avoid blocking main thread)
         entry = self._widget_map.get(field_id)
         if entry:
             _, widget, field_def = entry
             errors = self._validation_engine.validate_field(
-                field_def, value, self._record_id
+                field_def, value, self._record_id,
+                skip_async_rules=True,
             )
             if errors:
                 self._validation_engine.show_field_error(
@@ -798,30 +792,46 @@ class FormRenderer(QWidget):
         rules = self._form_def.get("rules", [])
         for rule in rules:
             if rule.get("trigger_field") == changed_field_id:
-                trigger_value = rule.get("trigger_value")
-                action = rule.get("action", "")
-                target = rule.get("target", "")
                 current_value = self.get_field_value(changed_field_id)
-                should_apply = (current_value == trigger_value)
+                self._execute_rule(rule, current_value)
 
-                if action == "hide_field":
-                    self.set_field_visible(target, not should_apply)
-                elif action == "show_field":
-                    self.set_field_visible(target, should_apply)
-                elif action == "hide_section":
-                    self.set_section_visible(target, not should_apply)
-                elif action == "show_section":
-                    self.set_section_visible(target, should_apply)
-                elif action == "enable_field":
-                    self.set_field_enabled(target, should_apply)
-                elif action == "disable_field":
-                    self.set_field_enabled(target, not should_apply)
-                elif action == "set_value":
-                    new_value = rule.get("value")
-                    if should_apply and new_value is not None:
-                        self.set_field_value(target, new_value)
-                elif action == "set_required":
-                    pass  # Dynamic required is handled via validation
+    def _execute_rule(
+        self, rule: dict[str, Any], current_value: Any
+    ) -> None:
+        """
+        Execute a single conditional rule based on the current trigger value.
+
+        Centralises the rule-action mapping so that _apply_rules and
+        _apply_rules_for_field stay consistent.
+        """
+        trigger_value = rule.get("trigger_value")
+        action = rule.get("action", "")
+        target = rule.get("target", "")
+        should_apply = (current_value == trigger_value)
+
+        if action == "hide_field":
+            self.set_field_visible(target, not should_apply)
+        elif action == "show_field":
+            self.set_field_visible(target, should_apply)
+        elif action == "hide_section":
+            self.set_section_visible(target, not should_apply)
+        elif action == "show_section":
+            self.set_section_visible(target, should_apply)
+        elif action == "enable_field":
+            self.set_field_enabled(target, should_apply)
+        elif action == "disable_field":
+            self.set_field_enabled(target, not should_apply)
+        elif action == "set_value":
+            new_value = rule.get("value")
+            if should_apply and new_value is not None:
+                self.set_field_value(target, new_value)
+        elif action == "set_required":
+            app_logger.debug(
+                f"set_required rule for '{target}' - "
+                f"dynamic required not yet implemented"
+            )
+        else:
+            app_logger.warning(f"Unknown rule action '{action}' for target '{target}'")
 
     # -----------------------------------------------------------------------
     # Internal: Confirm dialogs
@@ -862,7 +872,12 @@ class FormRenderer(QWidget):
     def _show_error(message: str) -> None:
         """Show an error message to the user."""
         try:
-            QMessageBox.critical(None, "خطأ", message)
+            msg_box = QMessageBox()
+            msg_box.setIcon(QMessageBox.Critical)
+            msg_box.setWindowTitle("خطأ")
+            msg_box.setText(message)
+            msg_box.setTextFormat(Qt.PlainText)
+            msg_box.exec_()
         except Exception:
             app_logger.error(f"Could not show error dialog: {message}")
 

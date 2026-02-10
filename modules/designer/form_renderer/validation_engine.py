@@ -102,6 +102,7 @@ class ValidationEngine:
         field_def: dict[str, Any],
         value: Any,
         record_id: Optional[int] = None,
+        skip_async_rules: bool = False,
     ) -> list[ValidationError]:
         """
         Validate a single field's value against its rules.
@@ -110,6 +111,8 @@ class ValidationEngine:
             field_def: The field definition containing 'validation' list.
             value: The current value of the field.
             record_id: Current record ID (for unique checks to exclude self).
+            skip_async_rules: If True, skip rules that require DB access
+                (e.g. 'unique') to avoid blocking the main Qt thread (Rule #13).
 
         Returns:
             List of ValidationError objects (empty if valid).
@@ -118,8 +121,16 @@ class ValidationEngine:
         rules = field_def.get("validation", [])
         errors: list[ValidationError] = []
 
+        # Rules that require async DB access
+        _ASYNC_RULES = {"unique"}
+
         for rule_def in rules:
             rule_name = rule_def.get("rule", "")
+
+            # Skip DB-dependent rules when called from main thread
+            if skip_async_rules and rule_name in _ASYNC_RULES:
+                continue
+
             rule_value = rule_def.get("value")
             message_ar = rule_def.get("message_ar", "")
             message_en = rule_def.get("message_en", "")
@@ -143,6 +154,7 @@ class ValidationEngine:
         fields: list[dict[str, Any]],
         values: dict[str, Any],
         record_id: Optional[int] = None,
+        skip_async_rules: bool = False,
     ) -> list[ValidationError]:
         """
         Validate all fields in the form.
@@ -151,6 +163,8 @@ class ValidationEngine:
             fields: List of all field definitions.
             values: Dict mapping field_id -> current value.
             record_id: Current record ID for unique checks.
+            skip_async_rules: If True, skip rules requiring DB access
+                (Rule #13 safety - don't block main thread).
 
         Returns:
             List of all ValidationError objects.
@@ -168,7 +182,9 @@ class ValidationEngine:
                 continue
 
             value = values.get(field_id)
-            errors = self.validate_field(field_def, value, record_id)
+            errors = self.validate_field(
+                field_def, value, record_id, skip_async_rules=skip_async_rules
+            )
             all_errors.extend(errors)
 
         return all_errors
@@ -233,6 +249,9 @@ class ValidationEngine:
         """Remove all error indicators from the form."""
         for field_id in list(self._error_widgets.keys()):
             self.clear_field_error(field_id)
+        # Ensure all error label references are released (Rule #6)
+        self._error_labels.clear()
+        self._error_widgets.clear()
 
     def focus_first_error(
         self,
@@ -339,7 +358,9 @@ class ValidationEngine:
                     message or f"الحد الأدنى {min_val}",
                 )
         except (ValueError, TypeError):
-            pass
+            app_logger.debug(
+                f"Non-numeric value '{value}' for min_value check on field '{field_id}'"
+            )
         return None
 
     def _check_max_value(
@@ -357,7 +378,9 @@ class ValidationEngine:
                     message or f"الحد الأقصى {max_val}",
                 )
         except (ValueError, TypeError):
-            pass
+            app_logger.debug(
+                f"Non-numeric value '{value}' for max_value check on field '{field_id}'"
+            )
         return None
 
     def _check_pattern(
@@ -367,15 +390,18 @@ class ValidationEngine:
         if value is None or not isinstance(value, str) or not value.strip():
             return None
         if rule_value:
+            pattern_str = str(rule_value)
             try:
-                if not re.match(str(rule_value), value):
+                # Limit input length to prevent excessive backtracking
+                check_value = value[:10000] if len(value) > 10000 else value
+                if not re.match(pattern_str, check_value):
                     return ValidationError(
                         field_id, "pattern",
                         message or "القيمة لا تتطابق مع الصيغة المطلوبة",
                     )
             except re.error:
                 app_logger.warning(
-                    f"Invalid regex pattern '{rule_value}' for field '{field_id}'"
+                    f"Invalid regex pattern '{pattern_str}' for field '{field_id}'"
                 )
         return None
 
@@ -467,7 +493,10 @@ class ValidationEngine:
                             message or f"التاريخ يجب أن يكون بعد {min_date_str}",
                         )
                 except ValueError:
-                    pass
+                    app_logger.warning(
+                        f"Invalid min date '{min_date_str}' in date_range rule "
+                        f"for field '{field_id}'"
+                    )
 
             if max_date_str:
                 try:
@@ -478,7 +507,10 @@ class ValidationEngine:
                             message or f"التاريخ يجب أن يكون قبل {max_date_str}",
                         )
                 except ValueError:
-                    pass
+                    app_logger.warning(
+                        f"Invalid max date '{max_date_str}' in date_range rule "
+                        f"for field '{field_id}'"
+                    )
 
         return None
 

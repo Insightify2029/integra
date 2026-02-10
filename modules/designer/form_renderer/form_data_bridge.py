@@ -15,6 +15,7 @@ management (Rule #8) and error logging (Rule #9).
 
 from __future__ import annotations
 
+import re
 import threading
 from typing import Any, Optional
 
@@ -32,6 +33,13 @@ from core.database import (
     get_scalar,
 )
 from core.threading import run_in_background
+
+# Regex to detect dangerous SQL keywords (case-insensitive, word-boundary)
+_DANGEROUS_SQL_RE = re.compile(
+    r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|EXECUTE|GRANT|REVOKE"
+    r"|COPY|LOAD|REPLACE|MERGE|CALL|SET|COMMIT|ROLLBACK|SAVEPOINT)\b",
+    re.IGNORECASE,
+)
 
 
 class FormDataBridge(QObject):
@@ -57,6 +65,9 @@ class FormDataBridge(QObject):
     unique_checked = pyqtSignal(str, bool)
     error_occurred = pyqtSignal(str, str)
 
+    # Lock for thread-safe access to class-level _ALLOWED_TABLES (Rule #3)
+    _table_lock = threading.Lock()
+
     # Allowed tables to prevent injection through dynamic table names
     _ALLOWED_TABLES: set[str] = {
         "employees", "companies", "departments", "job_titles",
@@ -73,15 +84,17 @@ class FormDataBridge(QObject):
 
     @classmethod
     def register_table(cls, table_name: str) -> None:
-        """Register an additional allowed table name."""
-        cls._ALLOWED_TABLES.add(table_name)
+        """Register an additional allowed table name (thread-safe)."""
+        with cls._table_lock:
+            cls._ALLOWED_TABLES.add(table_name)
 
     def _validate_table(self, table_name: str) -> bool:
-        """Check if a table name is in the whitelist."""
-        if table_name not in self._ALLOWED_TABLES:
+        """Check if a table name is in the whitelist (thread-safe)."""
+        with self._table_lock:
+            allowed = table_name in self._ALLOWED_TABLES
+        if not allowed:
             app_logger.error(f"Table '{table_name}' is not in the allowed tables list")
-            return False
-        return True
+        return allowed
 
     # -----------------------------------------------------------------------
     # Load record
@@ -323,11 +336,31 @@ class FormDataBridge(QObject):
             value_column: Column name for the combo value.
             display_column: Column name for the display text.
         """
-        # Basic sanitization: only allow SELECT
-        clean = query_str.strip().upper()
-        if not clean.startswith("SELECT"):
+        # Sanitize: must start with SELECT
+        clean = query_str.strip()
+        if not clean.upper().startswith("SELECT"):
             self.error_occurred.emit(
-                "combo_load", f"Only SELECT queries allowed for combo data"
+                "combo_load", "Only SELECT queries allowed for combo data"
+            )
+            return
+
+        # Reject semicolons (prevents multi-statement injection)
+        if ";" in clean:
+            app_logger.error(
+                f"Combo query for '{field_id}' rejected: contains semicolons"
+            )
+            self.error_occurred.emit(
+                "combo_load", "Query must not contain semicolons"
+            )
+            return
+
+        # Reject dangerous SQL keywords (INSERT, DROP, DELETE, etc.)
+        if _DANGEROUS_SQL_RE.search(clean):
+            app_logger.error(
+                f"Combo query for '{field_id}' rejected: contains dangerous keywords"
+            )
+            self.error_occurred.emit(
+                "combo_load", "Query contains disallowed SQL keywords"
             )
             return
 
