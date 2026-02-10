@@ -5,7 +5,8 @@ Visual designers for reports and forms in INTEGRA.
 
 Includes:
 - Report Designer: WYSIWYG report editor
-- Form Builder: Drag & drop form creator
+- Form Builder: Drag & drop form creator (Phase 2 enhanced)
+- Template Library: Pre-built form templates
 
 Usage:
     # Open Report Designer
@@ -19,6 +20,12 @@ Usage:
 
     builder = FormBuilderWindow()
     builder.show()
+
+    # Browse templates
+    from modules.designer.templates import get_template_manager
+
+    tm = get_template_manager()
+    templates = tm.get_all_templates()
 """
 
 from .report_designer import (
@@ -36,6 +43,12 @@ from .form_builder import (
     DataBindingManager
 )
 
+from .templates import (
+    TemplateManager,
+    get_template_manager,
+    TemplateInfo
+)
+
 
 __all__ = [
     # Report Designer
@@ -48,5 +61,9 @@ __all__ = [
     'FormCanvas',
     'WidgetToolbox',
     'FormPropertyEditor',
-    'DataBindingManager'
+    'DataBindingManager',
+    # Templates
+    'TemplateManager',
+    'get_template_manager',
+    'TemplateInfo',
 ]

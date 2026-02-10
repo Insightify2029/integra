@@ -973,7 +973,7 @@ class FormRenderer(QWidget):
 | المرحلة | الحالة | تاريخ البدء | تاريخ الانتهاء | الملاحظات |
 |---------|--------|------------|---------------|-----------|
 | Phase 1: FormRenderer | ✅ مكتمل | 2026-02-10 | 2026-02-10 | 8 ملفات جديدة في form_renderer/ و shared/ |
-| Phase 2: Designer Enhancement | 🔴 لم يبدأ | - | - | يعتمد على Phase 1 |
+| Phase 2: Designer Enhancement | ✅ مكتمل | 2026-02-10 | 2026-02-10 | Preview, Undo/Redo, Property Tabs, DB Introspection, 8 Templates, Canvas Improvements |
 | Phase 3: Live Edit Mode | 🔴 لم يبدأ | - | - | يعتمد على Phase 1 |
 | Phase 4: Migration | 🔴 لم يبدأ | - | - | يعتمد على Phase 1+2+3 |
 

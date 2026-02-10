@@ -1,0 +1,241 @@
+{
+  "version": "2.0",
+  "form_id": "settings_form",
+  "form_name_ar": "الإعدادات",
+  "form_name_en": "Settings",
+  "target_table": null,
+  "settings": {
+    "direction": "rtl",
+    "layout_mode": "smart_grid",
+    "columns": 2,
+    "column_gap": 20,
+    "row_gap": 15,
+    "margins": {
+      "top": 20,
+      "right": 25,
+      "bottom": 20,
+      "left": 25
+    },
+    "min_width": 600,
+    "max_width": 1200,
+    "scrollable": true,
+    "show_required_indicator": true,
+    "save_button_position": "bottom_left"
+  },
+  "sections": [
+    {
+      "section_id": "general",
+      "title_ar": "الإعدادات العامة",
+      "title_en": "General Settings",
+      "collapsible": false,
+      "fields": [
+        {
+          "id": "language",
+          "widget_type": "combo_box",
+          "label_ar": "اللغة",
+          "label_en": "Language",
+          "placeholder_ar": "اختر اللغة",
+          "placeholder_en": "Select language",
+          "layout": {
+            "row": 0,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "editable": false,
+            "items": [
+              {"value": "ar", "text_ar": "العربية", "text_en": "Arabic"},
+              {"value": "en", "text_ar": "الإنجليزية", "text_en": "English"}
+            ]
+          },
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "id": "theme",
+          "widget_type": "combo_box",
+          "label_ar": "المظهر",
+          "label_en": "Theme",
+          "placeholder_ar": "اختر المظهر",
+          "placeholder_en": "Select theme",
+          "layout": {
+            "row": 0,
+            "col": 1,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "editable": false,
+            "items": [
+              {"value": "dark", "text_ar": "داكن", "text_en": "Dark"},
+              {"value": "light", "text_ar": "فاتح", "text_en": "Light"},
+              {"value": "system", "text_ar": "تلقائي", "text_en": "System"}
+            ]
+          },
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "id": "font_size",
+          "widget_type": "number_input",
+          "label_ar": "حجم الخط",
+          "label_en": "Font Size",
+          "placeholder_ar": "حجم الخط بالبكسل",
+          "placeholder_en": "Font size in pixels",
+          "layout": {
+            "row": 1,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "min_value": 8,
+            "max_value": 32,
+            "step": 1,
+            "default_value": 14,
+            "suffix": "px",
+            "editable": true
+          },
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "section_id": "notifications",
+      "title_ar": "الإشعارات",
+      "title_en": "Notifications",
+      "collapsible": true,
+      "fields": [
+        {
+          "id": "email_notify",
+          "widget_type": "check_box",
+          "label_ar": "إشعارات البريد الإلكتروني",
+          "label_en": "Email Notifications",
+          "placeholder_ar": "",
+          "placeholder_en": "",
+          "layout": {
+            "row": 0,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "default_value": true,
+            "editable": true
+          },
+          "validation": {
+            "required": false
+          }
+        },
+        {
+          "id": "sms_notify",
+          "widget_type": "check_box",
+          "label_ar": "إشعارات الرسائل النصية",
+          "label_en": "SMS Notifications",
+          "placeholder_ar": "",
+          "placeholder_en": "",
+          "layout": {
+            "row": 0,
+            "col": 1,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "default_value": false,
+            "editable": true
+          },
+          "validation": {
+            "required": false
+          }
+        }
+      ]
+    },
+    {
+      "section_id": "advanced",
+      "title_ar": "إعدادات متقدمة",
+      "title_en": "Advanced Settings",
+      "collapsible": true,
+      "fields": [
+        {
+          "id": "auto_save",
+          "widget_type": "check_box",
+          "label_ar": "الحفظ التلقائي",
+          "label_en": "Auto Save",
+          "placeholder_ar": "",
+          "placeholder_en": "",
+          "layout": {
+            "row": 0,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "default_value": true,
+            "editable": true
+          },
+          "validation": {
+            "required": false
+          }
+        },
+        {
+          "id": "backup_interval",
+          "widget_type": "number_input",
+          "label_ar": "فترة النسخ الاحتياطي (بالساعات)",
+          "label_en": "Backup Interval (hours)",
+          "placeholder_ar": "عدد الساعات",
+          "placeholder_en": "Number of hours",
+          "layout": {
+            "row": 0,
+            "col": 1,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "min_value": 1,
+            "max_value": 72,
+            "step": 1,
+            "default_value": 3,
+            "suffix_ar": "ساعة",
+            "suffix_en": "hrs",
+            "editable": true
+          },
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "action_id": "save",
+      "label_ar": "حفظ الإعدادات",
+      "label_en": "Save Settings",
+      "type": "primary",
+      "icon": "save",
+      "shortcut": "Ctrl+S",
+      "handler": "save_settings"
+    },
+    {
+      "action_id": "reset",
+      "label_ar": "استعادة الافتراضي",
+      "label_en": "Reset to Default",
+      "type": "secondary",
+      "icon": "refresh",
+      "shortcut": "Ctrl+R",
+      "handler": "reset_to_defaults"
+    }
+  ],
+  "rules": [],
+  "events": {
+    "on_load": null,
+    "on_save": null,
+    "on_validate": null,
+    "on_close": null
+  }
+}

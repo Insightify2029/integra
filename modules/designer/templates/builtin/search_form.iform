@@ -1,0 +1,183 @@
+{
+  "version": "2.0",
+  "form_id": "search_form",
+  "form_name_ar": "نموذج بحث",
+  "form_name_en": "Search Form",
+  "target_table": null,
+  "settings": {
+    "direction": "rtl",
+    "layout_mode": "smart_grid",
+    "columns": 3,
+    "column_gap": 20,
+    "row_gap": 15,
+    "margins": {
+      "top": 20,
+      "right": 25,
+      "bottom": 20,
+      "left": 25
+    },
+    "min_width": 600,
+    "max_width": 1200,
+    "scrollable": true,
+    "show_required_indicator": true,
+    "save_button_position": "bottom_left"
+  },
+  "sections": [
+    {
+      "section_id": "filters",
+      "title_ar": "معايير البحث",
+      "title_en": "Search Filters",
+      "collapsible": false,
+      "fields": [
+        {
+          "id": "keyword",
+          "widget_type": "text_input",
+          "label_ar": "كلمة البحث",
+          "label_en": "Keyword",
+          "placeholder_ar": "أدخل كلمة للبحث...",
+          "placeholder_en": "Enter search keyword...",
+          "layout": {
+            "row": 0,
+            "col": 0,
+            "colspan": 2,
+            "rowspan": 1
+          },
+          "properties": {
+            "max_length": 200,
+            "editable": true
+          },
+          "validation": {
+            "required": false
+          }
+        },
+        {
+          "id": "status",
+          "widget_type": "combo_box",
+          "label_ar": "الحالة",
+          "label_en": "Status",
+          "placeholder_ar": "الكل",
+          "placeholder_en": "All",
+          "layout": {
+            "row": 0,
+            "col": 2,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "editable": false,
+            "allow_empty": true,
+            "empty_text_ar": "الكل",
+            "empty_text_en": "All",
+            "data_source": {
+              "table": "employee_statuses",
+              "value_column": "id",
+              "display_column_ar": "name_ar",
+              "display_column_en": "name_en"
+            }
+          },
+          "validation": {
+            "required": false
+          }
+        },
+        {
+          "id": "department",
+          "widget_type": "combo_box",
+          "label_ar": "الإدارة",
+          "label_en": "Department",
+          "placeholder_ar": "الكل",
+          "placeholder_en": "All",
+          "layout": {
+            "row": 1,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "editable": false,
+            "allow_empty": true,
+            "empty_text_ar": "الكل",
+            "empty_text_en": "All",
+            "data_source": {
+              "table": "departments",
+              "value_column": "id",
+              "display_column_ar": "name_ar",
+              "display_column_en": "name_en"
+            }
+          },
+          "validation": {
+            "required": false
+          }
+        },
+        {
+          "id": "date_from",
+          "widget_type": "date_picker",
+          "label_ar": "من تاريخ",
+          "label_en": "Date From",
+          "placeholder_ar": "تاريخ البداية",
+          "placeholder_en": "Start date",
+          "layout": {
+            "row": 1,
+            "col": 1,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "format": "yyyy-MM-dd",
+            "editable": true
+          },
+          "validation": {
+            "required": false
+          }
+        },
+        {
+          "id": "date_to",
+          "widget_type": "date_picker",
+          "label_ar": "إلى تاريخ",
+          "label_en": "Date To",
+          "placeholder_ar": "تاريخ النهاية",
+          "placeholder_en": "End date",
+          "layout": {
+            "row": 1,
+            "col": 2,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "format": "yyyy-MM-dd",
+            "editable": true
+          },
+          "validation": {
+            "required": false
+          }
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "action_id": "search",
+      "label_ar": "بحث",
+      "label_en": "Search",
+      "type": "primary",
+      "icon": "search",
+      "shortcut": "Enter",
+      "handler": "execute_search"
+    },
+    {
+      "action_id": "reset",
+      "label_ar": "إعادة تعيين",
+      "label_en": "Reset",
+      "type": "secondary",
+      "icon": "refresh",
+      "shortcut": "Ctrl+R",
+      "handler": "reset_filters"
+    }
+  ],
+  "rules": [],
+  "events": {
+    "on_load": null,
+    "on_save": null,
+    "on_validate": null,
+    "on_close": null
+  }
+}
