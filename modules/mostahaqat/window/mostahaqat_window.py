@@ -356,8 +356,10 @@ class MostahaqatWindow(BaseWindow):
     # ═══════════════════════════════════════════════════════════════
     
     def _edit_employee_data(self, employee: dict):
-        """Edit employee data."""
-        toast_info(self, "تعديل", f"تعديل بيانات {employee.get('name_ar', '')} - قيد التطوير")
+        """Edit employee data - navigate to edit screen."""
+        self._edit_employee_screen.set_employee(employee)
+        self._stack.setCurrentIndex(3)
+        self.statusBar().showMessage(f"تعديل بيانات: {employee.get('name_ar', '')}")
     
     def _employee_leave_settlement(self, employee: dict):
         """Calculate leave settlement for employee."""

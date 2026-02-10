@@ -34,8 +34,8 @@
           "widget_type": "text_input",
           "label_ar": "كود الموظف",
           "label_en": "Employee Code",
-          "placeholder_ar": "مثال: EMP-001",
-          "placeholder_en": "e.g. EMP-001",
+          "placeholder_ar": "",
+          "placeholder_en": "",
           "layout": {
             "row": 0,
             "col": 0,
@@ -43,17 +43,94 @@
             "rowspan": 1
           },
           "properties": {
-            "max_length": 20,
-            "editable": true
+            "readonly": true,
+            "enabled": true,
+            "visible": true
           },
-          "validation": {
-            "required": true,
-            "pattern": "^[A-Z]{2,5}-\\d{3,6}$",
-            "pattern_message_ar": "الصيغة المطلوبة: حروف-أرقام (مثال: EMP-001)",
-            "pattern_message_en": "Required format: LETTERS-DIGITS (e.g. EMP-001)"
-          },
+          "validation": [],
           "data_binding": {
-            "column": "code",
+            "column": "employee_code",
+            "type": "string"
+          }
+        },
+        {
+          "id": "status_id",
+          "widget_type": "combo_box",
+          "label_ar": "الحالة",
+          "label_en": "Status",
+          "layout": {
+            "row": 0,
+            "col": 1,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "readonly": false,
+            "enabled": true,
+            "visible": true
+          },
+          "combo_source": {
+            "type": "query",
+            "query": "SELECT id, name_ar FROM employee_statuses ORDER BY id",
+            "value_column": "id",
+            "display_column": "name_ar",
+            "default_text_ar": "-- اختر الحالة --"
+          },
+          "validation": [
+            {"rule": "required", "message_ar": "يجب اختيار الحالة"}
+          ],
+          "data_binding": {
+            "column": "status_id",
+            "type": "integer"
+          }
+        },
+        {
+          "id": "name_ar",
+          "widget_type": "text_input",
+          "label_ar": "الاسم بالعربي",
+          "label_en": "Name (Arabic)",
+          "placeholder_ar": "أدخل الاسم بالعربي",
+          "placeholder_en": "Enter Arabic name",
+          "layout": {
+            "row": 1,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "readonly": false,
+            "enabled": true,
+            "visible": true
+          },
+          "validation": [
+            {"rule": "required", "message_ar": "يجب إدخال الاسم بالعربي أو الإنجليزي"}
+          ],
+          "data_binding": {
+            "column": "name_ar",
+            "type": "string"
+          }
+        },
+        {
+          "id": "name_en",
+          "widget_type": "text_input",
+          "label_ar": "الاسم بالإنجليزي",
+          "label_en": "Name (English)",
+          "placeholder_ar": "أدخل الاسم بالإنجليزي",
+          "placeholder_en": "Enter English name",
+          "layout": {
+            "row": 1,
+            "col": 1,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "readonly": false,
+            "enabled": true,
+            "visible": true
+          },
+          "validation": [],
+          "data_binding": {
+            "column": "name_en",
             "type": "string"
           }
         },
@@ -65,72 +142,19 @@
           "placeholder_ar": "أدخل رقم الهوية",
           "placeholder_en": "Enter national ID",
           "layout": {
-            "row": 0,
-            "col": 1,
-            "colspan": 1,
-            "rowspan": 1
-          },
-          "properties": {
-            "max_length": 20,
-            "editable": true
-          },
-          "validation": {
-            "required": true
-          },
-          "data_binding": {
-            "column": "national_id",
-            "type": "string"
-          }
-        },
-        {
-          "id": "name_ar",
-          "widget_type": "text_input",
-          "label_ar": "الاسم بالعربية",
-          "label_en": "Name (Arabic)",
-          "placeholder_ar": "أدخل الاسم بالعربية",
-          "placeholder_en": "Enter name in Arabic",
-          "layout": {
-            "row": 1,
+            "row": 2,
             "col": 0,
             "colspan": 1,
             "rowspan": 1
           },
           "properties": {
-            "max_length": 150,
-            "editable": true
+            "readonly": false,
+            "enabled": true,
+            "visible": true
           },
-          "validation": {
-            "required": true,
-            "min_length": 2
-          },
+          "validation": [],
           "data_binding": {
-            "column": "name_ar",
-            "type": "string"
-          }
-        },
-        {
-          "id": "name_en",
-          "widget_type": "text_input",
-          "label_ar": "الاسم بالإنجليزية",
-          "label_en": "Name (English)",
-          "placeholder_ar": "أدخل الاسم بالإنجليزية",
-          "placeholder_en": "Enter name in English",
-          "layout": {
-            "row": 1,
-            "col": 1,
-            "colspan": 1,
-            "rowspan": 1
-          },
-          "properties": {
-            "max_length": 150,
-            "editable": true
-          },
-          "validation": {
-            "required": true,
-            "min_length": 2
-          },
-          "data_binding": {
-            "column": "name_en",
+            "column": "national_id",
             "type": "string"
           }
         },
@@ -139,156 +163,27 @@
           "widget_type": "combo_box",
           "label_ar": "الجنسية",
           "label_en": "Nationality",
-          "placeholder_ar": "اختر الجنسية",
-          "placeholder_en": "Select nationality",
           "layout": {
             "row": 2,
-            "col": 0,
+            "col": 1,
             "colspan": 1,
             "rowspan": 1
           },
           "properties": {
-            "editable": false,
-            "data_source": {
-              "table": "nationalities",
-              "value_column": "id",
-              "display_column_ar": "name_ar",
-              "display_column_en": "name_en"
-            }
+            "readonly": false,
+            "enabled": true,
+            "visible": true
           },
-          "validation": {
-            "required": true
+          "combo_source": {
+            "type": "query",
+            "query": "SELECT id, name_ar FROM nationalities ORDER BY name_ar",
+            "value_column": "id",
+            "display_column": "name_ar",
+            "default_text_ar": "-- اختر الجنسية --"
           },
+          "validation": [],
           "data_binding": {
             "column": "nationality_id",
-            "type": "integer"
-          }
-        },
-        {
-          "id": "status_id",
-          "widget_type": "combo_box",
-          "label_ar": "الحالة",
-          "label_en": "Status",
-          "placeholder_ar": "اختر الحالة",
-          "placeholder_en": "Select status",
-          "layout": {
-            "row": 2,
-            "col": 1,
-            "colspan": 1,
-            "rowspan": 1
-          },
-          "properties": {
-            "editable": false,
-            "data_source": {
-              "table": "employee_statuses",
-              "value_column": "id",
-              "display_column_ar": "name_ar",
-              "display_column_en": "name_en"
-            }
-          },
-          "validation": {
-            "required": true
-          },
-          "data_binding": {
-            "column": "status_id",
-            "type": "integer"
-          }
-        }
-      ]
-    },
-    {
-      "section_id": "work_info",
-      "title_ar": "بيانات العمل",
-      "title_en": "Work Information",
-      "collapsible": false,
-      "fields": [
-        {
-          "id": "company_id",
-          "widget_type": "combo_box",
-          "label_ar": "الشركة",
-          "label_en": "Company",
-          "placeholder_ar": "اختر الشركة",
-          "placeholder_en": "Select company",
-          "layout": {
-            "row": 0,
-            "col": 0,
-            "colspan": 1,
-            "rowspan": 1
-          },
-          "properties": {
-            "editable": false,
-            "data_source": {
-              "table": "companies",
-              "value_column": "id",
-              "display_column_ar": "name_ar",
-              "display_column_en": "name_en"
-            }
-          },
-          "validation": {
-            "required": true
-          },
-          "data_binding": {
-            "column": "company_id",
-            "type": "integer"
-          }
-        },
-        {
-          "id": "department_id",
-          "widget_type": "combo_box",
-          "label_ar": "الإدارة",
-          "label_en": "Department",
-          "placeholder_ar": "اختر الإدارة",
-          "placeholder_en": "Select department",
-          "layout": {
-            "row": 0,
-            "col": 1,
-            "colspan": 1,
-            "rowspan": 1
-          },
-          "properties": {
-            "editable": false,
-            "data_source": {
-              "table": "departments",
-              "value_column": "id",
-              "display_column_ar": "name_ar",
-              "display_column_en": "name_en"
-            }
-          },
-          "validation": {
-            "required": true
-          },
-          "data_binding": {
-            "column": "department_id",
-            "type": "integer"
-          }
-        },
-        {
-          "id": "job_title_id",
-          "widget_type": "combo_box",
-          "label_ar": "المسمى الوظيفي",
-          "label_en": "Job Title",
-          "placeholder_ar": "اختر المسمى الوظيفي",
-          "placeholder_en": "Select job title",
-          "layout": {
-            "row": 1,
-            "col": 0,
-            "colspan": 1,
-            "rowspan": 1
-          },
-          "properties": {
-            "editable": false,
-            "data_source": {
-              "table": "job_titles",
-              "value_column": "id",
-              "display_column_ar": "name_ar",
-              "display_column_en": "name_en"
-            }
-          },
-          "validation": {
-            "required": true
-          },
-          "data_binding": {
-            "column": "job_title_id",
             "type": "integer"
           }
         },
@@ -297,21 +192,18 @@
           "widget_type": "date_picker",
           "label_ar": "تاريخ التعيين",
           "label_en": "Hire Date",
-          "placeholder_ar": "اختر تاريخ التعيين",
-          "placeholder_en": "Select hire date",
           "layout": {
-            "row": 1,
-            "col": 1,
+            "row": 3,
+            "col": 0,
             "colspan": 1,
             "rowspan": 1
           },
           "properties": {
-            "format": "yyyy-MM-dd",
-            "editable": true
+            "readonly": false,
+            "enabled": true,
+            "visible": true
           },
-          "validation": {
-            "required": true
-          },
+          "validation": [],
           "data_binding": {
             "column": "hire_date",
             "type": "date"
@@ -320,18 +212,16 @@
       ]
     },
     {
-      "section_id": "financial_info",
-      "title_ar": "البيانات المالية",
-      "title_en": "Financial Information",
+      "section_id": "work_info",
+      "title_ar": "البيانات الوظيفية",
+      "title_en": "Work Information",
       "collapsible": false,
       "fields": [
         {
-          "id": "salary",
-          "widget_type": "decimal_input",
-          "label_ar": "الراتب",
-          "label_en": "Salary",
-          "placeholder_ar": "أدخل الراتب",
-          "placeholder_en": "Enter salary",
+          "id": "company_id",
+          "widget_type": "combo_box",
+          "label_ar": "الشركة",
+          "label_en": "Company",
           "layout": {
             "row": 0,
             "col": 0,
@@ -339,26 +229,28 @@
             "rowspan": 1
           },
           "properties": {
-            "min_value": 0,
-            "max_value": 999999.99,
-            "decimal_places": 2,
-            "editable": true
+            "readonly": false,
+            "enabled": true,
+            "visible": true
           },
-          "validation": {
-            "required": true
+          "combo_source": {
+            "type": "query",
+            "query": "SELECT id, name_en FROM companies ORDER BY name_en",
+            "value_column": "id",
+            "display_column": "name_en",
+            "default_text_ar": "-- اختر الشركة --"
           },
+          "validation": [],
           "data_binding": {
-            "column": "salary",
-            "type": "decimal"
+            "column": "company_id",
+            "type": "integer"
           }
         },
         {
-          "id": "bank_id",
+          "id": "department_id",
           "widget_type": "combo_box",
-          "label_ar": "البنك",
-          "label_en": "Bank",
-          "placeholder_ar": "اختر البنك",
-          "placeholder_en": "Select bank",
+          "label_ar": "القسم",
+          "label_en": "Department",
           "layout": {
             "row": 0,
             "col": 1,
@@ -366,17 +258,84 @@
             "rowspan": 1
           },
           "properties": {
-            "editable": false,
-            "data_source": {
-              "table": "banks",
-              "value_column": "id",
-              "display_column_ar": "name_ar",
-              "display_column_en": "name_en"
-            }
+            "readonly": false,
+            "enabled": true,
+            "visible": true
           },
-          "validation": {
-            "required": false
+          "combo_source": {
+            "type": "query",
+            "query": "SELECT id, name_en FROM departments ORDER BY name_en",
+            "value_column": "id",
+            "display_column": "name_en",
+            "default_text_ar": "-- اختر القسم --"
           },
+          "validation": [],
+          "data_binding": {
+            "column": "department_id",
+            "type": "integer"
+          }
+        },
+        {
+          "id": "job_title_id",
+          "widget_type": "combo_box",
+          "label_ar": "الوظيفة",
+          "label_en": "Job Title",
+          "layout": {
+            "row": 1,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "readonly": false,
+            "enabled": true,
+            "visible": true
+          },
+          "combo_source": {
+            "type": "query",
+            "query": "SELECT id, name_ar FROM job_titles ORDER BY name_ar",
+            "value_column": "id",
+            "display_column": "name_ar",
+            "default_text_ar": "-- اختر الوظيفة --"
+          },
+          "validation": [],
+          "data_binding": {
+            "column": "job_title_id",
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    {
+      "section_id": "bank_info",
+      "title_ar": "البيانات البنكية",
+      "title_en": "Bank Information",
+      "collapsible": false,
+      "fields": [
+        {
+          "id": "bank_id",
+          "widget_type": "combo_box",
+          "label_ar": "البنك",
+          "label_en": "Bank",
+          "layout": {
+            "row": 0,
+            "col": 0,
+            "colspan": 1,
+            "rowspan": 1
+          },
+          "properties": {
+            "readonly": false,
+            "enabled": true,
+            "visible": true
+          },
+          "combo_source": {
+            "type": "query",
+            "query": "SELECT id, name_en FROM banks ORDER BY name_en",
+            "value_column": "id",
+            "display_column": "name_en",
+            "default_text_ar": "-- اختر البنك --"
+          },
+          "validation": [],
           "data_binding": {
             "column": "bank_id",
             "type": "integer"
@@ -385,26 +344,22 @@
         {
           "id": "iban",
           "widget_type": "text_input",
-          "label_ar": "رقم الآيبان",
+          "label_ar": "IBAN",
           "label_en": "IBAN",
           "placeholder_ar": "أدخل رقم الآيبان",
           "placeholder_en": "Enter IBAN number",
           "layout": {
-            "row": 1,
-            "col": 0,
-            "colspan": 2,
+            "row": 0,
+            "col": 1,
+            "colspan": 1,
             "rowspan": 1
           },
           "properties": {
-            "max_length": 34,
-            "editable": true
+            "readonly": false,
+            "enabled": true,
+            "visible": true
           },
-          "validation": {
-            "required": false,
-            "pattern": "^[A-Z]{2}\\d{2}[A-Z0-9]{4,30}$",
-            "pattern_message_ar": "صيغة الآيبان غير صحيحة",
-            "pattern_message_en": "Invalid IBAN format"
-          },
+          "validation": [],
           "data_binding": {
             "column": "iban",
             "type": "string"
@@ -415,22 +370,21 @@
   ],
   "actions": [
     {
-      "action_id": "save",
-      "label_ar": "حفظ",
-      "label_en": "Save",
-      "type": "primary",
-      "icon": "save",
-      "shortcut": "Ctrl+S",
-      "handler": "save_record"
+      "id": "save",
+      "action": "save",
+      "label_ar": "حفظ التعديلات",
+      "label_en": "Save Changes",
+      "type": "success",
+      "width": 200,
+      "shortcut": "Ctrl+S"
     },
     {
-      "action_id": "cancel",
+      "id": "cancel",
+      "action": "cancel",
       "label_ar": "إلغاء",
       "label_en": "Cancel",
       "type": "danger",
-      "icon": "close",
-      "shortcut": "Escape",
-      "handler": "cancel_edit"
+      "width": 160
     }
   ],
   "rules": [],
