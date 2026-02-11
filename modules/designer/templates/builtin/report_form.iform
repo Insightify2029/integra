@@ -24,7 +24,7 @@
   },
   "sections": [
     {
-      "section_id": "filters",
+      "id": "filters",
       "title_ar": "معايير التقرير",
       "title_en": "Report Filters",
       "collapsible": false,
@@ -46,9 +46,9 @@
             "format": "yyyy-MM-dd",
             "editable": true
           },
-          "validation": {
-            "required": true
-          }
+          "validation": [
+            {"rule": "required", "message_ar": "هذا الحقل مطلوب"}
+          ]
         },
         {
           "id": "date_to",
@@ -67,9 +67,9 @@
             "format": "yyyy-MM-dd",
             "editable": true
           },
-          "validation": {
-            "required": true
-          }
+          "validation": [
+            {"rule": "required", "message_ar": "هذا الحقل مطلوب"}
+          ]
         },
         {
           "id": "department",
@@ -96,9 +96,7 @@
               "display_column_en": "name_en"
             }
           },
-          "validation": {
-            "required": false
-          }
+          "validation": []
         },
         {
           "id": "status",
@@ -125,14 +123,12 @@
               "display_column_en": "name_en"
             }
           },
-          "validation": {
-            "required": false
-          }
+          "validation": []
         }
       ]
     },
     {
-      "section_id": "output",
+      "id": "output",
       "title_ar": "خيارات الإخراج",
       "title_en": "Output Options",
       "collapsible": false,
@@ -158,9 +154,9 @@
               {"value": "print", "text_ar": "طباعة", "text_en": "Print"}
             ]
           },
-          "validation": {
-            "required": true
-          }
+          "validation": [
+            {"rule": "required", "message_ar": "هذا الحقل مطلوب"}
+          ]
         },
         {
           "id": "include_charts",
@@ -179,16 +175,14 @@
             "default_value": true,
             "editable": true
           },
-          "validation": {
-            "required": false
-          }
+          "validation": []
         }
       ]
     }
   ],
   "actions": [
     {
-      "action_id": "generate",
+      "id": "generate",
       "label_ar": "إنشاء التقرير",
       "label_en": "Generate Report",
       "type": "primary",
@@ -197,7 +191,7 @@
       "handler": "generate_report"
     },
     {
-      "action_id": "cancel",
+      "id": "cancel",
       "label_ar": "إلغاء",
       "label_en": "Cancel",
       "type": "secondary",

@@ -24,7 +24,7 @@
   },
   "sections": [
     {
-      "section_id": "main",
+      "id": "main",
       "title_ar": "القسم الرئيسي",
       "title_en": "Main Section",
       "collapsible": false,
@@ -47,16 +47,14 @@
             "font_size": 14,
             "color": "#94a3b8"
           },
-          "validation": {
-            "required": false
-          }
+          "validation": []
         }
       ]
     }
   ],
   "actions": [
     {
-      "action_id": "save",
+      "id": "save",
       "label_ar": "حفظ",
       "label_en": "Save",
       "type": "primary",
@@ -65,7 +63,7 @@
       "handler": "save_record"
     },
     {
-      "action_id": "cancel",
+      "id": "cancel",
       "label_ar": "إلغاء",
       "label_en": "Cancel",
       "type": "danger",

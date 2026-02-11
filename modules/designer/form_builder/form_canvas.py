@@ -450,7 +450,7 @@ class DesignWidgetItem(QFrame):
 
         if self._selected:
             p = get_current_palette()
-            border = f"2px solid {p['primary']}"
+            border = f"2px solid {p.get('primary', '#3b82f6')}"
         else:
             border = f"{style.border_width}px solid {style.border_color}"
 
@@ -477,8 +477,8 @@ class DesignWidgetItem(QFrame):
             painter.setRenderHint(QPainter.Antialiasing)
 
             p = get_current_palette()
-            painter.setPen(QPen(QColor(p['primary']), 1))
-            painter.setBrush(QBrush(QColor(p['bg_card'])))
+            painter.setPen(QPen(QColor(p.get('primary', '#3b82f6')), 1))
+            painter.setBrush(QBrush(QColor(p.get('bg_card', '#1e293b'))))
 
             size = self._handle_size
             rect = self.rect()
@@ -733,10 +733,10 @@ class FormCanvas(QScrollArea):
         # Style
         p = get_current_palette()
         self._p = p
-        self._canvas.setStyleSheet(f"background: {p['bg_main']};")
+        self._canvas.setStyleSheet(f"background: {p.get('bg_main', '#0f172a')};")
         self.setStyleSheet(f"""
             QScrollArea {{
-                border: 1px solid {p['border']};
+                border: 1px solid {p.get('border', '#334155')};
             }}
         """)
 
@@ -1025,20 +1025,20 @@ class FormCanvas(QScrollArea):
 
         # Background
         p = self._p
-        painter.fillRect(self._canvas.rect(), QColor(p['bg_main']))
+        painter.fillRect(self._canvas.rect(), QColor(p.get('bg_main', '#0f172a')))
 
         # Form area
         form_w = int(600 * self._zoom_level)
         form_h = int(500 * self._zoom_level)
         form_rect = QRect(20, 20, form_w, form_h)
-        painter.fillRect(form_rect, QColor(p['bg_card']))
-        painter.setPen(QPen(QColor(p['border']), 1))
+        painter.fillRect(form_rect, QColor(p.get('bg_card', '#1e293b')))
+        painter.setPen(QPen(QColor(p.get('border', '#334155')), 1))
         painter.drawRect(form_rect)
 
         # Grid
         if self._show_grid:
             grid_step = max(1, int(self._grid_size * self._zoom_level))
-            painter.setPen(QPen(QColor(p['border_light']), 1))
+            painter.setPen(QPen(QColor(p.get('border_light', p.get('border', '#334155'))), 1))
 
             for x in range(form_rect.left(), form_rect.right(), grid_step):
                 painter.drawLine(x, form_rect.top(), x, form_rect.bottom())
@@ -1048,14 +1048,14 @@ class FormCanvas(QScrollArea):
 
         # Alignment guide lines
         if self._guide_lines:
-            guide_pen = QPen(QColor(p['primary']), 1, Qt.DashLine)
+            guide_pen = QPen(QColor(p.get('primary', '#3b82f6')), 1, Qt.DashLine)
             painter.setPen(guide_pen)
             for p1, p2 in self._guide_lines:
                 painter.drawLine(p1, p2)
 
         # Zoom indicator
         if abs(self._zoom_level - 1.0) > 0.01:
-            painter.setPen(QPen(QColor(p['text_muted']), 1))
+            painter.setPen(QPen(QColor(p.get('text_muted', '#94a3b8')), 1))
             painter.drawText(
                 self._canvas.rect().adjusted(0, 0, -10, -10),
                 Qt.AlignBottom | Qt.AlignRight,

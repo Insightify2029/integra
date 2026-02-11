@@ -24,7 +24,7 @@
   },
   "sections": [
     {
-      "section_id": "general",
+      "id": "general",
       "title_ar": "الإعدادات العامة",
       "title_en": "General Settings",
       "collapsible": false,
@@ -49,9 +49,9 @@
               {"value": "en", "text_ar": "الإنجليزية", "text_en": "English"}
             ]
           },
-          "validation": {
-            "required": true
-          }
+          "validation": [
+            {"rule": "required", "message_ar": "هذا الحقل مطلوب"}
+          ]
         },
         {
           "id": "theme",
@@ -74,9 +74,9 @@
               {"value": "system", "text_ar": "تلقائي", "text_en": "System"}
             ]
           },
-          "validation": {
-            "required": true
-          }
+          "validation": [
+            {"rule": "required", "message_ar": "هذا الحقل مطلوب"}
+          ]
         },
         {
           "id": "font_size",
@@ -99,14 +99,14 @@
             "suffix": "px",
             "editable": true
           },
-          "validation": {
-            "required": true
-          }
+          "validation": [
+            {"rule": "required", "message_ar": "هذا الحقل مطلوب"}
+          ]
         }
       ]
     },
     {
-      "section_id": "notifications",
+      "id": "notifications",
       "title_ar": "الإشعارات",
       "title_en": "Notifications",
       "collapsible": true,
@@ -128,9 +128,7 @@
             "default_value": true,
             "editable": true
           },
-          "validation": {
-            "required": false
-          }
+          "validation": []
         },
         {
           "id": "sms_notify",
@@ -149,14 +147,12 @@
             "default_value": false,
             "editable": true
           },
-          "validation": {
-            "required": false
-          }
+          "validation": []
         }
       ]
     },
     {
-      "section_id": "advanced",
+      "id": "advanced",
       "title_ar": "إعدادات متقدمة",
       "title_en": "Advanced Settings",
       "collapsible": true,
@@ -178,9 +174,7 @@
             "default_value": true,
             "editable": true
           },
-          "validation": {
-            "required": false
-          }
+          "validation": []
         },
         {
           "id": "backup_interval",
@@ -204,16 +198,16 @@
             "suffix_en": "hrs",
             "editable": true
           },
-          "validation": {
-            "required": true
-          }
+          "validation": [
+            {"rule": "required", "message_ar": "هذا الحقل مطلوب"}
+          ]
         }
       ]
     }
   ],
   "actions": [
     {
-      "action_id": "save",
+      "id": "save",
       "label_ar": "حفظ الإعدادات",
       "label_en": "Save Settings",
       "type": "primary",
@@ -222,7 +216,7 @@
       "handler": "save_settings"
     },
     {
-      "action_id": "reset",
+      "id": "reset",
       "label_ar": "استعادة الافتراضي",
       "label_en": "Reset to Default",
       "type": "secondary",

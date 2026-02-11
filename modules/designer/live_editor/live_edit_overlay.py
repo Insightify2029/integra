@@ -212,10 +212,11 @@ class _LiveEditToolbar(QWidget):
         )
 
         # Save button special styling
+        text_on_primary = palette.get('text_on_primary', '#ffffff')
         self._save_btn.setStyleSheet(
             f"QPushButton {{"
             f"  background-color: {primary};"
-            f"  color: white;"
+            f"  color: {text_on_primary};"
             f"  border: none;"
             f"  border-radius: 4px;"
             f"  padding: 4px 16px;"
@@ -233,7 +234,7 @@ class _LiveEditToolbar(QWidget):
             f"}}"
             f"QPushButton:hover {{"
             f"  background-color: {danger};"
-            f"  color: white;"
+            f"  color: {text_on_primary};"
             f"}}"
         )
 
