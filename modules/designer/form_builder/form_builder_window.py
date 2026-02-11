@@ -90,7 +90,7 @@ class PreviewDialog(QDialog):
 
         p = get_current_palette()
         info_label = QLabel("وضع المعاينة - هذا عرض تقريبي للنموذج")
-        info_label.setStyleSheet(f"color: {p['text_muted']}; font-style: italic;")
+        info_label.setStyleSheet(f"color: {p.get('text_muted', '#94a3b8')}; font-style: italic;")
         toolbar.addWidget(info_label)
 
         toolbar.addStretch()
@@ -99,21 +99,21 @@ class PreviewDialog(QDialog):
         close_btn.clicked.connect(self.close)
         close_btn.setStyleSheet(f"""
             QPushButton {{
-                background: {p['primary']};
-                color: white;
+                background: {p.get('primary', '#3b82f6')};
+                color: {p.get('text_on_primary', '#ffffff')};
                 padding: 6px 16px;
                 border: none;
                 border-radius: 4px;
             }}
             QPushButton:hover {{
-                background: {p.get('primary_dark', p['primary'])};
+                background: {p.get('primary_dark', p.get('primary', '#3b82f6'))};
             }}
         """)
         toolbar.addWidget(close_btn)
 
         toolbar_widget = QWidget()
         toolbar_widget.setLayout(toolbar)
-        toolbar_widget.setStyleSheet(f"background: {p['bg_card']}; border-bottom: 1px solid {p['border']};")
+        toolbar_widget.setStyleSheet(f"background: {p.get('bg_card', '#1e293b')}; border-bottom: 1px solid {p.get('border', '#334155')};")
         layout.addWidget(toolbar_widget)
 
         # FormRenderer
@@ -126,14 +126,14 @@ class PreviewDialog(QDialog):
             else:
                 error_label = QLabel("فشل في تحميل المعاينة")
                 error_label.setAlignment(Qt.AlignCenter)
-                error_label.setStyleSheet(f"color: {p['danger']}; font-size: 14px; padding: 40px;")
+                error_label.setStyleSheet(f"color: {p.get('danger', '#ef4444')}; font-size: 14px; padding: 40px;")
                 layout.addWidget(error_label, 1)
         except Exception as e:
             app_logger.error(f"Preview failed: {e}", exc_info=True)
             error_label = QLabel(f"خطأ في المعاينة:\n{html.escape(str(e))}")
             error_label.setAlignment(Qt.AlignCenter)
             error_label.setWordWrap(True)
-            error_label.setStyleSheet(f"color: {p['danger']}; font-size: 13px; padding: 40px;")
+            error_label.setStyleSheet(f"color: {p.get('danger', '#ef4444')}; font-size: 13px; padding: 40px;")
             layout.addWidget(error_label, 1)
 
 
@@ -159,7 +159,7 @@ class TemplateBrowserDialog(QDialog):
 
         # Header
         header = QLabel("اختر قالباً لبدء التصميم")
-        header.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {p['text_primary']}; padding: 10px;")
+        header.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {p.get('text_primary', '#e2e8f0')}; padding: 10px;")
         layout.addWidget(header)
 
         # Categories filter
@@ -207,14 +207,14 @@ class TemplateBrowserDialog(QDialog):
         self._use_btn.clicked.connect(self._use_template)
         self._use_btn.setStyleSheet(f"""
             QPushButton {{
-                background: {p['primary']};
-                color: white;
+                background: {p.get('primary', '#3b82f6')};
+                color: {p.get('text_on_primary', '#ffffff')};
                 padding: 8px 20px;
                 border: none;
                 border-radius: 4px;
             }}
-            QPushButton:hover {{ background: {p.get('primary_dark', p['primary'])}; }}
-            QPushButton:disabled {{ background: {p['border']}; color: {p['text_muted']}; }}
+            QPushButton:hover {{ background: {p.get('primary_dark', p.get('primary', '#3b82f6'))}; }}
+            QPushButton:disabled {{ background: {p.get('border', '#334155')}; color: {p.get('text_muted', '#94a3b8')}; }}
         """)
         btn_layout.addWidget(self._use_btn)
 
@@ -253,12 +253,12 @@ class TemplateBrowserDialog(QDialog):
             card.setProperty("template_id", tmpl.template_id)
             card.setStyleSheet(f"""
                 QFrame {{
-                    background: {p['bg_card']};
-                    border: 2px solid {p['border']};
+                    background: {p.get('bg_card', '#1e293b')};
+                    border: 2px solid {p.get('border', '#334155')};
                     border-radius: 8px;
                 }}
                 QFrame:hover {{
-                    border-color: {p['primary']};
+                    border-color: {p.get('primary', '#3b82f6')};
                 }}
             """)
 
@@ -271,19 +271,19 @@ class TemplateBrowserDialog(QDialog):
             card_layout.addWidget(icon)
 
             name = QLabel(tmpl.name_ar)
-            name.setStyleSheet(f"font-weight: bold; color: {p['text_primary']}; font-size: 12px;")
+            name.setStyleSheet(f"font-weight: bold; color: {p.get('text_primary', '#e2e8f0')}; font-size: 12px;")
             name.setAlignment(Qt.AlignCenter)
             name.setWordWrap(True)
             card_layout.addWidget(name)
 
             desc = QLabel(tmpl.description_ar)
-            desc.setStyleSheet(f"color: {p['text_muted']}; font-size: 10px;")
+            desc.setStyleSheet(f"color: {p.get('text_muted', '#94a3b8')}; font-size: 10px;")
             desc.setAlignment(Qt.AlignCenter)
             desc.setWordWrap(True)
             card_layout.addWidget(desc)
 
             cols = QLabel(f"{tmpl.columns} أعمدة")
-            cols.setStyleSheet(f"color: {p['text_muted']}; font-size: 9px;")
+            cols.setStyleSheet(f"color: {p.get('text_muted', '#94a3b8')}; font-size: 9px;")
             cols.setAlignment(Qt.AlignCenter)
             card_layout.addWidget(cols)
 
@@ -308,12 +308,12 @@ class TemplateBrowserDialog(QDialog):
         for card in self._template_cards:
             card.setStyleSheet(f"""
                 QFrame {{
-                    background: {p['bg_card']};
-                    border: 2px solid {p['border']};
+                    background: {p.get('bg_card', '#1e293b')};
+                    border: 2px solid {p.get('border', '#334155')};
                     border-radius: 8px;
                 }}
                 QFrame:hover {{
-                    border-color: {p['primary']};
+                    border-color: {p.get('primary', '#3b82f6')};
                 }}
             """)
 
@@ -322,8 +322,8 @@ class TemplateBrowserDialog(QDialog):
             if card.property("template_id") == template.template_id:
                 card.setStyleSheet(f"""
                     QFrame {{
-                        background: {p.get('primary_light', p['bg_card'])};
-                        border: 2px solid {p['primary']};
+                        background: {p.get('primary_light', p.get('bg_card', '#1e293b'))};
+                        border: 2px solid {p.get('primary', '#3b82f6')};
                         border-radius: 8px;
                     }}
                 """)
@@ -436,16 +436,16 @@ class FormBuilderWindow(QMainWindow):
         p = get_current_palette()
         self.setStyleSheet(f"""
             QMainWindow {{
-                background: {p['bg_main']};
+                background: {p.get('bg_main', '#0f172a')};
             }}
             QToolBar {{
-                background: {p['bg_card']};
-                border-bottom: 1px solid {p['border']};
+                background: {p.get('bg_card', '#1e293b')};
+                border-bottom: 1px solid {p.get('border', '#334155')};
                 padding: 4px;
             }}
             QMenuBar {{
-                background: {p['bg_card']};
-                border-bottom: 1px solid {p['border']};
+                background: {p.get('bg_card', '#1e293b')};
+                border-bottom: 1px solid {p.get('border', '#334155')};
             }}
         """)
 
@@ -620,13 +620,13 @@ class FormBuilderWindow(QMainWindow):
         btn_style = f"""
             QPushButton {{
                 padding: 4px 10px;
-                border: 1px solid {p['border']};
+                border: 1px solid {p.get('border', '#334155')};
                 border-radius: 4px;
-                background: {p['bg_card']};
+                background: {p.get('bg_card', '#1e293b')};
             }}
             QPushButton:hover {{
-                background: {p['bg_hover']};
-                border-color: {p['primary']};
+                background: {p.get('bg_hover', '#334155')};
+                border-color: {p.get('primary', '#3b82f6')};
             }}
         """
 
@@ -689,7 +689,7 @@ class FormBuilderWindow(QMainWindow):
         toolbar.addWidget(zoom_out_btn)
 
         self._zoom_label = QLabel("100%")
-        self._zoom_label.setStyleSheet(f"padding: 0 6px; color: {p['text_primary']};")
+        self._zoom_label.setStyleSheet(f"padding: 0 6px; color: {p.get('text_primary', '#e2e8f0')};")
         toolbar.addWidget(self._zoom_label)
 
         zoom_in_btn = QPushButton("+")
@@ -707,12 +707,12 @@ class FormBuilderWindow(QMainWindow):
                 padding: 4px 14px;
                 border: none;
                 border-radius: 4px;
-                background: {p['primary']};
-                color: white;
+                background: {p.get('primary', '#3b82f6')};
+                color: {p.get('text_on_primary', '#ffffff')};
                 font-weight: bold;
             }}
             QPushButton:hover {{
-                background: {p.get('primary_dark', p['primary'])};
+                background: {p.get('primary_dark', p.get('primary', '#3b82f6'))};
             }}
         """)
         preview_btn.clicked.connect(self._preview)

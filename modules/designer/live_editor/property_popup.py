@@ -404,6 +404,7 @@ class PropertyPopup(QWidget):
         )
 
         # Special styling for delete button
+        text_on_primary = palette.get('text_on_primary', '#ffffff')
         self._delete_btn.setStyleSheet(
             f"QPushButton {{"
             f"  color: {danger};"
@@ -411,7 +412,7 @@ class PropertyPopup(QWidget):
             f"}}"
             f"QPushButton:hover {{"
             f"  background-color: {danger};"
-            f"  color: white;"
+            f"  color: {text_on_primary};"
             f"}}"
         )
 
@@ -423,7 +424,7 @@ class PropertyPopup(QWidget):
             f"}}"
             f"QPushButton:hover {{"
             f"  background-color: {primary};"
-            f"  color: white;"
+            f"  color: {text_on_primary};"
             f"}}"
         )
 

@@ -24,7 +24,7 @@
   },
   "sections": [
     {
-      "section_id": "filters",
+      "id": "filters",
       "title_ar": "معايير البحث",
       "title_en": "Search Filters",
       "collapsible": false,
@@ -46,9 +46,7 @@
             "max_length": 200,
             "editable": true
           },
-          "validation": {
-            "required": false
-          }
+          "validation": []
         },
         {
           "id": "status",
@@ -75,9 +73,7 @@
               "display_column_en": "name_en"
             }
           },
-          "validation": {
-            "required": false
-          }
+          "validation": []
         },
         {
           "id": "department",
@@ -104,9 +100,7 @@
               "display_column_en": "name_en"
             }
           },
-          "validation": {
-            "required": false
-          }
+          "validation": []
         },
         {
           "id": "date_from",
@@ -125,9 +119,7 @@
             "format": "yyyy-MM-dd",
             "editable": true
           },
-          "validation": {
-            "required": false
-          }
+          "validation": []
         },
         {
           "id": "date_to",
@@ -146,16 +138,14 @@
             "format": "yyyy-MM-dd",
             "editable": true
           },
-          "validation": {
-            "required": false
-          }
+          "validation": []
         }
       ]
     }
   ],
   "actions": [
     {
-      "action_id": "search",
+      "id": "search",
       "label_ar": "بحث",
       "label_en": "Search",
       "type": "primary",
@@ -164,7 +154,7 @@
       "handler": "execute_search"
     },
     {
-      "action_id": "reset",
+      "id": "reset",
       "label_ar": "إعادة تعيين",
       "label_en": "Reset",
       "type": "secondary",
