@@ -16,6 +16,41 @@
 
 ---
 
+## الجلسة: 11 فبراير 2026 - Phase 4 Remaining Fixes (إصلاح المشاكل المتبقية)
+
+### ملخص الجلسة:
+
+**إصلاح 7 مشاكل متبقية من مراجعة Phase 4 (CRITICAL + HIGH + MEDIUM + LOW).**
+
+### ما تم إنجازه:
+
+| # | الخطورة | الملف | المشكلة | الحل |
+|---|---------|-------|---------|------|
+| 1 | CRITICAL | `master_data_dialog.py` | DB ops على Main Thread (Rule #13) | نقل duplicate check + insert/update إلى `run_in_background()` مع loading indicator |
+| 2 | HIGH | `form_renderer.py` | Combo Race Condition (set_data قبل combo loading) | إضافة `_pending_data` + `_combos_loaded` flag + re-apply بعد اكتمال التحميل |
+| 3 | HIGH | `form_schema.py` | data_binding "data_type" vs "type" mismatch | تغيير validator ليدعم كلا المفتاحين (`type` أولاً ثم `data_type`) |
+| 4 | MEDIUM | `form_schema.py` | Events schema ناقص (on_close مفقود) | إضافة `on_close` + `SUPPORTED_EVENT_KEYS` + event validation |
+| 5 | MEDIUM | `employee_edit.iform` | حقول بدون validation (national_id, iban) | إضافة `national_id` (14 رقم) و `iban` validation rules |
+| 6 | LOW | `employee_edit.iform` | فراغات في الشبكة (hire_date, job_title_id) | جعلها `colspan=2` لملء الصف |
+| 7 | LOW | `employee_profile.iform` | national_id مفقود | إضافته readonly بجانب nationality_id في Row 2 |
+
+### الملفات المعدلة:
+
+```
+modules/mostahaqat/screens/master_data/master_data_dialog.py  ← async DB ops
+modules/designer/form_renderer/form_renderer.py               ← combo race fix
+modules/designer/shared/form_schema.py                        ← type key + events
+modules/designer/templates/builtin/employee_edit.iform        ← validation + layout
+modules/designer/templates/builtin/employee_profile.iform     ← national_id field
+```
+
+### القواعد المطبقة:
+- Rule #13: Blocking Operations → `run_in_background()`
+- Rule #9: Error Handling → `toast_success/error/warning`
+- Rule #2: SQL Injection → parameterized queries (maintained)
+
+---
+
 ## الجلسة: 10 فبراير 2026 - Phase 4: Migration (تحويل الشاشات لـ FormRenderer)
 
 ### ملخص الجلسة:

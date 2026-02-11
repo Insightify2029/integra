@@ -114,6 +114,14 @@ SUPPORTED_RULE_ACTIONS: tuple[str, ...] = (
     "set_required",
 )
 
+SUPPORTED_EVENT_KEYS: tuple[str, ...] = (
+    "on_load",
+    "on_save",
+    "on_validate",
+    "on_close",
+    "on_field_change",
+)
+
 SUPPORTED_COMBO_SOURCE_TYPES: tuple[str, ...] = (
     "query",
     "static",
@@ -233,7 +241,8 @@ def _validate_field(field: dict[str, Any], section_id: str, errors: list[str]) -
     # Validate data_binding if present
     binding = field.get("data_binding")
     if binding:
-        data_type = binding.get("data_type")
+        # Support both "type" (used in .iform files) and "data_type" (legacy)
+        data_type = binding.get("type") or binding.get("data_type")
         if data_type and data_type not in SUPPORTED_DATA_TYPES:
             errors.append(f"{prefix}: unsupported data_type '{data_type}'")
 
@@ -372,6 +381,13 @@ def validate_form_schema(form_data: dict[str, Any]) -> tuple[bool, list[str]]:
         for rule in rules:
             _validate_rule(rule, errors)
 
+    # Events validation
+    events = form_data.get("events")
+    if events and isinstance(events, dict):
+        for event_key in events:
+            if event_key not in SUPPORTED_EVENT_KEYS:
+                errors.append(f"Unsupported event key '{event_key}'")
+
     is_valid = len(errors) == 0
     if not is_valid:
         app_logger.warning(
@@ -418,6 +434,7 @@ def get_default_form(
             "on_load": None,
             "on_save": None,
             "on_validate": None,
+            "on_close": None,
             "on_field_change": {},
         },
     }
