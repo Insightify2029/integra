@@ -761,7 +761,7 @@ class FormRenderer(QWidget):
                 widget_type = field_def.get("widget_type", "text_input")
                 connect_change_signal(
                     widget, widget_type,
-                    lambda fid=field_id: self._on_widget_changed(fid),
+                    lambda *_args, fid=field_id: self._on_widget_changed(fid),
                 )
 
     def _connect_action_buttons(self, actions: list[dict[str, Any]]) -> None:
