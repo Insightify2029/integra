@@ -726,7 +726,7 @@ class FormRenderer(QWidget):
             f"}}"
             f"QPushButton:hover {{"
             f"  background-color: {primary};"
-            f"  color: white;"
+            f"  color: {palette.get('text_on_primary', '#ffffff')};"
             f"}}"
         )
         layout.addWidget(live_edit_btn)
@@ -1086,11 +1086,10 @@ class FormRenderer(QWidget):
     # Internal: Error display
     # -----------------------------------------------------------------------
 
-    @staticmethod
-    def _show_error(message: str) -> None:
+    def _show_error(self, message: str) -> None:
         """Show an error message to the user."""
         try:
-            msg_box = QMessageBox()
+            msg_box = QMessageBox(self)
             msg_box.setIcon(QMessageBox.Critical)
             msg_box.setWindowTitle("خطأ")
             msg_box.setText(message)
@@ -1114,6 +1113,10 @@ class FormRenderer(QWidget):
             self._live_edit_active = False
 
         self._validation_engine.clear_all_errors()
+
+        # Release cached widget references in layout engine (Rule #6)
+        if self._layout_engine:
+            self._layout_engine.clear()
 
         # Clear widget map references first, then delete
         self._widget_map.clear()

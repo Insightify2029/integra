@@ -45,6 +45,7 @@ from PyQt5.QtWidgets import (
     QLabel,
     QPushButton,
     QFrame,
+    QScrollArea,
     QApplication,
     QMessageBox,
 )
@@ -375,7 +376,7 @@ class LiveEditOverlay(QWidget):
             self._property_popup.deleteLater()
             self._property_popup = None
 
-        self._property_popup = PropertyPopup(parent=None)
+        self._property_popup = PropertyPopup(parent=self)
         self._property_popup.property_changed.connect(self._on_popup_property_changed)
         self._property_popup.delete_requested.connect(self._on_delete_field)
         self._property_popup.duplicate_requested.connect(self._on_duplicate_field)

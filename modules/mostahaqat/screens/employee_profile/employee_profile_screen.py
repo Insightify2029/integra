@@ -233,57 +233,58 @@ class EmployeeProfileScreen(QWidget):
     def _apply_theme(self) -> None:
         """Apply current theme using palette."""
         p = get_current_palette()
+        text_on_primary = p.get('text_on_primary', '#ffffff')
         self.setStyleSheet(f"""
-            QWidget {{ background-color: {p['bg_main']}; }}
-            QLabel {{ color: {p['text_primary']}; background: transparent; }}
-            QLabel#screenTitle {{ color: {p['accent']}; }}
+            QWidget {{ background-color: {p.get('bg_main', '#0f172a')}; }}
+            QLabel {{ color: {p.get('text_primary', '#e2e8f0')}; background: transparent; }}
+            QLabel#screenTitle {{ color: {p.get('accent', '#3b82f6')}; }}
             QFrame#actionsFrame {{
-                background-color: {p['bg_card']};
-                border: 1px solid {p['border']};
+                background-color: {p.get('bg_card', '#1e293b')};
+                border: 1px solid {p.get('border', '#334155')};
                 border-radius: 12px;
             }}
             QPushButton {{
-                background-color: {p['bg_card']};
-                color: {p['text_primary']};
+                background-color: {p.get('bg_card', '#1e293b')};
+                color: {p.get('text_primary', '#e2e8f0')};
                 border: none;
                 border-radius: 8px;
                 padding: 12px 24px;
                 font-weight: bold;
             }}
             QPushButton:hover {{
-                background-color: {p['bg_hover']};
+                background-color: {p.get('bg_hover', '#334155')};
             }}
             QPushButton#backButton {{
                 background-color: transparent;
-                color: {p['text_secondary']};
-                border: 1px solid {p['border']};
+                color: {p.get('text_secondary', '#94a3b8')};
+                border: 1px solid {p.get('border', '#334155')};
             }}
             QPushButton#backButton:hover {{
-                background-color: {p['bg_card']};
-                color: {p['text_primary']};
+                background-color: {p.get('bg_card', '#1e293b')};
+                color: {p.get('text_primary', '#e2e8f0')};
             }}
             QPushButton[buttonColor="primary"] {{
-                background-color: {p['primary']};
-                color: {p['text_on_primary']};
+                background-color: {p.get('primary', '#2563eb')};
+                color: {text_on_primary};
             }}
             QPushButton[buttonColor="primary"]:hover {{
-                background-color: {p['primary_hover']};
+                background-color: {p.get('primary_hover', '#1d4ed8')};
             }}
             QPushButton[buttonColor="success"] {{
-                background-color: {p['success']};
-                color: {p['text_on_primary']};
+                background-color: {p.get('success', '#22c55e')};
+                color: {text_on_primary};
             }}
             QPushButton[buttonColor="info"] {{
-                background-color: {p['info']};
-                color: {p['text_on_primary']};
+                background-color: {p.get('info', '#06b6d4')};
+                color: {text_on_primary};
             }}
             QPushButton[buttonColor="warning"] {{
-                background-color: {p['warning']};
-                color: {p['text_on_primary']};
+                background-color: {p.get('warning', '#f59e0b')};
+                color: {text_on_primary};
             }}
             QPushButton[buttonColor="danger"] {{
-                background-color: {p['danger']};
-                color: {p['text_on_primary']};
+                background-color: {p.get('danger', '#ef4444')};
+                color: {text_on_primary};
             }}
             QScrollArea {{ background: transparent; border: none; }}
         """)
