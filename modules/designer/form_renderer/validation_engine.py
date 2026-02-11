@@ -212,10 +212,18 @@ class ValidationEngine:
         palette = get_current_palette()
         danger = palette.get("danger", "#ef4444")
 
-        # Red border on widget
-        widget.setStyleSheet(
-            widget.styleSheet() + f"\nborder: 1px solid {danger};"
+        # Red border on widget (scoped to widget class to avoid style conflicts)
+        class_name = type(widget).__name__
+        existing = widget.styleSheet()
+        # Remove any previous error border before adding new one
+        existing = re.sub(
+            rf"/\* validation-error \*/\s*{re.escape(class_name)}\s*\{{[^}}]*\}}",
+            "", existing
+        ).strip()
+        error_style = (
+            f"/* validation-error */ {class_name} {{ border: 1px solid {danger}; }}"
         )
+        widget.setStyleSheet(f"{existing}\n{error_style}" if existing else error_style)
         self._error_widgets[field_id] = widget
 
         # Error label
@@ -235,9 +243,13 @@ class ValidationEngine:
         """Remove error styling and message from a field."""
         widget = self._error_widgets.pop(field_id, None)
         if widget:
-            # Remove only the border override (keep other styles)
+            # Remove only the scoped validation-error block (keep other styles)
             current = widget.styleSheet()
-            current = re.sub(r"border:\s*1px\s+solid\s+#[a-fA-F0-9]+;", "", current)
+            class_name = type(widget).__name__
+            current = re.sub(
+                rf"/\* validation-error \*/\s*{re.escape(class_name)}\s*\{{[^}}]*\}}",
+                "", current
+            )
             widget.setStyleSheet(current.strip())
 
         label = self._error_labels.get(field_id)
@@ -391,6 +403,13 @@ class ValidationEngine:
             return None
         if rule_value:
             pattern_str = str(rule_value)
+            # Limit pattern length to prevent ReDoS from crafted .iform files
+            if len(pattern_str) > 500:
+                app_logger.warning(
+                    f"Regex pattern too long ({len(pattern_str)} chars) "
+                    f"for field '{field_id}', skipping"
+                )
+                return None
             try:
                 # Limit input length to prevent excessive backtracking
                 check_value = value[:10000] if len(value) > 10000 else value

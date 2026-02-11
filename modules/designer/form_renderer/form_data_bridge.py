@@ -37,7 +37,8 @@ from core.threading import run_in_background
 # Regex to detect dangerous SQL keywords (case-insensitive, word-boundary)
 _DANGEROUS_SQL_RE = re.compile(
     r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|EXECUTE|GRANT|REVOKE"
-    r"|COPY|LOAD|REPLACE|MERGE|CALL|SET|COMMIT|ROLLBACK|SAVEPOINT)\b",
+    r"|COPY|LOAD|REPLACE|MERGE|CALL|SET|COMMIT|ROLLBACK|SAVEPOINT"
+    r"|UNION|INTO\s+OUTFILE|INTO\s+DUMPFILE|INFORMATION_SCHEMA)\b",
     re.IGNORECASE,
 )
 

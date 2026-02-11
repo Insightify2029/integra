@@ -108,7 +108,10 @@ class EditEmployeeScreen(QWidget):
             app_logger.error(f"Failed to load employee edit form: {_IFORM_PATH}")
             err_label = QLabel("فشل تحميل نموذج التعديل")
             err_label.setAlignment(Qt.AlignCenter)
-            err_label.setStyleSheet("color: red; font-size: 16px;")
+            palette = get_current_palette()
+            err_label.setStyleSheet(
+                f"color: {palette.get('danger', '#ef4444')}; font-size: 16px;"
+            )
             layout.addWidget(err_label)
 
         layout.addWidget(self._renderer, 1)
@@ -209,18 +212,18 @@ class EditEmployeeScreen(QWidget):
         """Apply theme to the header area. FormRenderer handles its own theming."""
         p = get_current_palette()
         self.setStyleSheet(f"""
-            QWidget {{ background-color: {p['bg_main']}; }}
-            QLabel {{ color: {p['text_primary']}; background: transparent; }}
-            QLabel#screenTitle {{ color: {p['accent']}; }}
+            QWidget {{ background-color: {p.get('bg_main', '#0f172a')}; }}
+            QLabel {{ color: {p.get('text_primary', '#e2e8f0')}; background: transparent; }}
+            QLabel#screenTitle {{ color: {p.get('accent', '#3b82f6')}; }}
             QPushButton#backButton {{
                 background-color: transparent;
-                color: {p['text_secondary']};
-                border: 1px solid {p['border']};
+                color: {p.get('text_secondary', '#94a3b8')};
+                border: 1px solid {p.get('border', '#334155')};
                 border-radius: 8px;
                 padding: 8px 16px;
             }}
             QPushButton#backButton:hover {{
-                background-color: {p['bg_card']};
-                color: {p['text_primary']};
+                background-color: {p.get('bg_card', '#1e293b')};
+                color: {p.get('text_primary', '#e2e8f0')};
             }}
         """)

@@ -83,6 +83,12 @@ class LayoutEngine:
     # Public API
     # -----------------------------------------------------------------------
 
+    def clear(self) -> None:
+        """Release all cached widget references (Rule #6: prevent stale references)."""
+        self._section_frames.clear()
+        self._section_content_widgets.clear()
+        self._section_toggle_buttons.clear()
+
     def build_form(
         self,
         sections: list[dict[str, Any]],
