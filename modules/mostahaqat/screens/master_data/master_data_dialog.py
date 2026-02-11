@@ -16,7 +16,7 @@ Features:
 - RTL Arabic layout
 """
 
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, Tuple
 
 from psycopg2 import sql as psycopg2_sql
 
@@ -27,12 +27,13 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 
 from core.database.queries import insert_returning_id, update, get_scalar
+from core.threading import run_in_background
 from core.themes import (
     get_current_palette, get_font,
     FONT_SIZE_TITLE, FONT_SIZE_BODY, FONT_SIZE_SMALL, FONT_WEIGHT_BOLD,
 )
 from core.logging import app_logger
-from ui.components.notifications import toast_error, toast_warning
+from ui.components.notifications import toast_error, toast_warning, toast_success
 
 from modules.designer.form_renderer import FormRenderer
 
@@ -87,6 +88,8 @@ class MasterDataDialog(QDialog):
         self._config = ENTITY_CONFIGS[entity_key]
         self._mode = mode
         self._record = record_data or {}
+        self._save_btn: Optional[QPushButton] = None
+        self._saving = False
 
         self._setup_ui()
         self._apply_theme()
@@ -158,14 +161,14 @@ class MasterDataDialog(QDialog):
 
         # Save
         save_text = "➕ إضافة" if self._mode == 'add' else "✅ حفظ التعديلات"
-        save_btn = QPushButton(save_text)
-        save_btn.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
-        save_btn.setMinimumHeight(44)
-        save_btn.setMinimumWidth(180)
-        save_btn.setCursor(Qt.PointingHandCursor)
-        save_btn.setProperty("buttonColor", "success")
-        save_btn.clicked.connect(self._on_save)
-        buttons_layout.addWidget(save_btn)
+        self._save_btn = QPushButton(save_text)
+        self._save_btn.setFont(get_font(FONT_SIZE_BODY, FONT_WEIGHT_BOLD))
+        self._save_btn.setMinimumHeight(44)
+        self._save_btn.setMinimumWidth(180)
+        self._save_btn.setCursor(Qt.PointingHandCursor)
+        self._save_btn.setProperty("buttonColor", "success")
+        self._save_btn.clicked.connect(self._on_save)
+        buttons_layout.addWidget(self._save_btn)
 
         buttons_layout.addStretch()
         layout.addLayout(buttons_layout)
@@ -253,53 +256,131 @@ class MasterDataDialog(QDialog):
         """Populate fields with existing data."""
         self._renderer.set_data(data)
 
-    def _validate(self) -> bool:
-        """Validate all fields including duplicate checks."""
-        # Use FormRenderer's built-in validation first
+    def _validate_local(self) -> bool:
+        """Validate fields locally (no DB access - safe for main thread)."""
         is_valid, errors = self._renderer.validate()
-        if not is_valid:
-            return False
+        return is_valid
 
-        # Additional duplicate checks using public API (get_field_value returns
-        # None for unknown fields, so no need to check _input_widgets)
-        name_ar = self._renderer.get_field_value('name_ar')
-        if name_ar and isinstance(name_ar, str) and name_ar.strip():
-            if self._is_duplicate('name_ar', name_ar.strip()):
-                toast_warning(self, "تنبيه", "هذا الاسم موجود بالفعل!")
-                return False
+    def _set_saving(self, saving: bool) -> None:
+        """Enable/disable save button during async operation."""
+        self._saving = saving
+        if self._save_btn:
+            self._save_btn.setEnabled(not saving)
+            if saving:
+                self._save_btn.setText("⏳ جارٍ الحفظ...")
+            else:
+                self._save_btn.setText(
+                    "➕ إضافة" if self._mode == 'add' else "✅ حفظ التعديلات"
+                )
 
-        name_en = self._renderer.get_field_value('name_en')
-        if name_en and isinstance(name_en, str) and name_en.strip():
-            if self._is_duplicate('name_en', name_en.strip()):
-                toast_warning(self, "تنبيه", "هذا الاسم الإنجليزي موجود بالفعل!")
-                return False
+    def _on_save(self) -> None:
+        """Handle save button click - validates locally, then runs DB ops in background."""
+        if self._saving:
+            return
 
-        code = self._renderer.get_field_value('code')
-        if code and isinstance(code, str) and code.strip():
-            if self._is_duplicate('code', code.strip()):
-                toast_warning(self, "تنبيه", "هذا الكود موجود بالفعل!")
-                return False
+        if not self._validate_local():
+            return
 
-        return True
+        # Collect form data on main thread (widget access must be on main thread)
+        form_data = self._collect_form_data()
+        if form_data is None:
+            return
 
-    def _is_duplicate(self, column: str, value: str) -> bool:
-        """Check if value already exists in the table using parameterized queries."""
+        self._set_saving(True)
+
+        # Run all DB operations (duplicate check + insert/update) in background (Rule #13)
+        run_in_background(
+            self._do_save_in_background,
+            args=(form_data,),
+            on_finished=self._on_save_finished,
+            on_error=self._on_save_error,
+        )
+
+    def _collect_form_data(self) -> Optional[Dict[str, Any]]:
+        """Collect all form data needed for save (called on main thread)."""
+        table = self._config['table']
+        if table not in _ALLOWED_TABLES:
+            app_logger.error(f"Table '{table}' not in allowed tables whitelist")
+            return None
+
+        field_keys: List[str] = []
+        values: List[Any] = []
+        duplicate_checks: List[Tuple[str, str, str]] = []
+
+        for field_def in self._config['fields']:
+            key = field_def['key']
+            if key not in _ALLOWED_COLUMNS:
+                continue
+            value = self._renderer.get_field_value(key)
+            str_value = str(value).strip() if value is not None else ""
+
+            if self._mode == 'add':
+                if str_value:
+                    field_keys.append(key)
+                    values.append(str_value)
+            else:
+                field_keys.append(key)
+                values.append(str_value if str_value else None)
+
+            # Prepare duplicate checks for non-empty values
+            if str_value and key in ('name_ar', 'name_en', 'code'):
+                label_map = {
+                    'name_ar': "هذا الاسم موجود بالفعل!",
+                    'name_en': "هذا الاسم الإنجليزي موجود بالفعل!",
+                    'code': "هذا الكود موجود بالفعل!",
+                }
+                duplicate_checks.append((key, str_value, label_map[key]))
+
+        if self._mode == 'add' and not field_keys:
+            toast_warning(self, "تنبيه", "يرجى إدخال بيانات!")
+            return None
+
+        return {
+            'table': table,
+            'field_keys': field_keys,
+            'values': values,
+            'duplicate_checks': duplicate_checks,
+            'record_id': self._record.get('id') if self._mode == 'edit' else None,
+        }
+
+    def _do_save_in_background(self, form_data: Dict[str, Any]) -> bool:
+        """
+        Run duplicate check + insert/update in a background thread (Rule #13).
+
+        Returns True on success. Raises Exception with user-facing message on failure.
+        """
+        table = form_data['table']
+        field_keys = form_data['field_keys']
+        values = form_data['values']
+        record_id = form_data['record_id']
+
+        # Step 1: Duplicate checks
+        for column, value, dup_msg in form_data['duplicate_checks']:
+            if self._is_duplicate_sync(table, column, value, record_id):
+                raise Exception(dup_msg)
+
+        # Step 2: Insert or Update
+        if self._mode == 'add':
+            return self._insert_record_sync(table, field_keys, values)
+        else:
+            if record_id is None:
+                raise Exception("لم يتم تحديد السجل!")
+            return self._update_record_sync(table, field_keys, values, record_id)
+
+    @staticmethod
+    def _is_duplicate_sync(
+        table: str, column: str, value: str, record_id: Optional[int]
+    ) -> bool:
+        """Check duplicate in DB (called from background thread)."""
         try:
-            table = self._config['table']
-
-            # Whitelist validation for SQL identifiers
             if table not in _ALLOWED_TABLES:
                 app_logger.error(f"Table '{table}' not in allowed tables whitelist")
-                return True  # Block save when we can't verify
+                return True
             if column not in _ALLOWED_COLUMNS:
                 app_logger.error(f"Column '{column}' not in allowed columns whitelist")
                 return True
 
-            if self._mode == 'edit':
-                record_id = self._record.get('id')
-                if record_id is None:
-                    app_logger.error("Edit mode but record has no id")
-                    return True
+            if record_id is not None:
                 query = psycopg2_sql.SQL(
                     "SELECT COUNT(*) FROM {} WHERE {} = %s AND id != %s"
                 ).format(
@@ -319,48 +400,12 @@ class MasterDataDialog(QDialog):
             return count is not None and count > 0
         except Exception as e:
             app_logger.error(f"Duplicate check error: {e}", exc_info=True)
-            return True  # Block save when we can't verify
+            return True
 
-    def _on_save(self) -> None:
-        """Handle save button click."""
-        if not self._validate():
-            return
-
-        try:
-            if self._mode == 'add':
-                success = self._insert_record()
-            else:
-                success = self._update_record()
-            if success:
-                self.accept()
-        except Exception as e:
-            app_logger.error(f"Save error: {e}", exc_info=True)
-            toast_error(self, "خطأ", "فشل الحفظ. يرجى المحاولة مرة أخرى.")
-
-    def _insert_record(self) -> bool:
-        """Insert new record using FormRenderer data with parameterized SQL."""
-        table = self._config['table']
-        if table not in _ALLOWED_TABLES:
-            app_logger.error(f"Table '{table}' not in allowed tables whitelist")
-            return False
-
-        field_keys = []
-        values = []
-
-        for field_def in self._config['fields']:
-            key = field_def['key']
-            if key not in _ALLOWED_COLUMNS:
-                continue
-            value = self._renderer.get_field_value(key)
-            str_value = str(value).strip() if value is not None else ""
-            if str_value:
-                field_keys.append(key)
-                values.append(str_value)
-
-        if not field_keys:
-            toast_warning(self, "تنبيه", "يرجى إدخال بيانات!")
-            return False
-
+    def _insert_record_sync(
+        self, table: str, field_keys: List[str], values: List[Any]
+    ) -> bool:
+        """Insert record (called from background thread)."""
         query = psycopg2_sql.SQL(
             "INSERT INTO {} ({}) VALUES ({}) RETURNING id"
         ).format(
@@ -377,35 +422,15 @@ class MasterDataDialog(QDialog):
         if not new_id:
             raise Exception("فشل إنشاء السجل")
 
-        app_logger.info(
-            f"Master data: Added {self._entity_key} id={new_id}"
-        )
+        app_logger.info(f"Master data: Added {self._entity_key} id={new_id}")
         return True
 
-    def _update_record(self) -> bool:
-        """Update existing record using FormRenderer data with parameterized SQL."""
-        record_id = self._record.get('id')
-        if not record_id:
-            raise Exception("لم يتم تحديد السجل!")
-
-        table = self._config['table']
-        if table not in _ALLOWED_TABLES:
-            app_logger.error(f"Table '{table}' not in allowed tables whitelist")
-            return False
-
-        field_keys = []
-        values = []
-
-        for field_def in self._config['fields']:
-            key = field_def['key']
-            if key not in _ALLOWED_COLUMNS:
-                continue
-            value = self._renderer.get_field_value(key)
-            str_value = str(value).strip() if value is not None else ""
-            field_keys.append(key)
-            values.append(str_value if str_value else None)
-
-        values.append(record_id)
+    def _update_record_sync(
+        self, table: str, field_keys: List[str], values: List[Any],
+        record_id: int,
+    ) -> bool:
+        """Update record (called from background thread)."""
+        update_values = list(values) + [record_id]
 
         set_clause = psycopg2_sql.SQL(', ').join(
             psycopg2_sql.SQL("{} = %s").format(psycopg2_sql.Identifier(k))
@@ -415,15 +440,33 @@ class MasterDataDialog(QDialog):
             psycopg2_sql.Identifier(table),
             set_clause,
         )
-        success = update(query, tuple(values))
+        success = update(query, tuple(update_values))
 
         if not success:
             raise Exception("فشل تحديث السجل")
 
-        app_logger.info(
-            f"Master data: Updated {self._entity_key} id={record_id}"
-        )
+        app_logger.info(f"Master data: Updated {self._entity_key} id={record_id}")
         return True
+
+    def _on_save_finished(self, result: Any) -> None:
+        """Handle successful save (callback on main thread)."""
+        self._set_saving(False)
+        if result:
+            toast_success(self, "تم", "تم الحفظ بنجاح")
+            self.accept()
+
+    def _on_save_error(self, exc_type: type, message: str, traceback: str) -> None:
+        """Handle save error (callback on main thread)."""
+        self._set_saving(False)
+        app_logger.error(f"Save error: {message}")
+        # Duplicate detection messages are user-friendly
+        if any(
+            keyword in message
+            for keyword in ("موجود بالفعل", "فشل إنشاء", "فشل تحديث", "لم يتم تحديد")
+        ):
+            toast_warning(self, "تنبيه", message)
+        else:
+            toast_error(self, "خطأ", "فشل الحفظ. يرجى المحاولة مرة أخرى.")
 
     def _apply_theme(self) -> None:
         """Apply current theme using palette."""

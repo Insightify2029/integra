@@ -94,11 +94,21 @@
           "data_binding": {"column": "nationality_id", "type": "integer"}
         },
         {
+          "id": "national_id",
+          "widget_type": "text_input",
+          "label_ar": "رقم الهوية",
+          "label_en": "National ID",
+          "layout": {"row": 2, "col": 1, "colspan": 1, "rowspan": 1},
+          "properties": {"readonly": true, "enabled": true, "visible": true},
+          "validation": [],
+          "data_binding": {"column": "national_id", "type": "string"}
+        },
+        {
           "id": "hire_date",
           "widget_type": "date_picker",
           "label_ar": "تاريخ التعيين",
           "label_en": "Hire Date",
-          "layout": {"row": 2, "col": 1, "colspan": 1, "rowspan": 1},
+          "layout": {"row": 3, "col": 0, "colspan": 2, "rowspan": 1},
           "properties": {"readonly": true, "enabled": false, "visible": true},
           "validation": [],
           "data_binding": {"column": "hire_date", "type": "date"}

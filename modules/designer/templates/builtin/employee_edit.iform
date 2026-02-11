@@ -139,8 +139,8 @@
           "widget_type": "text_input",
           "label_ar": "رقم الهوية",
           "label_en": "National ID",
-          "placeholder_ar": "أدخل رقم الهوية",
-          "placeholder_en": "Enter national ID",
+          "placeholder_ar": "أدخل رقم الهوية (14 رقم)",
+          "placeholder_en": "Enter national ID (14 digits)",
           "layout": {
             "row": 2,
             "col": 0,
@@ -152,7 +152,13 @@
             "enabled": true,
             "visible": true
           },
-          "validation": [],
+          "validation": [
+            {
+              "rule": "national_id",
+              "message_ar": "رقم الهوية يجب أن يكون 14 رقم",
+              "message_en": "National ID must be exactly 14 digits"
+            }
+          ],
           "data_binding": {
             "column": "national_id",
             "type": "string"
@@ -195,7 +201,7 @@
           "layout": {
             "row": 3,
             "col": 0,
-            "colspan": 1,
+            "colspan": 2,
             "rowspan": 1
           },
           "properties": {
@@ -283,7 +289,7 @@
           "layout": {
             "row": 1,
             "col": 0,
-            "colspan": 1,
+            "colspan": 2,
             "rowspan": 1
           },
           "properties": {
@@ -346,8 +352,8 @@
           "widget_type": "text_input",
           "label_ar": "IBAN",
           "label_en": "IBAN",
-          "placeholder_ar": "أدخل رقم الآيبان",
-          "placeholder_en": "Enter IBAN number",
+          "placeholder_ar": "أدخل رقم الآيبان (مثال: SA...)",
+          "placeholder_en": "Enter IBAN number (e.g. SA...)",
           "layout": {
             "row": 0,
             "col": 1,
@@ -359,7 +365,13 @@
             "enabled": true,
             "visible": true
           },
-          "validation": [],
+          "validation": [
+            {
+              "rule": "iban",
+              "message_ar": "صيغة IBAN غير صحيحة",
+              "message_en": "Invalid IBAN format"
+            }
+          ],
           "data_binding": {
             "column": "iban",
             "type": "string"

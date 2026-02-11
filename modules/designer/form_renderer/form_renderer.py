@@ -152,6 +152,11 @@ class FormRenderer(QWidget):
         self._header_widget: Optional[QWidget] = None
         self._main_layout: Optional[QVBoxLayout] = None
 
+        # Combo loading state (Fix: race condition between set_data and combo loading)
+        self._combos_loading_count = 0  # Number of combos still loading
+        self._combos_loaded = False  # True when all combos have loaded
+        self._pending_data: Optional[dict[str, Any]] = None  # Data waiting for combos
+
         # Live edit overlay (Phase 3)
         self._live_edit_overlay = None  # Created lazily
         self._live_edit_active = False
@@ -297,6 +302,9 @@ class FormRenderer(QWidget):
         """
         Populate the form with data from a dictionary.
 
+        If combo boxes are still loading, the data is stored as pending
+        and will be re-applied once all combos have finished loading.
+
         Args:
             data: Dict mapping column/field names to values.
         """
@@ -308,6 +316,11 @@ class FormRenderer(QWidget):
             )
         finally:
             self._state_manager.resume_tracking()
+
+        # If combos are still loading, store data so we can re-apply combo
+        # values once loading completes (fixes race condition)
+        if not self._combos_loaded:
+            self._pending_data = copy.deepcopy(data)
 
     def get_data(self) -> dict[str, Any]:
         """
@@ -791,6 +804,9 @@ class FormRenderer(QWidget):
 
     def _load_all_combo_data(self) -> None:
         """Load data for all combo box fields that have query sources."""
+        self._combos_loaded = False
+        self._combos_loading_count = 0
+
         for field_id, (_, widget, field_def) in self._widget_map.items():
             if field_def.get("widget_type") != "combo_box":
                 continue
@@ -804,9 +820,14 @@ class FormRenderer(QWidget):
             display_col = combo_src.get("display_column", "name_ar")
 
             if query:
+                self._combos_loading_count += 1
                 self._data_bridge.load_combo_data(
                     field_id, query, value_col, display_col
                 )
+
+        # If no combos need loading, mark as loaded immediately
+        if self._combos_loading_count == 0:
+            self._combos_loaded = True
 
     def _apply_rules(self) -> None:
         """Apply conditional logic rules from the form definition."""
@@ -868,6 +889,8 @@ class FormRenderer(QWidget):
         """Populate a combo box with loaded data."""
         widget = self._input_widgets.get(field_id)
         if not isinstance(widget, QComboBox):
+            self._combos_loading_count = max(0, self._combos_loading_count - 1)
+            self._check_all_combos_loaded()
             return
 
         # Preserve current selection
@@ -891,6 +914,30 @@ class FormRenderer(QWidget):
                         break
         finally:
             widget.blockSignals(False)
+
+        # Track combo loading progress
+        self._combos_loading_count = max(0, self._combos_loading_count - 1)
+        self._check_all_combos_loaded()
+
+    def _check_all_combos_loaded(self) -> None:
+        """Check if all combos are loaded; if so, re-apply pending data."""
+        if self._combos_loading_count > 0:
+            return
+
+        self._combos_loaded = True
+
+        # Re-apply pending data to set correct combo selections
+        if self._pending_data is not None:
+            pending = self._pending_data
+            self._pending_data = None
+            self._state_manager.suppress_tracking()
+            try:
+                self._populate_fields(pending)
+                self._state_manager.set_original_values(
+                    self._collect_values()
+                )
+            finally:
+                self._state_manager.resume_tracking()
 
     def _on_bridge_error(self, operation: str, message: str) -> None:
         """Handle errors from the data bridge."""
@@ -1085,6 +1132,9 @@ class FormRenderer(QWidget):
         self._content_widget = None
         self._action_bar = None
         self._header_widget = None
+        self._combos_loaded = False
+        self._combos_loading_count = 0
+        self._pending_data = None
 
     def closeEvent(self, event) -> None:  # noqa: N802
         """Handle close with unsaved changes check."""
